@@ -204,7 +204,7 @@ indent yanked text (with prefix arg don't indent)."
     (yank-advised-indent-function (region-beginning) (region-end)))))
 
 ;; abbrev config
-(add-hook 'text-mode-hook 'eric-turn-on-abbrev)
+(add-hook 'text-mode-hook (lambda () (abbrev-mode +1)))
 
 ;; make a shell script executable automatically on save
 (add-hook 'after-save-hook
