@@ -43,6 +43,7 @@
   (eric-indent-buffer)
   (eric-untabify-buffer)
   (whitespace-cleanup))
+(add-hook 'after-save-hook 'eric-cleanup-buffer)
 
 (defun eric-eval-and-replace ()
   "Replace the preceding sexp with its value."
