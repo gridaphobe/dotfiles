@@ -35,6 +35,7 @@
     python
     rainbow-mode
     restclient
+    ruby-block
     scala-mode
     smex
     switch-window

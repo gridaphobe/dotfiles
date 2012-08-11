@@ -27,6 +27,8 @@ ELPA (or MELPA).")
 (require 'eric-keybindings)
 
 ;; mode-specific
+(require 'eric-c)
+(require 'eric-css)
 (require 'eric-erc)
 (require 'eric-haskell)
 (require 'eric-js)
@@ -34,8 +36,11 @@ ELPA (or MELPA).")
 (require 'eric-lisp)
 (require 'eric-mail)
 (require 'eric-org)
+(require 'eric-perl)
 (require 'eric-programming)
 (require 'eric-python)
+(require 'eric-ruby)
+(require 'eric-xml)
 
 ;; OSX specific settings
 (when (eq system-type 'darwin)
