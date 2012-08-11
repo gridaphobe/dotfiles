@@ -31,6 +31,7 @@ ELPA (or MELPA).")
 (require 'eric-haskell)
 (require 'eric-js)
 (require 'eric-latex)
+(require 'eric-lisp)
 (require 'eric-mail)
 (require 'eric-org)
 (require 'eric-programming)
@@ -38,7 +39,10 @@ ELPA (or MELPA).")
 
 ;; OSX specific settings
 (when (eq system-type 'darwin)
-  (require 'eric-osx))
+  (require 'eric-osx)
+  (let (osx-paths)
+    (dolist (path exec-path (setenv "PATH" osx-paths))
+      (setq osx-paths (concat osx-paths (concat path ":"))))))
 
 ;; config changes made through the customize UI will be store here
 (setq custom-file (concat emacs-config-dir "custom.el"))

@@ -130,4 +130,6 @@ and so on."
 (prefer-coding-system 'utf-8)
 (set-language-environment "UTF-8")
 
+(add-to-list 'exec-path "/usr/local/bin/")
+
 (provide 'eric-misc)
