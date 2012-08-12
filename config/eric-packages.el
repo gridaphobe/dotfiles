@@ -32,6 +32,7 @@
     org
     paredit
     pkgbuild-mode
+    puppet-mode
     python
     rainbow-mode
     restclient
@@ -39,6 +40,7 @@
     scala-mode
     smex
     switch-window
+    tuareg
     undo-tree
     virtualenv
     volatile-highlights
