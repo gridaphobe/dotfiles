@@ -43,7 +43,6 @@
   (eric-indent-buffer)
   (eric-untabify-buffer)
   (whitespace-cleanup))
-(add-hook 'after-save-hook 'eric-cleanup-buffer)
 
 (defun eric-eval-and-replace ()
   "Replace the preceding sexp with its value."
@@ -131,6 +130,6 @@ and so on."
 (prefer-coding-system 'utf-8)
 (set-language-environment "UTF-8")
 
-(add-to-list 'exec-path "/usr/local/bin/")
+(add-to-list 'exec-path "/usr/local/bin")
 
 (provide 'eric-misc)
