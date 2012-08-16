@@ -30,6 +30,8 @@
     melpa
     nginx-mode
     org
+    org-magit
+    org-readme
     paredit
     pkgbuild-mode
     puppet-mode
@@ -45,7 +47,6 @@
     virtualenv
     volatile-highlights
     writegood-mode
-    yasnippet
     zenburn-theme)
   "A list of packages to ensure are installed at launch.")
 
