@@ -14,6 +14,7 @@
     ack-and-a-half
     auctex
     bbdb
+    browse-kill-ring
     clojure-mode
     cperl-mode
     deft
@@ -31,7 +32,6 @@
     nginx-mode
     org
     org-magit
-    org-readme
     paredit
     pkgbuild-mode
     puppet-mode
