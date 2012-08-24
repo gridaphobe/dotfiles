@@ -20,6 +20,7 @@
     deft
     edit-server
     expand-region
+    flymake-cursor
     gist
     go-mode
     haskell-mode
