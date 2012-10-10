@@ -101,7 +101,7 @@
 (setq show-paren-style 'parenthesis)
 
 ;; highlight the current line
-(global-hl-line-mode +1)
+(global-hl-line-mode -1)
 
 (require 'volatile-highlights)
 (volatile-highlights-mode t)

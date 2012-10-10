@@ -1,5 +1,7 @@
 ;;; eric-misc.el --- Miscellaneous configuration details.
 
+(add-to-list 'auto-mode-alist '("PKGBUILD$" . pkgbuild-mode))
+
 ;; add the ability to copy and cut the current line, without marking it
 (defadvice kill-ring-save (before slick-copy activate compile)
   "When called interactively with no active region, copy a single line instead."

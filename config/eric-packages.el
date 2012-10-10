@@ -15,6 +15,7 @@
     auctex
     bbdb
     browse-kill-ring
+    caml
     clojure-mode
     cperl-mode
     deft
@@ -26,6 +27,8 @@
     haskell-mode
     js2-mode
     less-css-mode
+    logito
+    lua-mode
     magit
     magithub
     markdown-mode
@@ -34,6 +37,7 @@
     org
     org-magit
     paredit
+    pcache
     pkgbuild-mode
     puppet-mode
     python
@@ -48,6 +52,7 @@
     virtualenv
     volatile-highlights
     writegood-mode
+    yaml-mode
     zenburn-theme)
   "A list of packages to ensure are installed at launch.")
 
