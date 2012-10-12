@@ -1,5 +1,8 @@
 ;;; eric-keybindings.el --- useful keybindings.
 
+;; better window-switching
+(require 'switch-window)
+
 ;; smex keybindings
 (smex-initialize)
 (global-set-key (kbd "M-x") 'smex)
