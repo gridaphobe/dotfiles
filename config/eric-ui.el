@@ -1,6 +1,7 @@
 ;;; eric-ui.el --- UI optimizations and tweaks.
 
 ;; experimental
+(require 'fwb-cmds)
 (setq pop-up-frames 'graphic-only)
 ;; this shouldn't be necessary as it's the default...
 (setq ido-default-file-method 'raise-frame)
