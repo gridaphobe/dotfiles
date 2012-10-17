@@ -40,6 +40,7 @@ ELPA (or MELPA).")
 (require 'eric-programming)
 (require 'eric-python)
 (require 'eric-ruby)
+(require 'eric-scala)
 (require 'eric-xml)
 
 ;; OSX specific settings

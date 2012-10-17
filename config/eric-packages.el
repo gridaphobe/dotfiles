@@ -10,13 +10,16 @@
 (setq url-http-attempt-keepalives nil)
 
 (defvar eric-packages
-  '(ace-jump-mode
+  '(ac-dabbrev
+    ac-nrepl
+    ace-jump-mode
     ack-and-a-half
     auctex
     bbdb
     browse-kill-ring
     caml
     clojure-mode
+    clojure-test-mode
     cperl-mode
     deft
     edit-server
@@ -34,6 +37,7 @@
     markdown-mode
     melpa
     nginx-mode
+    nrepl
     org
     org-magit
     paredit

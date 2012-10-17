@@ -13,7 +13,9 @@
 
 ;; clojure
 (add-hook 'clojure-mode-hook 'eric-lisp-coding-defaults)
-
+(add-hook 'nrepl-interaction-mode-hook 'nrepl-turn-on-eldoc-mode)
+(add-hook 'nrepl-mode-hook 'eric-interactive-lisp-coding-defaults)
+(setq nrepl-popup-stacktraces nil)
 
 ;; common-lisp
 ;; the SBCL configuration file is in Common Lisp

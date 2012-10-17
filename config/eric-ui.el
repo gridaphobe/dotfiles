@@ -10,9 +10,12 @@
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
 
-(set-frame-font "Ubuntu Mono-14")
+(set-frame-font "Consolas-14")
 
 (setq org-pretty-entities t)
+
+;; experimental
+(setq pop-up-frames 'graphic-only)
 
 ;; For daemon mode, with-selected-frame seems to be required.  Normal
 ;; mode seems to require with-selected-frame to be absent.
