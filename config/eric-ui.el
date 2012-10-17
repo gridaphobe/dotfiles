@@ -2,6 +2,8 @@
 
 ;; experimental
 (setq pop-up-frames 'graphic-only)
+;; this shouldn't be necessary as it's the default...
+(setq ido-default-file-method 'raise-frame)
 (defun quit-window (&optional kill window)
     "Quit the current buffer.  Bury it, and maybe delete the selected frame.
 \(The frame is deleted if it contains a dedicated window for the buffer.)
