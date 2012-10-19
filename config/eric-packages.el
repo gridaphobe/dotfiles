@@ -25,6 +25,7 @@
     edit-server
     expand-region
     flymake-cursor
+    fwb-cmds
     gist
     go-mode
     haskell-mode
