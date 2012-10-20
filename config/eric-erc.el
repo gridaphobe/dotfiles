@@ -8,6 +8,8 @@
 ;; share your username (optional)
 (setq erc-user-full-name "Eric Seidel")
 
+(setq erc-autojoin-timing 'ident)
+
 ;; auto identify
 (when (file-exists-p (expand-file-name "~/.ercpass"))
   (load "~/.ercpass")

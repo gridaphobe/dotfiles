@@ -51,6 +51,7 @@
     ruby-block
     scala-mode
     smex
+    sr-speedbar
     switch-window
     tuareg
     undo-tree
