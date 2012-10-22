@@ -7,4 +7,6 @@
   (dolist (path exec-path (setenv "PATH" osx-paths))
     (setq osx-paths (concat osx-paths (concat path ":")))))
 
+(setq eshell-path-env (getenv "PATH"))
+
 (provide 'eric-osx)
