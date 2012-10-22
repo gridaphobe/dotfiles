@@ -1,6 +1,7 @@
 ;;; eric-misc.el --- Miscellaneous configuration details.
 
 (add-to-list 'auto-mode-alist '("PKGBUILD$" . pkgbuild-mode))
+(setq eshell-path-env (getenv "PATH"))
 
 ;; add the ability to copy and cut the current line, without marking it
 (defadvice kill-ring-save (before slick-copy activate compile)
