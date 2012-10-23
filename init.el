@@ -45,10 +45,7 @@ ELPA (or MELPA).")
 
 ;; OSX specific settings
 (when (eq system-type 'darwin)
-  (require 'eric-osx)
-  (let (osx-paths)
-    (dolist (path exec-path (setenv "PATH" osx-paths))
-      (setq osx-paths (concat osx-paths (concat path ":"))))))
+  (require 'eric-osx))
 
 ;; config changes made through the customize UI will be store here
 (setq custom-file (concat emacs-config-dir "custom.el"))

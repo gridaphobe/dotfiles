@@ -25,6 +25,7 @@
     edit-server
     expand-region
     flymake-cursor
+    fwb-cmds
     gist
     go-mode
     haskell-mode
@@ -50,6 +51,7 @@
     ruby-block
     scala-mode
     smex
+    sr-speedbar
     switch-window
     tuareg
     undo-tree
