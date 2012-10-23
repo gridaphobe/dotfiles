@@ -60,6 +60,17 @@ ELPA (or MELPA).")
               (add-hook 'gnus-after-exiting-gnus-hook
                         'save-buffers-kill-emacs))))
 
+(add-to-list
+ 'command-switch-alist
+ '("erc" . (lambda (&rest ignore)
+             (setq invocation-name "erc")
+             ;; Start Erc when Emacs starts
+             (load "~/.ercpass")
+             (add-hook 'emacs-startup-hook
+                       (lambda ()
+                         (erc :password erc-pass))
+                       t))))
+
 ;; run a server for emacsclient
 (when (not (server-running-p))
   (server-start))
