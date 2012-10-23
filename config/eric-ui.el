@@ -64,7 +64,7 @@ and the buffer that is killed or buried is the one in that window."
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
 
-(set-frame-font "Consolas-14")
+(add-to-list 'default-frame-alist '(font . "Consolas-10"))
 
 (setq org-pretty-entities t)
 

@@ -53,6 +53,16 @@ ELPA (or MELPA).")
 ;; config changes made through the customize UI will be store here
 (setq custom-file (concat emacs-config-dir "custom.el"))
 
+(add-to-list
+ 'command-switch-alist
+ '("gnus" . (lambda (&rest ignore)
+              (setq invocation-name "gnus")
+              ;; Start Gnus when Emacs starts
+              (add-hook 'emacs-startup-hook 'gnus t)
+              ;; Exit Emacs after quitting Gnus
+              (add-hook 'gnus-after-exiting-gnus-hook
+                        'save-buffers-kill-emacs))))
+
 ;; run a server for emacsclient
 (when (not (server-running-p))
   (server-start))

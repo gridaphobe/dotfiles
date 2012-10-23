@@ -7,7 +7,6 @@
                 (nnimap-address "imap.gmail.com")
                 (nnimap-inbox "INBOX")
                 (nnimap-server-port 993)
-                (nnimap-expunge t)
                 (nnimap-stream ssl))))
 (setq mm-text-html-renderer 'shr)
 (setq mm-discouraged-alternatives '("text/html" "text/richtext"))
@@ -16,7 +15,6 @@
 (setq gnus-invalid-group-regexp "[:`'\"]\\|^$")
 (setq gnus-ignored-newsgroups "")
 ;; . save sent items
-(setq gnus-message-archive-method '(nnimap "imap.gmail.com"))
 (setq gnus-message-archive-group "nnimap+imap.gmail.com:[Gmail]/Sent Mail")
 (setq gnus-gcc-mark-as-read t)
 
@@ -37,7 +35,8 @@
 (setq message-alternative-emails
       (regexp-opt '("gridaphobe@gmail.com" "eric@eseidel.org"
                     "eric9@mac.com" "eric9@me.com" "eric@fluidinfo.com"
-                    "eseidel@eng.ucsd.edu")))
+                    "eseidel@eng.ucsd.edu" "eseidel@cs.ucsd.edu"
+                    "eseidel@ucsd.edu")))
 (setq gnus-user-date-format-alist
       '(((gnus-seconds-today) . "Today, %H:%M")
         ((+ 86400 (gnus-seconds-today)) . "Yesterday, %H:%M")
