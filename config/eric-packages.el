@@ -45,10 +45,8 @@
     pcache
     pkgbuild-mode
     puppet-mode
-    python
     rainbow-mode
     restclient
-    ruby-block
     scala-mode
     smex
     sr-speedbar

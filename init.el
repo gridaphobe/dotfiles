@@ -53,7 +53,6 @@ ELPA (or MELPA).")
 (add-to-list
  'command-switch-alist
  '("gnus" . (lambda (&rest ignore)
-              (setq invocation-name "gnus")
               ;; Start Gnus when Emacs starts
               (add-hook 'emacs-startup-hook 'gnus t)
               ;; Exit Emacs after quitting Gnus
@@ -63,7 +62,6 @@ ELPA (or MELPA).")
 (add-to-list
  'command-switch-alist
  '("erc" . (lambda (&rest ignore)
-             (setq invocation-name "erc")
              ;; Start Erc when Emacs starts
              (load "~/.ercpass")
              (add-hook 'emacs-startup-hook
