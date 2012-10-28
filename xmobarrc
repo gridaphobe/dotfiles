@@ -1,3 +1,5 @@
+-- -*- mode: haskell -*-
+
 Config { font = "xft:Consolas-10"
        , bgColor = "#3f3f3f"
        , fgColor = "grey"

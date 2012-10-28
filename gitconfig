@@ -1,3 +1,5 @@
+# -*- mode: conf -*-
+
 [user]
 	name = Eric Seidel
 	email = gridaphobe@gmail.com
@@ -10,6 +12,7 @@
 	lg = log --graph --all --pretty=format:'%Cred%h%Creset - %Cgreen(%cr)%Creset %s%C(yellow)%d%Creset' --abbrev-commit --date=relative
         up = !sh -c 'git co master && git pull --ff-only upstream master && git push origin master'
         delete-branch = !sh -c 'git branch -d "$0" && git push origin :"$0"'
+        puhs = push
 [color]
 	diff = auto
 	status = auto

@@ -1,3 +1,5 @@
+# -*- mode: ruby -*-
+
 require 'rubygems'
 require 'wirble'
 require 'irb/completion'

@@ -1,3 +1,5 @@
+# -*- mode: conf -*-
+
 :set prompt "ghci> "
 :set +s
 :def hoogle \x -> return $ ":!hoogle \"" ++ x ++ "\""

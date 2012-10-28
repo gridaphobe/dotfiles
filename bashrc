@@ -1,6 +1,4 @@
-#
-# ~/.bashrc
-#
+# -*- mode: sh -*-
 
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
