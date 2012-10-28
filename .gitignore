@@ -15,5 +15,5 @@ custom.el
 places
 .smex-items
 savefile/
-/abbrev_defs
+abbrev_defs
 session*

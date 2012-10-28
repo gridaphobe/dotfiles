@@ -1,28 +1,35 @@
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/ma-gnus"))
 (require 'gnus-load)
+(require 'nnir)
 (setq gnus-select-method
-      '(nntp "news.gmane.org"))
-(setq gnus-secondary-select-methods
-      '((nnimap "imap.gmail.com"
-                (nnimap-address "imap.gmail.com")
-                (nnimap-inbox "INBOX")
-                (nnimap-server-port 993)
-                (nnimap-stream ssl))))
+      '(nnimap "gmail"
+               (nnimap-stream shell)
+               (nnir-search-engine imap)
+               (nnimap-shell-program "/usr/lib/dovecot/imap")))
+;; save sent items
+(setq gnus-message-archive-group "nnimap+gmail:[Gmail].Sent Mail")
+(setq gnus-gcc-mark-as-read t)
+
+;; (setq gnus-select-method
+;;       '(nntp "news.gmane.org"))
+;; (setq gnus-secondary-select-methods
+;;       '((nnimap "imap.gmail.com"
+;;                 (nnimap-address "imap.gmail.com")
+;;                 (nnimap-inbox "INBOX")
+;;                 (nnimap-server-port 993)
+;;                 (nnimap-stream ssl))))
 (setq mm-text-html-renderer 'shr)
 (setq mm-discouraged-alternatives '("text/html" "text/richtext"))
 
 ;; Accessing the [Gmail] folders http://www.emacswiki.org/emacs/GnusGmail
 (setq gnus-invalid-group-regexp "[:`'\"]\\|^$")
 (setq gnus-ignored-newsgroups "")
-;; . save sent items
-(setq gnus-message-archive-group "nnimap+imap.gmail.com:[Gmail]/Sent Mail")
-(setq gnus-gcc-mark-as-read t)
 
 ;; General speedups.
 (setq gnus-read-active-file nil)
 (setq gnus-check-new-newsgroups nil)
 (setq gnus-nov-is-evil nil)
-(setq gnus-save-newsrc-file t)
+(setq gnus-save-newsrc-file nil)
 (setq gnus-asynchronous t)
 ;; .
 ;; (setq gnus-thread-sort-functions
