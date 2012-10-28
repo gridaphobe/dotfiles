@@ -6,4 +6,4 @@
 (add-hook 'scala-mode-hook (lambda ()
                              (define-key scala-mode-map (kbd "C-c C-l") 'ensime-inf-load-file)))
 
-(provide 'eric-scala)
+(provide 'my-scala)

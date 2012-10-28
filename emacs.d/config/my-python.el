@@ -9,4 +9,4 @@
 
 (add-to-list 'exec-path "/usr/local/share/python")
 
-(provide 'eric-python)
+(provide 'my-python)

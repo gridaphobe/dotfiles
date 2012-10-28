@@ -14,7 +14,7 @@
 
 (eval-after-load 'ruby-mode
   '(progn
-     (defun eric-ruby-mode-defaults ()
+     (defun my-ruby-mode-defaults ()
        (inf-ruby-setup-keybindings)
        ;; turn off the annoying input echo in irb
        (setq comint-process-echoes t)
@@ -26,6 +26,6 @@
        ;; bind yari in the local keymap
        (local-set-key (kbd "C-h r") 'yari))
 
-     (add-hook 'ruby-mode-hook 'eric-ruby-mode-hook)))
+     (add-hook 'ruby-mode-hook 'my-ruby-mode-hook)))
 
-(provide 'eric-ruby)
+(provide 'my-ruby)

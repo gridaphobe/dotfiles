@@ -1,7 +1,7 @@
 ;; use cperl-mode instead of perl-mode
 (defalias 'perl-mode 'cperl-mode)
 
-(defun eric-cperl-mode-defaults ()
+(defun my-cperl-mode-defaults ()
   (setq cperl-indent-level 4)
   (setq cperl-continued-statement-offset 8)
   ;; cperl-hairy affects all those variables, but I prefer
@@ -22,6 +22,6 @@
   (set-face-background 'cperl-hash-face nil)
   (setq cperl-invalid-face nil))
 
-(add-hook 'cperl-mode-hook 'eric-cperl-mode-hook t)
+(add-hook 'cperl-mode-hook 'my-cperl-mode-hook t)
 
-(provide 'eric-perl)
+(provide 'my-perl)

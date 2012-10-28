@@ -22,9 +22,9 @@
 
 (require 'virthualenv)
 
-(defun eric-haskell-mode-defaults ()
+(defun my-haskell-mode-defaults ()
   ;; run manually since haskell-mode is not derived from prog-mode
-  (run-hooks 'eric-prog-mode-hook)
+  (run-hooks 'my-prog-mode-hook)
   (subword-mode +1)
   (turn-on-haskell-doc-mode)
   (turn-on-haskell-indentation)
@@ -79,7 +79,7 @@
       (interactive)
       (haskell-move-nested -1))))
 
-(add-hook 'haskell-mode-hook 'eric-haskell-mode-defaults)
+(add-hook 'haskell-mode-hook 'my-haskell-mode-defaults)
 
 (add-hook 'haskell-cabal-mode-hook 'haskell-cabal-hook)
 
@@ -91,4 +91,4 @@
   (define-key haskell-cabal-mode-map [?\C-c ?\C-z] 'haskell-interactive-switch))
 
 
-(provide 'eric-haskell)
+(provide 'my-haskell)

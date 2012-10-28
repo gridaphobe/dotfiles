@@ -1,4 +1,4 @@
-;;; eric-ui.el --- UI optimizations and tweaks.
+;;; my-ui.el --- UI optimizations and tweaks.
 
 ;; experimental
 (require 'fwb-cmds)
@@ -71,7 +71,7 @@ and the buffer that is killed or buried is the one in that window."
 ;; For daemon mode, with-selected-frame seems to be required.  Normal
 ;; mode seems to require with-selected-frame to be absent.
 (require 'server) ;;for server-running-p
-(defun eric-frame-config (frame)
+(defun my-frame-config (frame)
   "Custom behaviours for new frames."
   (if (eq system-type 'darwin)
       (if (server-running-p)
@@ -84,9 +84,9 @@ and the buffer that is killed or buried is the one in that window."
           (modify-frame-parameters frame '((menu-bar-lines . 0)))))
     (menu-bar-mode -1)))
 ;; run now
-(eric-frame-config (selected-frame))
+(my-frame-config (selected-frame))
 ;; and later
-(add-hook 'after-make-frame-functions 'eric-frame-config)
+(add-hook 'after-make-frame-functions 'my-frame-config)
 
 ;; the blinking cursor is nothing, but an annoyance
 (blink-cursor-mode -1)
@@ -127,4 +127,4 @@ and the buffer that is killed or buried is the one in that window."
       whitespace-style '(face trailing tabs lines-tail indentation
                               space-after-tab space-before-tab))
 
-(provide 'eric-ui)
+(provide 'my-ui)

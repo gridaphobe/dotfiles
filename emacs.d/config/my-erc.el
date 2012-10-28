@@ -27,10 +27,10 @@
 
 ;; always display a timestamp on the left, and only on the left
 (setq erc-timestamp-format "[%H:%M] ")
-(defun eric-erc-timestamp-left (string)
+(defun my-erc-timestamp-left (string)
   (let* ((ct (current-time))
          (ts (erc-format-timestamp ct erc-timestamp-format)))
     (erc-insert-timestamp-left ts)))
-(setq erc-insert-timestamp-function 'eric-erc-timestamp-left)
+(setq erc-insert-timestamp-function 'my-erc-timestamp-left)
 
-(provide 'eric-erc)
+(provide 'my-erc)

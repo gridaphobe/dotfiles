@@ -1,4 +1,4 @@
-;;; eric-editing.el --- enhanced core editing experience.
+;;; my-editing.el --- enhanced core editing experience.
 
 ;; Death to the tabs!  However, tabs historically indent to the next
 ;; 8-character offset; specifying anything else will cause *mass*
@@ -131,13 +131,13 @@
       ispell-extra-args '("--sug-mode=ultra"))
 (autoload 'flyspell-mode "flyspell" "On-the-fly spelling checker." t)
 
-(defun eric-turn-on-flyspell ()
+(defun my-turn-on-flyspell ()
   "Force flyspell-mode on using a positive argument.  For use in hooks."
   (interactive)
   (flyspell-mode +1))
 
-(add-hook 'message-mode-hook 'eric-turn-on-flyspell)
-(add-hook 'text-mode-hook 'eric-turn-on-flyspell)
+(add-hook 'message-mode-hook 'my-turn-on-flyspell)
+(add-hook 'text-mode-hook 'my-turn-on-flyspell)
 
 ;; enable narrowing commands
 (put 'narrow-to-region 'disabled nil)
@@ -220,4 +220,4 @@ indent yanked text (with prefix arg don't indent)."
 (setq semanticdb-default-save-directory
       (concat emacs-savefile-dir "semanticdb"))
 
-(provide 'eric-editing)
+(provide 'my-editing)

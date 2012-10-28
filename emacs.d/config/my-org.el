@@ -47,4 +47,4 @@
 (define-key global-map [f8] 'remember)
 (define-key global-map [f9] 'remember-region)
 
-(provide 'eric-org)
+(provide 'my-org)

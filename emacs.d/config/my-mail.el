@@ -66,4 +66,4 @@
 
 (setq message-kill-buffer-on-exit t)
 
-(provide 'eric-mail)
+(provide 'my-mail)

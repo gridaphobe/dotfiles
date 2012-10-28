@@ -1,4 +1,4 @@
-;;; eric-keybindings.el --- useful keybindings.
+;;; my-keybindings.el --- useful keybindings.
 
 ;; better window-switching
 (require 'switch-window)
@@ -63,8 +63,8 @@
 
 (global-set-key (kbd "C-x g") 'magit-status)
 
-(global-set-key (kbd "C-c n") 'eric-cleanup-buffer)
-(global-set-key (kbd "C-x M-f") 'eric-sudo-edit)
+(global-set-key (kbd "C-c n") 'my-cleanup-buffer)
+(global-set-key (kbd "C-x M-f") 'my-sudo-edit)
 
 (global-set-key (kbd "C-=") 'er/expand-region)
 (global-set-key (kbd "C-c w") (make-repeatable-command 'er/expand-region))
@@ -96,4 +96,4 @@
 (defvar newline-and-indent t
   "Modify the behavior of the open-*-line functions to cause them to autoindent.")
 
-(provide 'eric-keybindings)
+(provide 'my-keybindings)

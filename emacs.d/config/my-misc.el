@@ -1,4 +1,4 @@
-;;; eric-misc.el --- Miscellaneous configuration details.
+;;; my-misc.el --- Miscellaneous configuration details.
 
 (add-to-list 'auto-mode-alist '("PKGBUILD$" . pkgbuild-mode))
 
@@ -18,12 +18,12 @@
      (list (line-beginning-position)
            (line-beginning-position 2)))))
 
-(defun eric-indent-buffer ()
+(defun my-indent-buffer ()
   "Indents the entire buffer."
   (interactive)
   (indent-region (point-min) (point-max)))
 
-(defun eric-indent-region-or-buffer ()
+(defun my-indent-region-or-buffer ()
   "Indents a region if selected, otherwise the whole buffer."
   (interactive)
   (save-excursion
@@ -35,18 +35,18 @@
         (prelude-indent-buffer)
         (message "Indented buffer.")))))
 
-(defun eric-untabify-buffer ()
+(defun my-untabify-buffer ()
   (interactive)
   (untabify (point-min) (point-max)))
 
-(defun eric-cleanup-buffer ()
+(defun my-cleanup-buffer ()
   "Perform a bunch of operations on the whitespace content of a buffer."
   (interactive)
-  (eric-indent-buffer)
-  (eric-untabify-buffer)
+  (my-indent-buffer)
+  (my-untabify-buffer)
   (whitespace-cleanup))
 
-(defun eric-eval-and-replace ()
+(defun my-eval-and-replace ()
   "Replace the preceding sexp with its value."
   (interactive)
   (backward-kill-sexp)
@@ -56,31 +56,31 @@
     (error (message "Invalid expression")
            (insert (current-kill 0)))))
 
-(defun eric-sudo-edit (&optional arg)
+(defun my-sudo-edit (&optional arg)
   (interactive "p")
   (if (or arg (not buffer-file-name))
       (find-file (concat "/sudo:root@localhost:" (ido-read-file-name "File: ")))
     (find-alternate-file (concat "/sudo:root@localhost:" buffer-file-name))))
 
-(defun eric-insert-date ()
+(defun my-insert-date ()
   "Insert a time-stamp according to locale's date and time format."
   (interactive)
   (insert (format-time-string "%c" (current-time))))
 
-(defun eric-conditionally-enable-paredit-mode ()
+(defun my-conditionally-enable-paredit-mode ()
   "Enable paredit-mode in the minibuffer, during eval-expression."
   (if (eq this-command 'eval-expression)
       (paredit-mode 1)))
-(add-hook 'minibuffer-setup-hook 'eric-conditionally-enable-paredit-mode)
+(add-hook 'minibuffer-setup-hook 'my-conditionally-enable-paredit-mode)
 
-(defun eric-recentf-ido-find-file ()
+(defun my-recentf-ido-find-file ()
   "Find a recent file using ido."
   (interactive)
   (let ((file (ido-completing-read "Choose recent file: " recentf-list nil t)))
     (when file
       (find-file file))))
 
-(defun eric-swap-windows ()
+(defun my-swap-windows ()
   "If you have 2 windows, it swaps them."
   (interactive)
   (if (/= (count-windows) 2)
@@ -97,7 +97,7 @@
       (set-window-start w2 s1)))
   (other-window 1))
 
-(defun eric-kill-other-buffers ()
+(defun my-kill-other-buffers ()
   "Kill all buffers but the current one. Doesn't mess with special buffers."
   (interactive)
   (dolist (buffer (buffer-list))
@@ -134,4 +134,4 @@ and so on."
 
 (add-to-list 'exec-path "/usr/local/bin")
 
-(provide 'eric-misc)
+(provide 'my-misc)

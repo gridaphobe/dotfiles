@@ -1,7 +1,7 @@
-(defun eric-local-comment-auto-fill ()
+(defun my-local-comment-auto-fill ()
   (set (make-local-variable 'comment-auto-fill-only-comments) t))
 
-(defun eric-add-watchwords ()
+(defun my-add-watchwords ()
   (font-lock-add-keywords
    nil '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
           1 font-lock-warning-face t))))
@@ -10,17 +10,17 @@
 (require 'which-func)
 (which-function-mode 1)
 
-(defun eric-prog-mode-defaults ()
+(defun my-prog-mode-defaults ()
   "Default coding hook, useful with any programming language."
   (flyspell-prog-mode)
-  (eric-local-comment-auto-fill)
+  (my-local-comment-auto-fill)
   (whitespace-mode +1)
   (abbrev-mode +1)
-  (eric-add-watchwords)
+  (my-add-watchwords)
   ;; keep the whitespace decent all the time (in this buffer)
   (add-hook 'before-save-hook 'whitespace-cleanup nil t))
 
-(add-hook 'prog-mode-hook 'eric-prog-mode-defaults)
+(add-hook 'prog-mode-hook 'my-prog-mode-defaults)
 
 (require 'thingatpt)
 (require 'imenu)
@@ -69,4 +69,4 @@
 (global-set-key (kbd "C-c i")     'ido-goto-symbol)
 (global-set-key (kbd "C-c p")   'ido-goto-symbol-at-point)
 
-(provide 'eric-programming)
+(provide 'my-programming)

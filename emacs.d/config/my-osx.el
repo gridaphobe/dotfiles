@@ -9,4 +9,4 @@
 
 (setq eshell-path-env (getenv "PATH"))
 
-(provide 'eric-osx)
+(provide 'my-osx)

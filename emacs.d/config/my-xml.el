@@ -9,4 +9,4 @@
 (setq nxml-bind-meta-tab-to-complete-flag t)
 (setq nxml-slash-auto-complete-flag t)
 
-(provide 'eric-xml)
+(provide 'my-xml)

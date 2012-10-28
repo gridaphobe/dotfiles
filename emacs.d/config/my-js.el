@@ -25,4 +25,4 @@
 
 (add-hook 'js2-mode-hook (lambda () (flymake-mode t)))
 
-(provide 'eric-js)
+(provide 'my-js)
