@@ -1,0 +1,11 @@
+[extensions]
+color =
+eol =
+hgext.fetch =
+hgext.graphlog =
+
+[ui]
+username = Eric Seidel <gridaphobe@gmail.com>
+
+[web]
+cacerts = /etc/hg-dummy-cert.pem

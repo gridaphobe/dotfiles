@@ -1,0 +1,16 @@
+Config { font = "xft:Consolas-10"
+       , bgColor = "#3f3f3f"
+       , fgColor = "grey"
+       , position = Top
+       , commands = [ Run Cpu ["-L","3","-H","50","--normal","green","--high","red"] 10
+                    , Run Memory ["-t","Mem: <usedratio>%"] 10
+                    , Run Date "%a, %b %d, %H:%M" "date" 10
+                    , Run Wireless "wlan0" ["-t", "Wifi: <essid> <quality>%"] 10
+                    , Run Battery ["-t", "Batt: <left>% / <timeleft>"] 10
+                    , Run Com "dropbox" ["status"] "" 10
+                    , Run StdinReader
+                    ]
+       , sepChar = "%"
+       , alignSep = "}{"
+       , template = " %StdinReader% }{ Dropbox: %dropbox% | %cpu% | %memory% | %wlan0wi% | %battery% | <fc=#ee9a00>%date%</fc> "
+       }

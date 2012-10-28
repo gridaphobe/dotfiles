@@ -17,3 +17,7 @@ places
 savefile/
 abbrev_defs
 session*
+fish/completions
+fish/fish_history
+fish/fishd*
+xmonad

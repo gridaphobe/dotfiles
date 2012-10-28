@@ -1,0 +1,18 @@
+#!/usr/bin/env fish
+
+set SOURCE (pwd)
+cd $HOME
+
+for f in (ls $SOURCE | grep -v fish | grep -v bin)
+    rm -rf "$HOME/.$f"
+    ln -s "$SOURCE/$f" "$HOME/.$f"
+end
+
+rm -rf $HOME/bin
+ln -s "$SOURCE/bin" "$HOME/bin"
+
+rm -rf $HOME/.config/fish
+mkdir -p $HOME/.config
+ln -s "$SOURCE/fish" "$HOME/.config/fish"
+
+

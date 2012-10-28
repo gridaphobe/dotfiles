@@ -1,0 +1,34 @@
+# -*- mode: conf -*-
+
+[general]
+accounts = gmail
+fsync = False
+
+[Account gmail]
+localrepository = gmail-local
+remoterepository = gmail-remote
+status_backend = sqlite
+#postsynchook = notmuch new
+autorefresh = 5
+quick = 10
+
+[Repository gmail-local]
+type = IMAP
+preauthtunnel = /usr/lib/dovecot/imap
+holdconnectionopen = yes
+
+[Repository gmail-remote]
+type = Gmail
+# Setting realdelete = yes will Really Delete email from the server.
+# Otherwise "deleting" a message will just remove any labels and
+# retain the message in the All Mail folder.
+realdelete = no
+folderfilter = lambda folder: folder in ['INBOX', '[Gmail]/Spam', '[Gmail]/Sent Mail',
+                                         '[Gmail]/Drafts', '[Gmail]/All Mail']
+nametrans = lambda name: re.sub('^INBOX.', '', name)
+remotehost = imap.gmail.com
+remoteuser = gridaphobe
+ssl = yes
+sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+keepalive = 60
+holdconnectionopen = yes
