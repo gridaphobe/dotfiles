@@ -14,5 +14,3 @@ ln -s "$SOURCE/bin" "$HOME/bin"
 rm -rf $HOME/.config/fish
 mkdir -p $HOME/.config
 ln -s "$SOURCE/fish" "$HOME/.config/fish"
-
-
