@@ -21,3 +21,4 @@ fish/completions
 fish/fish_history
 fish/fishd*
 xmonad
+/fish/fish_read_history

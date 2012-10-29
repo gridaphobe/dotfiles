@@ -8,8 +8,8 @@ Config { font = "xft:Consolas-10"
                     , Run Memory ["-t","Mem: <usedratio>%"] 10
                     , Run Date "%a, %b %d, %H:%M" "date" 10
                     , Run Wireless "wlan0" ["-t", "Wifi: <essid> <quality>%"] 10
-                    , Run Battery ["-t", "Batt: <left>% / <timeleft>"] 10
-                    , Run Com "dropbox" ["status"] "" 10
+                    , Run Battery ["-t", "Batt: <left>% / <timeleft>"] 60
+                    , Run Com "dropbox" ["status"] "" 60
                     , Run StdinReader
                     ]
        , sepChar = "%"
