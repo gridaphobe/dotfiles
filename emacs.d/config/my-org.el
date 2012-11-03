@@ -38,8 +38,15 @@
       org-use-fast-todo-selection t
       org-use-tag-inheritance nil)
 
+;; mobile org
 (setq org-mobile-directory "~/Dropbox/MobileOrg"
       org-mobile-inbox-for-pull "~/Dropbox/org/mobile_inbox.org")
+
+;; org-latex
+(setq org-latex-to-pdf-process (list "latexmk %f")
+      org-export-latex-quotes
+      '(("en" ("\\(\\s-\\|[[(]\\)\"" . "\\enquote{") ("\\(\\S-\\)\"" . "}") ("\\(\\s-\\|(\\)'" . "`"))))
+(org-add-link-type "ebib" 'ebib)
 
 (define-key global-map "\C-cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)

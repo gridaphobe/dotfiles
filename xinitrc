@@ -8,9 +8,9 @@ xsetroot -cursor_name left_ptr  # use a normal cursor
 xsetroot -solid '#3f3f3f'       # set background color
 xbindkeys                       # add keybindings, just monitor backlight for now
 
-for command in $(gnome-keyring-daemon --start); do
-    eval "export $command"
-done
+# for command in $(gnome-keyring-daemon --start); do
+#     eval "export $command"
+# done
 # /usr/lib/gnome-settings-daemon/gnome-settings-daemon &
 # nautilus --no-default-window --no-desktop &
 # unclutter -idle 1 &

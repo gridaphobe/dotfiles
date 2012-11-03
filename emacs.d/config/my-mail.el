@@ -66,4 +66,15 @@
 
 (setq message-kill-buffer-on-exit t)
 
+
+(require 'mu4e)
+(setq mu4e-maildir "~/.mail"
+      mu4e-drafts-folder "/.[Gmail].Drafts"
+      mu4e-sent-folder   "/.[Gmail].Sent Mail"
+      mu4e-trash-folder  "/.[Gmail].Trash"
+      mu4e-sent-messages-behavior 'delete
+      mu4e-get-mail-command "offlineimap")
+(setq mu4e-user-mail-address-regexp
+      "gridaphobe@gmail\.com\\|eric@eseidel\.org")
+
 (provide 'my-mail)

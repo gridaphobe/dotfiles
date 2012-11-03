@@ -69,6 +69,15 @@ ELPA (or MELPA).")
                          (erc :password erc-pass))
                        t))))
 
+(add-to-list
+ 'command-switch-alist
+ '("rcirc" . (lambda (&rest ignore)
+               ;; Start Erc when Emacs starts
+               (load "~/.ercpass")
+               (setq rcirc-authinfo `(("freenode" nickserv
+                                       "gridaphobe" ,erc-pass)))
+               (add-hook 'emacs-startup-hook (lambda () (rcirc nil)) t))))
+
 ;; run a server for emacsclient
 (when (not (server-running-p))
   (server-start))

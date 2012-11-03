@@ -57,8 +57,8 @@ XTerm*cursorColor: magenta
 URxvt.internalBorder: 0
 URxvt.jumpScroll: true
 URxvt.perl-ext-common: default,clipboard,url-select
-URxvt.keysym.M-c: perl:clipboard:copy
-URxvt.keysym.M-v: perl:clipboard:paste
+URxvt.keysym.Mod4-c: perl:clipboard:copy
+URxvt.keysym.Mod4-v: perl:clipboard:paste
 URxvt.keysym.M-u: perl:url-select:select_next
 URxvt.url-select.launcher: /usr/bin/chromium
 URxvt.url-select.underline: true

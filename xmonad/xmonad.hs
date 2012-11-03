@@ -3,6 +3,8 @@ import           XMonad.Config.Desktop
 import           XMonad.Hooks.DynamicLog
 import           XMonad.Hooks.EwmhDesktops
 import           XMonad.Hooks.ManageDocks
+import           XMonad.Hooks.ManageHelpers
+import           XMonad.Layout.NoBorders
 import           XMonad.Util.EZConfig
 import           XMonad.Util.Run
 
@@ -16,7 +18,7 @@ main = do
         { modMask = mod4Mask
         , terminal = "urxvtc -e fish"
         , manageHook = myManageHook <+> manageHook desktopConfig
-        , layoutHook = avoidStruts  $  layoutHook desktopConfig
+        , layoutHook = smartBorders $ avoidStruts $ layoutHook desktopConfig
         , logHook = dynamicLogWithPP $ xmobarPP
                     { ppOutput = \o -> hPutStrLn xmproc o -- >> hPutStrLn xmproc' o
                     , ppTitle = xmobarColor "green" "" . shorten 50
@@ -27,5 +29,6 @@ main = do
 myManageHook = composeAll
     [ className =? "gnus" --> doShift "3:mail"
     , className =? "erc"  --> doShift "4:irc"
+    , isFullscreen --> doFullFloat
     , manageDocks
     ]

@@ -1,5 +1,9 @@
 ;;; my-misc.el --- Miscellaneous configuration details.
 
+;; Proof General
+(load-file "/usr/share/emacs/site-lisp/ProofGeneral/generic/proof-site.el")
+
+;; Arch Linux PKGBUILDs
 (add-to-list 'auto-mode-alist '("PKGBUILD$" . pkgbuild-mode))
 
 ;; add the ability to copy and cut the current line, without marking it

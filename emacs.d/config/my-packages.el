@@ -22,6 +22,7 @@
     clojure-test-mode
     cperl-mode
     deft
+    ebib
     edit-server
     expand-region
     flymake-cursor

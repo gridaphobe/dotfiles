@@ -8,9 +8,9 @@ fsync = False
 localrepository = gmail-local
 remoterepository = gmail-remote
 status_backend = sqlite
-#postsynchook = notmuch new
-autorefresh = 5
-quick = 10
+postsynchook = notmuch new
+# autorefresh = 3
+# quick = 10
 
 [Repository gmail-local]
 type = IMAP
@@ -24,11 +24,13 @@ type = Gmail
 # retain the message in the All Mail folder.
 realdelete = no
 folderfilter = lambda folder: folder in ['INBOX', '[Gmail]/Spam', '[Gmail]/Sent Mail',
-                                         '[Gmail]/Drafts', '[Gmail]/All Mail']
+                                         '[Gmail]/Drafts', '[Gmail]/All Mail',
+                                         '[Gmail]/Trash']
 nametrans = lambda name: re.sub('^INBOX.', '', name)
 remotehost = imap.gmail.com
 remoteuser = gridaphobe
 ssl = yes
 sslcacertfile = /etc/ssl/certs/ca-certificates.crt
+maxconnections = 1
 keepalive = 60
 holdconnectionopen = yes
