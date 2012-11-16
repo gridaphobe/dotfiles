@@ -8,14 +8,15 @@ fsync = False
 localrepository = gmail-local
 remoterepository = gmail-remote
 status_backend = sqlite
-postsynchook = notmuch new
-# autorefresh = 3
-# quick = 10
+# postsynchook = notmuch new
 
 [Repository gmail-local]
+# type = GmailMaildir
+# localfolders = ~/.mail
 type = IMAP
 preauthtunnel = /usr/lib/dovecot/imap
 holdconnectionopen = yes
+nametrans = lambda name: '[Gmail]/' + name if name in ['Sent Mail', 'Trash', 'Spam', 'Drafts'] else name
 
 [Repository gmail-remote]
 type = Gmail
@@ -23,14 +24,19 @@ type = Gmail
 # Otherwise "deleting" a message will just remove any labels and
 # retain the message in the All Mail folder.
 realdelete = no
-folderfilter = lambda folder: folder in ['INBOX', '[Gmail]/Spam', '[Gmail]/Sent Mail',
-                                         '[Gmail]/Drafts', '[Gmail]/All Mail',
-                                         '[Gmail]/Trash']
-nametrans = lambda name: re.sub('^INBOX.', '', name)
+folderfilter = lambda folder: not folder in ['[Gmail]/All Mail',
+                                             '[Gmail]/Important',
+                                             '[Gmail]/Starred',
+                                             'Notes',
+                                             'UCSD',
+                                             'Fluidinfo',
+                                             'eseidel.org',
+                                             'MobileMe']
+nametrans = lambda name: name.replace('[Gmail]/', '')
 remotehost = imap.gmail.com
 remoteuser = gridaphobe
 ssl = yes
 sslcacertfile = /etc/ssl/certs/ca-certificates.crt
 maxconnections = 1
-keepalive = 60
-holdconnectionopen = yes
+# keepalive = 60
+# holdconnectionopen = yes
