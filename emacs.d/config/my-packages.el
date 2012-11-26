@@ -31,6 +31,7 @@
     go-mode
     haskell-mode
     js2-mode
+    keychain-environment
     less-css-mode
     logito
     lua-mode

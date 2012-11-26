@@ -1,0 +1,3 @@
+#!/bin/bash
+
+mu find flag:unread AND NOT maildir:/.Spam AND NOT maildir:/.Trash | wc -l

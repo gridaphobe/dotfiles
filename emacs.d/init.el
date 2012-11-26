@@ -83,4 +83,3 @@ ELPA (or MELPA).")
   (server-start))
 
 (message "Emacs is ready to do thy bidding, Master %s!" (getenv "USER"))
-

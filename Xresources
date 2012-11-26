@@ -4,38 +4,16 @@ Xcursor.theme: Vanilla-DMZ
 
 
 ! XFT and Font settings
-Xft*dpi:       96
+!Xft*dpi:       96
 Xft*antialias: rgba
 Xft*hinting:   true
 Xft*hintstyle: hintslight
-Xft*rgba:      rgb
+Xft*rgba:      subpixel
 *font:         xft:Consolas-10
-
-
-! General colors
-! *background: #3f3f3f
-! *foreground: #ffffff
-! *color0: #000000
-! *color1: #9e1828
-! *color2: #aece92
-! *color3: #968a38
-! *color4: #414171
-! *color5: #963c59
-! *color6: #418179
-! *color7: #bebebe
-! *color8: #666666
-! *color9: #cf6171
-! *color10: #c5f779
-! *color11: #fff796
-! *color12: #4186be
-! *color13: #cf9ebe
-! *color14: #71bebe
-! *color15: #ffffff
-! *cursorColor: magenta
 
 ! XTerm
 XTerm*background: #3f3f3f
-XTerm*foreground: #ffffff
+XTerm*foreground: #dcdccc
 XTerm*color0: #000000
 XTerm*color1: #9e1828
 XTerm*color2: #aece92
@@ -70,8 +48,9 @@ URxvt.scrollTtyKeypress: true
 URxvt.scrollWithBuffer: true
 URxvt*urlLauncher: /usr/bin/chromium
 
+URxvt*font: xft:Consolas-10
 URxvt*background: #3f3f3f
-URxvt*foreground: Wheat
+URxvt*foreground: #dcdccc
 URxvt*cursorColor: magenta
 URxvt*colorUL: #c5f779
 URxvt*underlineColor: #c5f779
@@ -91,8 +70,6 @@ URxvt*color12: #4186be
 URxvt*color13: #cf9ebe
 URxvt*color14: #71bebe
 URxvt*color15: #ffffff
-URxvt*letterSpace: -1
-
 
 ! Emacs.geometry: 80x50
 Emacs.font: Consolas-10

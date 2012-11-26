@@ -18,6 +18,9 @@
 (setq nrepl-popup-stacktraces nil)
 
 ;; common-lisp
+(load (expand-file-name "~/.quicklisp/slime-helper.el"))
+(setq inferior-lisp-program "sbcl")
+
 ;; the SBCL configuration file is in Common Lisp
 (add-to-list 'auto-mode-alist '("\\.sbclrc$" . lisp-mode))
 
