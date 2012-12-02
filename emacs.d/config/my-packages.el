@@ -4,6 +4,8 @@
 (require 'package)
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.milkbox.net/packages/") t)
+(add-to-list 'package-archives
+             '("marmalade" . "http://marmalade-repo.org/packages/") t)
 (package-initialize)
 
 ;; required because of a package.el bug
@@ -27,6 +29,7 @@
     expand-region
     flymake-cursor
     fwb-cmds
+    geiser
     gist
     go-mode
     haskell-mode
@@ -47,6 +50,7 @@
     pcache
     pkgbuild-mode
     puppet-mode
+    quack
     rainbow-mode
     restclient
     scala-mode
