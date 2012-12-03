@@ -55,6 +55,7 @@
     restclient
     scala-mode
     smex
+    solarized-theme
     sr-speedbar
     switch-window
     tuareg

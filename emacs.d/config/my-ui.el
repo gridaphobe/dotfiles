@@ -120,7 +120,7 @@
                                        "%b"))))
 
 ;; use zenburn as the default theme
-(load-theme 'zenburn t)
+(load-theme 'solarized-dark t)
 
 ;; make whitespace-mode less intrusive
 (setq whitespace-line-count 80
