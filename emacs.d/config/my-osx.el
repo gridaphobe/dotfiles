@@ -3,6 +3,9 @@
 (setq mac-command-modifier 'super)
 (setq mac-option-modifier 'meta)
 
+;; OSX font sizes are different??
+(add-to-list 'default-frame-alist '(font . "Consolas-14"))
+
 (let (osx-paths)
   (dolist (path exec-path (setenv "PATH" osx-paths))
     (setq osx-paths (concat osx-paths (concat path ":")))))

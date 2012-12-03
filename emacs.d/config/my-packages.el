@@ -32,6 +32,7 @@
     geiser
     gist
     go-mode
+    google-contacts
     haskell-mode
     js2-mode
     keychain-environment
@@ -44,6 +45,7 @@
     melpa
     nginx-mode
     nrepl
+    oauth2
     org
     org-magit
     paredit
