@@ -1,7 +1,8 @@
 ;; Join the a couple of interesting channels whenever connecting to Freenode.
 (setq erc-autojoin-channels-alist '(("freenode.net"
                                      "#emacs" "#ruby" "#lisp" "#clojure"
-                                     "#fluidinfo" "#haskell" "#ucsdpl")))
+                                     "#fluidinfo" "#haskell" "#ucsdpl"
+                                     "#racket")))
 ;; set your nickname
 (setq erc-nick "gridaphobe")
 

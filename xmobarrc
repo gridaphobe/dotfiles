@@ -9,9 +9,10 @@ Config { font = "xft:Consolas-10"
                     , Run Date "%a, %b %d, %H:%M" "date" 10
                     , Run Battery ["-t", "Batt: <left>% / <timeleft>"] 50
                     , Run StdinReader
-                    , Run Com "unread-mail" [] "mail" 100
+                    -- , Run Com "unread-mail" [] "mail" 100
+                    -- , Run Mail [("inbox", "~/.mail/.Forums/")] "mail"
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = " %StdinReader% }{ New Mail: %mail% | %cpu% | %memory% | %battery% | <fc=#ee9a00>%date%</fc> "
+       , template = " %StdinReader% }{ %cpu% | %memory% | %battery% | <fc=#ee9a00>%date%</fc> "
        }

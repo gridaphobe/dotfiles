@@ -14,12 +14,14 @@ xset fp+ /usr/share/fonts/local # add local fonts
 xset fp rehash
 xsetroot -cursor_name left_ptr  # use a normal cursor
 xsetroot -solid '#3f3f3f'       # set background color
+xmodmap .Xmodmap                # remap CAPS -> Control
 xbindkeys                       # add keybindings, just monitor backlight for now
+xcalib ~/.colorprofile          # use Apple's color profile for MBA screen
 
 # xfce4-power-manager --no-daemon &
-# for command in $(gnome-keyring-daemon --start); do
-#     eval "export $command"
-# done
+for command in $(gnome-keyring-daemon --start); do
+    eval "export $command"
+done
 # # pcmanfm --daemon-mode --no-desktop &
 # # # unclutter -idle 1 -jitter 1 &
 

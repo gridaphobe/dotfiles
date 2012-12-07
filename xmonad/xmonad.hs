@@ -46,8 +46,6 @@ myLayoutHook = smartBorders $ avoidStruts $ onWorkspace "4:irc" ircLayout $
     ircLayout = Grid
 
 main = do
-    dbus <- D.connectSession
-    getWellKnownName dbus
     xmonad =<< xmobar (myBaseConfig
         { modMask = mod4Mask
         , terminal = "urxvtc -e fish"
@@ -55,7 +53,9 @@ main = do
         , layoutHook = myLayoutHook
         , workspaces = ["1:web", "2:dev", "3:mail", "4:irc"] ++ map show [5..9]
         , startupHook = setWMName "LG3D"
-        })
+        } `additionalKeysP`
+        [ ("M-p", spawn "dmenu_run")
+        ])
 
 kdeOverride :: Query Bool
 kdeOverride = ask >>= \w -> liftX $ do
