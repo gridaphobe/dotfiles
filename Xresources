@@ -8,7 +8,8 @@
 ! Xft*hinting:   true
 ! Xft*hintstyle: hintslight
 ! Xft*rgba:      subpixel
-*font:         -xos4-terminus-medium-r-normal--16-*-*-*-*-*-iso10646-1
+*font:         -*-terminus-medium-*-*-*-16-*-*-*-*-*-iso10646-1
+*boldFont:     -*-terminus-bold-*-*-*-16-*-*-*-*-*-iso10646-1
 
 URxvt.internalBorder: 0
 URxvt.jumpScroll: true
