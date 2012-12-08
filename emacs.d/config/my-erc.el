@@ -2,7 +2,7 @@
 (setq erc-autojoin-channels-alist '(("freenode.net"
                                      "#emacs" "#ruby" "#lisp" "#clojure"
                                      "#fluidinfo" "#haskell" "#ucsdpl"
-                                     "#racket")))
+                                     "#racket" "#stumpwm")))
 ;; set your nickname
 (setq erc-nick "gridaphobe")
 

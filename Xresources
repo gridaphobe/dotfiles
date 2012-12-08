@@ -72,8 +72,8 @@ URxvt*color14: #71bebe
 URxvt*color15: #ffffff
 
 ! Emacs.geometry: 80x50
-Emacs.font: Consolas-10
-Emacs.FontBackend: xft
+Emacs.font: TermsynU-14
+! Emacs.FontBackend: xft
 Emacs.pane.menubar.shadowThickness: 1
 Emacs.pane.menubar.margin: 1
 Emacs.toolBar: off

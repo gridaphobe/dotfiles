@@ -1,10 +1,9 @@
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/ma-gnus"))
+(require 'gnus-load)
 (require 'google-contacts)
 (require 'google-contacts-gnus)
 (require 'google-contacts-message)
-;; (add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/ma-gnus"))
-;; (require 'gnus-load)
-
-;; (require 'nnir)
+(require 'nnir)
 
 (setq message-directory "~/.mail")
 (setq gnus-select-method
@@ -74,12 +73,13 @@
 
 (setq-default
  gnus-summary-thread-gathering-function 'gnus-gather-threads-by-references
- gnus-sum-thread-tree-false-root "┬ "
- gnus-sum-thread-tree-indent "  "
- gnus-sum-thread-tree-leaf-with-other "├─► "
+ gnus-sum-thread-tree-false-root " ┌ "
+ gnus-sum-thread-tree-indent " "
+ gnus-sum-thread-tree-leaf-with-other "├─→ "
  gnus-sum-thread-tree-root "┬ "
- gnus-sum-thread-tree-single-leaf "└─► "
- gnus-sum-thread-tree-vertical "│ ")
+ gnus-sum-thread-tree-single-indent "─ "
+ gnus-sum-thread-tree-single-leaf "└─→ "
+ gnus-sum-thread-tree-vertical "│")
 
 (setq user-mail-address "gridaphobe@gmail.com"
       user-full-name "Eric Seidel")
