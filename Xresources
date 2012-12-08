@@ -1,36 +1,14 @@
 ! X cursor
-Xcursor.theme: Vanilla-DMZ
+! Xcursor.theme: Vanilla-DMZ
 ! Xcursor.size: 16
 
-
 ! XFT and Font settings
-!Xft*dpi:       96
-Xft*antialias: rgba
-Xft*hinting:   true
-Xft*hintstyle: hintslight
-Xft*rgba:      subpixel
-*font:         xft:Consolas-10
-
-! XTerm
-XTerm*background: #3f3f3f
-XTerm*foreground: #dcdccc
-XTerm*color0: #000000
-XTerm*color1: #9e1828
-XTerm*color2: #aece92
-XTerm*color3: #968a38
-XTerm*color4: #414171
-XTerm*color5: #963c59
-XTerm*color6: #418179
-XTerm*color7: #bebebe
-XTerm*color8: #666666
-XTerm*color9: #cf6171
-XTerm*color10: #c5f779
-XTerm*color11: #fff796
-XTerm*color12: #4186be
-XTerm*color13: #cf9ebe
-XTerm*color14: #71bebe
-XTerm*color15: #ffffff
-XTerm*cursorColor: magenta
+! Xft*dpi:       96
+! Xft*antialias: rgba
+! Xft*hinting:   true
+! Xft*hintstyle: hintslight
+! Xft*rgba:      subpixel
+*font:         -xos4-terminus-medium-r-normal--16-*-*-*-*-*-iso10646-1
 
 URxvt.internalBorder: 0
 URxvt.jumpScroll: true
@@ -48,7 +26,6 @@ URxvt.scrollTtyKeypress: true
 URxvt.scrollWithBuffer: true
 URxvt*urlLauncher: /usr/bin/chromium
 
-URxvt*font: xft:Consolas-10
 URxvt*background: #3f3f3f
 URxvt*foreground: #dcdccc
 URxvt*cursorColor: magenta
@@ -71,12 +48,9 @@ URxvt*color13: #cf9ebe
 URxvt*color14: #71bebe
 URxvt*color15: #ffffff
 
-! Emacs.geometry: 80x50
-Emacs.font: TermsynU-14
-! Emacs.FontBackend: xft
-Emacs.pane.menubar.shadowThickness: 1
-Emacs.pane.menubar.margin: 1
-Emacs.toolBar: off
-Emacs.menuBar: off
-Emacs.verticalScrollBars: off
-Emacs.cursorColor: magenta
+! Emacs.pane.menubar.shadowThickness: 1
+! Emacs.pane.menubar.margin: 1
+! Emacs.toolBar: off
+! Emacs.menuBar: off
+! Emacs.verticalScrollBars: off
+! Emacs.cursorColor: magenta
