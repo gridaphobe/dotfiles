@@ -10,11 +10,11 @@ fi
 xrdb -merge ~/.Xresources
 xset s off                      # no screensaver
 xset +dpms                      # turn on energy star
-xset fp+ /usr/share/fonts/local # add local fonts
+xset +fp /usr/share/fonts/local # add local fonts
 xset fp rehash
 xsetroot -cursor_name left_ptr  # use a normal cursor
 xsetroot -solid '#3f3f3f'       # set background color
-# xmodmap .Xmodmap                # remap CAPS -> Control
+xmodmap .Xmodmap                # remap CAPS -> Control
 xbindkeys                       # add keybindings, just monitor backlight for now
 xcalib ~/.colorprofile          # use Apple's color profile for MBA screen
 
