@@ -7,6 +7,7 @@
 
 (mapcar #'load-module '("battery-portable"
                         "cpu"
+                        "mem"
                         "notifications"
                         "wifi"
                         ))
@@ -23,13 +24,14 @@
 (setf *input-completion-type* :fuzzy)
 (setf *message-window-gravity* :center)
 (setf *input-window-gravity* :center)
+(setf *mode-line-timeout* 5)
 (set-transient-gravity :top)
-(set-focus-color "Red")
+(set-focus-color "DarkRed")
 
 ;; Show time, cpu usage and network traffic in the modeline
 (setf *iwconfig-path* "/usr/sbin/iwconfig")
 
-(setf *time-modeline-string* "%a %m/%e/%Y ^4*^b%H:%M^b^n") ; zero-pad day
+(setf *time-modeline-string* "%a %m/%e/%Y ^4*^B%H:%M^b^n") ; zero-pad day
 (setf *screen-mode-line-format*
       (list "^B%g^b | %W ^> "
             "Notifications: " '(:eval (princ-to-string (length notifications)))
@@ -141,4 +143,6 @@
   ((kbd "s-@") "gmove 2")
   ((kbd "s-#") "gmove 3")
   ((kbd "s-$") "gmove 4")
-  ((kbd "s-b") "banish"))
+  ((kbd "s-b") "banish")
+  ((kbd "s-;") "colon")
+  )

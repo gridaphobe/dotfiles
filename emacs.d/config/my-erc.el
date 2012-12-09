@@ -32,7 +32,7 @@
 (setq erc-fill-function 'erc-fill-static
       erc-fill-static-center 15
       erc-fill-variable-maximum-indentation nil
-      erc-fill-column 98)
+      erc-fill-column 80)
 (setq erc-header-line-format "%t: %o")
 
 (require 'erc-notifications)

@@ -54,7 +54,7 @@ main = do
         , workspaces = ["1:web", "2:dev", "3:mail", "4:irc"] ++ map show [5..9]
         , startupHook = setWMName "LG3D"
         } `additionalKeysP`
-        [ ("M-p", spawn "dmenu_run")
+        [ ("M-p", spawn "dmenu_run -fn '-*-terminus-medium-*-*-*-14-*-*-*-*-*-iso10646-1'")
         ])
 
 kdeOverride :: Query Bool
