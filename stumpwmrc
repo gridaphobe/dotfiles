@@ -1,19 +1,24 @@
 ;; -*-lisp-*-
 (in-package :stumpwm)
+
 (require 'swank)
-(swank:create-server)
+(defcommand swank () ()
+  (setf *top-level-error-action* :break)
+  (swank:create-server :port 4005
+                       :style swank:*communication-style*
+                       :dont-close t)
+  (echo-string (current-screen) "Starting swank."))
 
 (set-contrib-dir "/home/gridaphobe/Source/stumpwm/contrib")
 
 (mapcar #'load-module '("battery-portable"
                         "cpu"
                         "mem"
-                        "notifications"
                         "wifi"
                         ))
 
 ;; change the prefix key to something else
-(set-prefix-key (kbd "C-z"))
+(set-prefix-key (kbd "s-z"))
 
 (defvar *my-font*
   "-*-terminus-medium-*-*-*-14-*-*-*-*-*-iso10646-1")
@@ -34,10 +39,12 @@
 (setf *time-modeline-string* "%a %m/%e/%Y ^4*^B%H:%M^b^n") ; zero-pad day
 (setf *screen-mode-line-format*
       (list "^B%g^b | %W ^> "
-            "Notifications: " '(:eval (princ-to-string (length notifications)))
-            " | %B | %c | %d"
+            ;; "Notifications: " '(:eval (princ-to-string (length notifications))) " | "
+            " %B | C %C M %N | %d"
             ))
-
+(setf *window-format* "%m%50t")
+(setf *group-format* "%t")
+;;(setf  *deny-map-request* '(:transient))
 ;; Turn on the modeline
 (if (not (head-mode-line (current-head)))
     (toggle-mode-line (current-screen) (current-head)))
@@ -86,6 +93,7 @@
 (gnewbg "web")
 (gnewbg "net")
 (gnewbg "irc")
+(gnewbg "misc")
 
 ;; Last rule to match takes precedence!
 ;; TIP: if the argument to :title or :role begins with an ellipsis, a substring
@@ -139,10 +147,19 @@
   ((kbd "s-2") "gselect 2")
   ((kbd "s-3") "gselect 3")
   ((kbd "s-4") "gselect 4")
+  ((kbd "s-5") "gselect 5")
+  ((kbd "s-6") "gselect 6")
+  ((kbd "s-7") "gselect 7")
+  ((kbd "s-8") "gselect 8")
   ((kbd "s-!") "gmove 1")
   ((kbd "s-@") "gmove 2")
   ((kbd "s-#") "gmove 3")
   ((kbd "s-$") "gmove 4")
+  ((kbd "s-%") "gmove 5")
+  ((kbd "s-^") "gmove 6")
+  ((kbd "s-&") "gmove 7")
+  ((kbd "s-*") "gmove 8")
   ((kbd "s-b") "banish")
   ((kbd "s-;") "colon")
+  ((kbd "s-g") "abort")
   )
