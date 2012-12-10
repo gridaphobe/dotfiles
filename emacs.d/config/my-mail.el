@@ -73,12 +73,15 @@
 
 (setq gnus-summary-thread-gathering-function 'gnus-gather-threads-by-subject
       gnus-summary-gather-subject-limit 'fuzzy
+      gnus-summary-make-false-root 'adopt
+      ;; things get really strange if only some threads have false roots..
+      gnus-summary-make-false-root-always t
       gnus-sum-thread-tree-false-root " ┌ "
       gnus-sum-thread-tree-indent " "
-      gnus-sum-thread-tree-leaf-with-other "├─> "
-      gnus-sum-thread-tree-root "┬ "
-      gnus-sum-thread-tree-single-indent "─ "
-      gnus-sum-thread-tree-single-leaf "└─> "
+      gnus-sum-thread-tree-leaf-with-other "├> "
+      gnus-sum-thread-tree-root " ┬ "
+      gnus-sum-thread-tree-single-indent " ─ "
+      gnus-sum-thread-tree-single-leaf "└> "
       gnus-sum-thread-tree-vertical "│")
 
 (setq user-mail-address "gridaphobe@gmail.com"
