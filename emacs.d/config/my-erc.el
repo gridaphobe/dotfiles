@@ -3,6 +3,22 @@
                                      "#emacs" "#ruby" "#lisp" "#clojure"
                                      "#fluidinfo" "#haskell" "#ucsdpl"
                                      "#racket" "#stumpwm")))
+(defvar my-erc-frame-buffers
+  '("#fluidinfo" "#ucsdpl" "#emacs" "#haskell" "#racket"))
+
+(add-hook 'erc-join-hook
+          (lambda ()
+            (let ((b (buffer-name (current-buffer))))
+              (when (member b my-erc-frame-buffers)
+                  (switch-to-buffer-other-frame b)
+                  (shell-command "stumpish place-existing-windows")))))
+
+(defun start-erc ()
+  "Start erc and open a few frames."
+  (interactive)
+  (load "~/.ercpass")
+  (erc :password erc-pass))
+
 ;; set your nickname
 (setq erc-nick "gridaphobe")
 

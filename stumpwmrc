@@ -53,6 +53,22 @@
 (defcommand dmenu () ()
   (run-shell-command (format nil "dmenu_run -fn '~a'" *my-font*)))
 
+(defcommand erc () ()
+  (run-shell-command "emacsclient -e '(start-erc)'")
+  ;; FIXME: i want a more declarative way of defining this layout...
+  (run-commands "gselect irc"
+                "only"
+                "hsplit"
+                "vsplit"
+                "move-focus right"
+                "vsplit"
+                "vsplit"
+                "balance-frames"
+                ;; FIXME: for now this has to be run from emacs since
+                ;; the frames are not spawned right away..
+                ;; "place-existing-windows"
+                ))
+
 (defcommand reinit () ()
   (reload)
   (loadrc))
