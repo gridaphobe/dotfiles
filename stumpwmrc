@@ -32,13 +32,17 @@
 (setf *mode-line-timeout* 5)
 (set-transient-gravity :top)
 (set-focus-color "DarkRed")
+(setf *window-border-style* :thick)
+(setf *maxsize-border-width* 1)
+(setf *normal-border-width* 1)
+
 
 ;; Show time, cpu usage and network traffic in the modeline
 (setf *iwconfig-path* "/usr/sbin/iwconfig")
 
 (setf *time-modeline-string* "%a %m/%e/%Y ^4*^B%H:%M^b^n") ; zero-pad day
 (setf *screen-mode-line-format*
-      (list "^B%g^b | %W ^> "
+      (list "^B%g^b %W ^> "
             ;; "Notifications: " '(:eval (princ-to-string (length notifications))) " | "
             " %B | C %C M %N | %d"
             ))
@@ -158,7 +162,7 @@
   ((kbd "s-r") "iresize")
   ((kbd "s-R") "remove")
   ((kbd "s-+") "balance-frames")
-  ((kbd "s-d") "dmenu")
+  ((kbd "s-x") "dmenu")
   ((kbd "s-1") "gselect 1")
   ((kbd "s-2") "gselect 2")
   ((kbd "s-3") "gselect 3")

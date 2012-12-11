@@ -50,36 +50,32 @@ ELPA (or MELPA).")
 ;; config changes made through the customize UI will be store here
 (setq custom-file (concat emacs-config-dir "custom.el"))
 
-(add-to-list
- 'command-switch-alist
- '("gnus" . (lambda (&rest ignore)
-              ;; Start Gnus when Emacs starts
-              (add-hook 'emacs-startup-hook 'gnus t)
-              ;; Exit Emacs after quitting Gnus
-              (add-hook 'gnus-after-exiting-gnus-hook
-                        'save-buffers-kill-emacs))))
-
-(add-to-list
- 'command-switch-alist
- '("erc" . (lambda (&rest ignore)
-             ;; Start Erc when Emacs starts
-             (load "~/.ercpass")
-             (add-hook 'emacs-startup-hook
-                       (lambda ()
-                         (erc :password erc-pass))
-                       t))))
-
-(add-to-list
- 'command-switch-alist
- '("rcirc" . (lambda (&rest ignore)
-               ;; Start Erc when Emacs starts
-               (load "~/.ercpass")
-               (setq rcirc-authinfo `(("freenode" nickserv
-                                       "gridaphobe" ,erc-pass)))
-               (add-hook 'emacs-startup-hook (lambda () (rcirc nil)) t))))
-
-;; run a server for emacsclient
-(when (not (server-running-p))
-  (server-start))
+(cond
+ ((string= invocation-name "gnus")
+  (progn
+    ;; Start Gnus when Emacs starts
+    (add-hook 'emacs-startup-hook 'gnus t)
+    ;; Exit Emacs after quitting Gnus
+    (add-hook 'gnus-after-exiting-gnus-hook
+              'save-buffers-kill-emacs)))
+ ((string= invocation-name "erc")
+  (progn
+    ;; Start Erc when Emacs starts
+    (load "~/.ercpass")
+    (add-hook 'emacs-startup-hook
+              (lambda ()
+                (erc :password erc-pass))
+              t)))
+ ((string= invocation-name "rcirc")
+  (progn
+    ;; Start Erc when Emacs starts
+    (load "~/.ercpass")
+    (setq rcirc-authinfo `(("freenode" nickserv
+                            "gridaphobe" ,erc-pass)))
+    (add-hook 'emacs-startup-hook (lambda () (rcirc nil)) t)))
+  (t (progn
+       ;; run a server for emacsclient
+       (when (not (server-running-p))
+         (server-start)))))
 
 (message "Emacs is ready to do thy bidding, Master %s!" (getenv "USER"))

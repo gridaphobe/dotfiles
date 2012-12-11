@@ -1,2 +1,1 @@
-#!/bin/bash
-exec emacs -rcirc -name rcirc
+/usr/bin/emacs

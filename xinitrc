@@ -9,13 +9,13 @@ fi
 
 xrdb -merge ~/.Xresources
 xset s off                      # no screensaver
-xset +dpms                      # turn on energy star
+xset dpms 300 600 900           # turn on energy star
 xset +fp /usr/share/fonts/local # add local fonts
 xset fp rehash
 xsetroot -cursor_name left_ptr  # use a normal cursor
 xsetroot -solid '#3f3f3f'       # set background color
 xmodmap .Xmodmap                # remap CAPS -> Control
-xbindkeys                       # add keybindings, just monitor backlight for now
+#xbindkeys                       # add keybindings, just monitor backlight for now
 xcalib ~/.colorprofile          # use Apple's color profile for MBA screen
 
 # xfce4-power-manager --no-daemon &
@@ -30,27 +30,33 @@ done
 # [ -f ~/.keychain/$HOSTNAME-sh-gpg ] && . ~/.keychain/$HOSTNAME-sh-gpg 2>/dev/null
 
 #eval `keychain --eval --agents ssh -Q --quiet id_rsa`
-tint2 &
 dropboxd &
-nm-applet &
-volumeicon &
+nm-applet --sm-disable &
 urxvtd -q -o -f &
-emacs --daemon &
+emacs --daemon=dev &
 
-exec startxfce4
-# DEFAULT_SESSION=xmonad
+DEFAULT_SESSION=xmonad
 
-# case $1 in
-# awesome)
-#         exec awesome
-#         ;;
-# stumpwm)
-#         exec stumpwm
-#         ;;
-# xmonad)
-#         exec xmonad
-#         ;;
-# *)
-#         exec $DEFAULT_SESSION
-#         ;;
-# esac
+case $1 in
+awesome)
+        exec awesome
+        ;;
+i3)
+        exec i3
+        ;;
+kde)
+        exec startkde
+        ;;
+stumpwm)
+        exec stumpwm
+        ;;
+xfce)
+        exec startxfce4
+        ;;
+xmonad)
+        exec xmonad
+        ;;
+*)
+        exec $DEFAULT_SESSION
+        ;;
+esac
