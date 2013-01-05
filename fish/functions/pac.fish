@@ -1,3 +1,3 @@
 function pac
-	sudo aura $argv; 
+	pacaur $argv
 end

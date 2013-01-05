@@ -6,12 +6,21 @@
 (defvar my-erc-frame-buffers
   '("#fluidinfo" "#ucsdpl" "#emacs" "#haskell" "#racket"))
 
+;; only open a new buffer when I join interactively
+(setq erc-join-buffer 'bury)
+(defun my-erc-join-channel (channel &optional key)
+  (interactive)
+  (let ((erc-join-buffer 'buffer))
+    (erc-join-channel channel key)))
+
+
 (add-hook 'erc-join-hook
           (lambda ()
             (let ((b (buffer-name (current-buffer))))
               (when (member b my-erc-frame-buffers)
                   (switch-to-buffer-other-frame b)
-                  (shell-command "stumpish place-existing-windows")))))
+;                  (shell-command "stumpish place-existing-windows")
+                  ))))
 
 (defun start-erc ()
   "Start erc and open a few frames."
@@ -51,7 +60,20 @@
       erc-fill-column 80)
 (setq erc-header-line-format "%t: %o")
 
-(require 'erc-notifications)
-(add-to-list 'erc-modules 'notifications)
+;; (require 'erc-notifications)
+;; (add-to-list 'erc-modules 'notifications)
+
+;; (make-variable-buffer-local 'erc-fill-column)
+;; (add-hook 'window-configuration-change-hook
+;;           '(lambda ()
+;;              (save-excursion
+;;                (walk-windows
+;;                 (lambda (w)
+;;                   (let ((buffer (window-buffer w)))
+;;                     (set-buffer buffer)
+;;                     (when (eq major-mode 'erc-mode)
+;;                       (setq erc-fill-column (- (window-width w) 2))
+;; ;                      (erc-fill)
+;;                       )))))))
 
 (provide 'my-erc)

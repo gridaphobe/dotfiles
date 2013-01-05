@@ -1,8 +1,8 @@
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/ma-gnus"))
 (require 'gnus-load)
-(require 'google-contacts)
-(require 'google-contacts-gnus)
-(require 'google-contacts-message)
+;; (require 'google-contacts)
+;; (require 'google-contacts-gnus)
+;; (require 'google-contacts-message)
 (require 'nnir)
 
 (setq message-directory "~/.mail")
@@ -19,7 +19,15 @@
 (setq gnus-fetch-old-headers 'some)
 
 ;; bbdb
-;; (require 'bbdb-autoloads)
+;;(require 'bbdb)
+;;(require 'bbdb-autoloads)
+(bbdb-initialize 'gnus 'message)
+(bbdb-mua-auto-update-init 'message)
+(setq bbdb-file "~/.bbdb"
+      bbdb-check-auto-save-file t
+      bbdb-canonicalize-redundant-mails t
+      bbdb-complete-mail-allow-cycling t
+      bbdb-message-pop-up 'horiz)
 ;; (setq bbdb/mail-auto-create-p t)
 ;; (setq bbdb/news-auto-create-p (quote bbdb-ignore-some-messages-hook))
 ;; (bbdb-initialize 'gnus 'message)
@@ -52,8 +60,9 @@
 
 ;; .
 (setq gnus-thread-sort-functions
-      '(gnus-thread-sort-by-number
-        gnus-thread-sort-by-most-recent-date))
+      '((not gnus-thread-sort-by-number)
+;        gnus-thread-sort-by-most-recent-date
+        ))
 (setq gnus-summary-line-format
       "%U%R%z %~(pad-right 30)&user-date; %(%-25,25n%) %B%S\n")
 

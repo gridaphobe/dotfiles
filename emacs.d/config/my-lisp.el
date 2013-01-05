@@ -13,17 +13,17 @@
 
 ;; clojure
 (add-hook 'clojure-mode-hook 'my-lisp-coding-defaults)
+(add-hook 'clojure-mode-hook 'nrepl-interaction-mode)
 (add-hook 'nrepl-interaction-mode-hook 'nrepl-turn-on-eldoc-mode)
 (add-hook 'nrepl-mode-hook 'my-interactive-lisp-coding-defaults)
+(add-hook 'nrepl-mode-hook 'subword-mode)
 (setq nrepl-popup-stacktraces nil)
+
 
 ;; common-lisp
 (load (expand-file-name "~/.quicklisp/slime-helper.el"))
 (setq inferior-lisp-program "sbcl")
-
-;; the SBCL configuration file is in Common Lisp
 (add-to-list 'auto-mode-alist '("\\.sbclrc$" . lisp-mode))
-
 (add-hook 'lisp-mode-hook 'my-lisp-coding-defaults)
 (add-hook 'slime-repl-mode-hook 'my-interactive-lisp-coding-defaults)
 

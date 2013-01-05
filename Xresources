@@ -49,9 +49,8 @@ URxvt*color13: #cf9ebe
 URxvt*color14: #71bebe
 URxvt*color15: #ffffff
 
-! Emacs.pane.menubar.shadowThickness: 1
-! Emacs.pane.menubar.margin: 1
-! Emacs.toolBar: off
-! Emacs.menuBar: off
-! Emacs.verticalScrollBars: off
-! Emacs.cursorColor: magenta
+
+SshAskpass*font: -*-terminus-medium-*-*-*-16-*-*-*-*-*-iso10646-1
+SshAskpass*foreground: #dcdccc
+SshAskpass*background: #3f3f3f
+SshAskpass*shadowThickness: 1

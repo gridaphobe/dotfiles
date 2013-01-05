@@ -8,11 +8,8 @@ fsync = False
 localrepository = gmail-local
 remoterepository = gmail-remote
 status_backend = sqlite
-# postsynchook = notmuch new
 
 [Repository gmail-local]
-# type = GmailMaildir
-# localfolders = ~/.mail
 type = IMAP
 preauthtunnel = /usr/lib/dovecot/imap
 holdconnectionopen = yes
@@ -38,5 +35,3 @@ remoteuser = gridaphobe
 ssl = yes
 sslcacertfile = /etc/ssl/certs/ca-certificates.crt
 maxconnections = 1
-# keepalive = 60
-# holdconnectionopen = yes
