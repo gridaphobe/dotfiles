@@ -2,6 +2,9 @@
 ;; (load-file (let ((coding-system-for-read 'utf-8))
 ;;              (shell-command-to-string "agda-mode locate")))
 
+;; don't show me .hi files!!
+(add-to-list 'completion-ignored-extensions ".hi")
+
 ;; courtesy of johan tibell
 (defun haskell-style ()
   "Sets the current buffer to use Haskell Style. Meant to be

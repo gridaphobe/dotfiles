@@ -173,7 +173,7 @@
 (require 'midnight)
 
 ;; automatically indenting yanked text if in programming-modes
-(defvar yank-indent-modes '(haskell-mode python-mode LaTeX-mode TeX-mode)
+(defvar yank-indent-modes '(LaTeX-mode TeX-mode)
   "Modes in which to indent regions that are yanked (or yank-popped). Only
 modes that don't derive from `prog-mode' should be listed here.")
 
@@ -202,6 +202,39 @@ indent yanked text (with prefix arg don't indent)."
                (member major-mode yank-indent-modes)))
     (let ((transient-mark-mode nil))
     (yank-advised-indent-function (region-beginning) (region-end)))))
+
+(defun zap-up-to-char (arg char)
+  "Kill up to ARGth occurrence of CHAR.
+Behaves just like `zap-to-char' except the final CHAR is not killed."
+  (interactive "p\ncZap up to char: ")
+  (zap-to-char arg char)
+  (insert-char char 1)
+  (backward-char 1))
+
+;; Behave like vi's o command
+(defun open-next-line (arg)
+  "Move to the next line and then opens a line.
+    See also `newline-and-indent'."
+  (interactive "p")
+  (end-of-line)
+  (open-line arg)
+  (next-line 1)
+  (when newline-and-indent
+    (indent-according-to-mode)))
+
+;; Behave like vi's O command
+(defun open-previous-line (arg)
+  "Open a new line before the current one.
+     See also `newline-and-indent'."
+  (interactive "p")
+  (beginning-of-line)
+  (open-line arg)
+  (when newline-and-indent
+    (indent-according-to-mode)))
+
+;; Autoindent open-*-lines
+(defvar newline-and-indent t
+  "Modify the behavior of the open-*-line functions to cause them to autoindent.")
 
 ;; abbrev config
 (add-hook 'text-mode-hook (lambda () (abbrev-mode +1)))
