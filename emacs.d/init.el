@@ -75,6 +75,7 @@ ELPA (or MELPA).")
     (add-hook 'emacs-startup-hook (lambda () (rcirc nil)) t)))
   (t (progn
        ;; run a server for emacsclient
+       (require 'server)
        (when (not (server-running-p))
          (server-start)))))
 
