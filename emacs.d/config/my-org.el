@@ -43,7 +43,7 @@
       org-mobile-inbox-for-pull "~/Dropbox/org/mobile_inbox.org")
 
 ;; org-latex
-(setq org-latex-to-pdf-process (list "latexmk %f")
+(setq org-latex-to-pdf-process (list "latexmk -pdf %f")
       org-export-latex-quotes
       '(("en" ("\\(\\s-\\|[[(]\\)\"" . "\\enquote{") ("\\(\\S-\\)\"" . "}") ("\\(\\s-\\|(\\)'" . "`"))))
 (org-add-link-type "ebib" 'ebib)
