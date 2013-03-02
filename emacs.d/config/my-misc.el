@@ -4,7 +4,7 @@
 (keychain-refresh-environment)
 
 ;; Proof General
-(load-file "/usr/share/emacs/site-lisp/ProofGeneral/generic/proof-site.el")
+;;(load-file "/usr/share/emacs/site-lisp/ProofGeneral/generic/proof-site.el")
 
 ;; Arch Linux PKGBUILDs
 (add-to-list 'auto-mode-alist '("PKGBUILD$" . pkgbuild-mode))
@@ -136,5 +136,18 @@ and so on."
 (set-language-environment "UTF-8")
 
 (add-to-list 'exec-path "/usr/local/bin")
+
+;; eshell
+(require 'eshell)
+(require 'em-smart)
+(setq eshell-where-to-jump 'begin
+      eshell-review-quick-commands nil
+      eshell-smart-space-goes-to-end t
+      eshell-cmpl-cycle-completions nil)
+
+;; dired
+(setq dired-listing-switches "-alh")
+
+(setq require-final-newline t)
 
 (provide 'my-misc)

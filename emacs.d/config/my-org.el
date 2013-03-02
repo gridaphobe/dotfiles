@@ -31,6 +31,7 @@
       org-default-notes-file "~/Dropbox/org/notes.org"
       org-fast-tag-selection-single-key nil
       org-log-done 'done
+      org-pretty-entities t
       org-refile-targets '(("todo.org" :maxlevel . 1)
                            ("someday.org" :level . 2))
       org-reverse-note-order nil
@@ -46,7 +47,20 @@
 (setq org-latex-to-pdf-process (list "latexmk -pdf %f")
       org-export-latex-quotes
       '(("en" ("\\(\\s-\\|[[(]\\)\"" . "\\enquote{") ("\\(\\S-\\)\"" . "}") ("\\(\\s-\\|(\\)'" . "`"))))
+
 (org-add-link-type "ebib" 'ebib)
+(org-add-link-type
+ "cite" 'ebib
+ (lambda (path desc format)
+   (cond
+    ((eq format 'html)
+     (format "(<cite>%s</cite>)" path))
+    ((eq format 'latex)
+     (if (or (not desc) (equal 0 (search "cite:" desc)))
+         (format "\\cite{%s}" path)
+       (format "\\cite[%s][%s]{%s}"
+               (cadr (split-string desc ";"))
+               (car (split-string desc ";"))  path))))))
 
 (define-key global-map "\C-cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)

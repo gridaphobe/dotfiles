@@ -3,10 +3,25 @@
 (setq mac-command-modifier 'super)
 (setq mac-option-modifier 'meta)
 
-(let (osx-paths)
-  (dolist (path exec-path (setenv "PATH" osx-paths))
-    (setq osx-paths (concat osx-paths (concat path ":")))))
+(set-fontset-font "fontset-default"
+                  'unicode
+                  '("Menlo" . "iso10646-1"))
+(set-face-attribute 'default nil
+                    :family "Menlo"
+                    :slant  'normal
+                    :weight 'normal
+                    :width  'normal
+                    :height 140)
 
-(setq eshell-path-env (getenv "PATH"))
+
+(exec-path-from-shell-initialize)
+
+(setq browse-url-browser-function 'browse-url-default-macosx-browser)
+
+;; (let (osx-paths)
+;;   (dolist (path exec-path (setenv "PATH" osx-paths))
+;;     (setq osx-paths (concat osx-paths (concat path ":")))))
+
+;; (setq eshell-path-env (getenv "PATH"))
 
 (provide 'my-osx)

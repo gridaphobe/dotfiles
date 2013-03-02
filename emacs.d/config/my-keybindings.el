@@ -73,4 +73,7 @@
 (global-set-key (kbd "C-o") 'open-next-line)
 (global-set-key (kbd "M-o") 'open-previous-line)
 
+;; C-x C-c is too easy to hit
+(global-unset-key (kbd "C-x C-c"))
+
 (provide 'my-keybindings)

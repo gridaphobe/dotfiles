@@ -128,7 +128,9 @@
 
 ;; flyspell-mode does spell-checking on the fly as you type
 (setq ispell-program-name "aspell" ; use aspell instead of ispell
-      ispell-extra-args '("--sug-mode=ultra"))
+      ispell-extra-args '("--sug-mode=ultra")
+      flyspell-issue-message-flag nil ; issuing a message for each word is slow
+      )
 (autoload 'flyspell-mode "flyspell" "On-the-fly spelling checker." t)
 
 (defun my-turn-on-flyspell ()

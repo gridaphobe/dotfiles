@@ -10,27 +10,27 @@
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
 
-(setq org-pretty-entities t)
+(setq ring-bell-function 'ignore)
 
 ;; For daemon mode, with-selected-frame seems to be required.  Normal
 ;; mode seems to require with-selected-frame to be absent.
-(require 'server) ;;for server-running-p
-(defun my-frame-config (frame)
-  "Custom behaviours for new frames."
-  (if (eq system-type 'darwin)
-      (if (server-running-p)
-          (with-selected-frame frame
-            (if (display-graphic-p)
-                (modify-frame-parameters frame '((menu-bar-lines . 1)))
-              (modify-frame-parameters frame '((menu-bar-lines . 0)))))
-        (if (display-graphic-p)
-            (modify-frame-parameters frame '((menu-bar-lines . 1)))
-          (modify-frame-parameters frame '((menu-bar-lines . 0)))))
-    (menu-bar-mode -1)))
-;; run now
-(my-frame-config (selected-frame))
-;; and later
-(add-hook 'after-make-frame-functions 'my-frame-config)
+;; (require 'server) ;;for server-running-p
+;; (defun my-frame-config (frame)
+;;   "Custom behaviours for new frames."
+;;   (if (eq system-type 'darwin)
+;;       (if (server-running-p)
+;;           (with-selected-frame frame
+;;             (if (display-graphic-p)
+;;                 (modify-frame-parameters frame '((menu-bar-lines . 1)))
+;;               (modify-frame-parameters frame '((menu-bar-lines . 0)))))
+;;         (if (display-graphic-p)
+;;             (modify-frame-parameters frame '((menu-bar-lines . 1)))
+;;           (modify-frame-parameters frame '((menu-bar-lines . 0)))))
+;;     (menu-bar-mode -1)))
+;; ;; run now
+;; (my-frame-config (selected-frame))
+;; ;; and later
+;; (add-hook 'after-make-frame-functions 'my-frame-config)
 
 ;; the blinking cursor is nothing, but an annoyance
 (blink-cursor-mode -1)
@@ -41,17 +41,12 @@
 ;; nice scrolling
 (setq scroll-margin 0
       scroll-conservatively 100000
-      scroll-preserve-screen-position 1)
+      scroll-preserve-screen-position t)
 
 ;; mode line settings
 (line-number-mode t)
 (column-number-mode t)
 (size-indication-mode t)
-
-;; make the fringe (gutter) smaller
-;; the argument is a width in pixels (the default is 8)
-(if (fboundp 'fringe-mode)
-    (fringe-mode 4))
 
 ;; enable y/n answers
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -63,6 +58,9 @@
                                          (abbreviate-file-name (buffer-file-name))
                                        "%b"))))
 
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/emacs-color-theme-solarized"))
+(require 'solarized-dark-theme)
+(setq solarized-broken-srgb nil)
 ;; use zenburn as the default theme
 (load-theme 'solarized-dark t)
 
