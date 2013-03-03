@@ -24,3 +24,4 @@ xmonad
 /fish/fish_read_history
 /emacs.d/oauth2.plstore
 /emacs.d/tramp
+/emacs.d/var/log
