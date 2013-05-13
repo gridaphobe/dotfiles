@@ -22,6 +22,7 @@
 (add-to-list 'exec-path "~/.cabal/bin")
 
 (add-to-list 'auto-mode-alist '("\\.xmobarrc$" . haskell-mode))
+(add-to-list 'auto-mode-alist '("\\.spec$" . haskell-mode))
 ;; yesod
 (add-to-list 'auto-mode-alist '("\\.hamlet$" . html-mode))
 (add-to-list 'auto-mode-alist '("\\.lucius$" . css-mode))

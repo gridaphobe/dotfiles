@@ -5,4 +5,7 @@
 (require 'ebib)
 (add-to-list 'ebib-preload-bib-files "~/Dropbox/gridaphobe.bib")
 
+(require 'markdown-mode)
+(setq markdown-enable-math t)
+
 (provide 'my-latex)

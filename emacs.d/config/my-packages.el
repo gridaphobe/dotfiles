@@ -65,6 +65,7 @@
     virtualenv
     volatile-highlights
     writegood-mode
+    ws-trim
     yaml-mode
     zenburn-theme)
   "A list of packages to ensure are installed at launch.")

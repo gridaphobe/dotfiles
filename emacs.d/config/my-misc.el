@@ -150,4 +150,11 @@ and so on."
 
 (setq require-final-newline t)
 
+;; tramp
+(require 'tramp)
+(setq tramp-persistency-file-name nil)
+(add-to-list 'tramp-remote-path "~/.cabal/bin")
+(add-to-list 'tramp-remote-path "~/bin")
+
+
 (provide 'my-misc)

@@ -1,5 +1,5 @@
-(add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/ma-gnus"))
-(require 'gnus-load)
+;; (add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/ma-gnus"))
+(require 'gnus)
 ;; (require 'google-contacts)
 ;; (require 'google-contacts-gnus)
 ;; (require 'google-contacts-message)

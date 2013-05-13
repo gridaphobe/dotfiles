@@ -62,7 +62,7 @@
 (require 'solarized-dark-theme)
 (setq solarized-broken-srgb nil)
 ;; use zenburn as the default theme
-(load-theme 'solarized-dark t)
+(load-theme 'zenburn t)
 
 ;; make whitespace-mode less intrusive
 (setq whitespace-line-count 80

@@ -92,10 +92,12 @@
                                :nickserv-password ,erc-pass
                                :channels ("#ucsdpl" "#fluidinfo"
                                           "#fluidinfo-private toaster" "#haskell"
-                                          "#emacs" "#racket")))
+                                          "#emacs" "#racket"
+                                          )))
       circe-nickserv-ghost-style 'after-auth
       circe-server-auto-join-default-type :after-nick
       circe-reduce-lurker-spam t
+      circe-active-users-timeout 300
       circe-format-server-topic "*** Topic change by {origin}: {topic-diff}"
       circe-default-part-message "part"
       circe-default-quit-message "quit"
@@ -105,28 +107,31 @@
       circe-new-buffer-behavior-ignore-auto-joins t
       circe-format-self-say "<{nick}> {body}"
       lui-flyspell-p t
-      lui-time-stamp-position 'right-margin
-      lui-time-stamp-format "%H:%M"
-      lui-fill-type nil
+      lui-time-stamp-position 'right
+      lui-time-stamp-format "[%H:%M]"
+      lui-time-stamp-only-when-changed-p t
+      lui-fill-type "    "
+      lui-max-buffer-size 30000
       tracking-ignored-buffers '(("#haskell" circe-highlight-nick-face)
                                  ("#emacs" circe-highlight-nick-face)
                                  ("#racket" circe-highlight-nick-face)))
 
-;; (set-face-attribute 'circe-highlight-all-nicks-face nil
-;;                     :foreground "wheat")
+(require 'circe-highlight-all-nicks)
+(set-face-attribute 'circe-highlight-all-nicks-face nil
+                    :foreground "wheat")
 
-(defun my-lui-setup ()
-  (setq fringes-outside-margins t
-        right-margin-width 5
-        word-wrap t
-        wrap-prefix "    "))
-(add-hook 'lui-mode-hook 'my-lui-setup)
+;; (defun my-lui-setup ()
+;;   (setq ;fringes-outside-margins t
+;;         ;left-margin-width 11
+;;         word-wrap nil
+;;         wrap-prefix "          |     "))
+;; (add-hook 'lui-mode-hook 'my-lui-setup)
 
 (require 'lui-logging)
 (setq lui-logging-directory "~/.emacs.d/var/log/circe")
 (require 'lui-autopaste)
 
-(add-hook 'circe-channel-mode-hook 'enable-circe-color-nicks)
+(add-hook 'circe-channel-mode-hook 'enable-circe-highlight-all-nicks)
 (add-hook 'circe-channel-mode-hook 'enable-lui-autopaste)
 (add-hook 'circe-channel-mode-hook 'enable-lui-logging)
 (add-hook 'circe-channel-mode-hook 'enable-lui-irc-colors)
@@ -141,5 +146,8 @@
                   "-message" (cadr args))))
 ;; (let ((circe-server-user "gridaphobe"))
 ;;   (circe-notify-on-mention "bob" nil nil "PRIVMSG" '("#emacs" "gridaphobe: yo'")))
+
+(add-to-list 'clean-buffer-list-kill-never-regexps "^#.*")
+(add-to-list 'clean-buffer-list-kill-never-regexps "^irc.*")
 
 (provide 'my-irc)

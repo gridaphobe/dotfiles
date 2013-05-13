@@ -117,6 +117,7 @@
       ido-enable-flex-matching t
       ido-create-new-buffer 'always
       ido-use-filename-at-point 'guess
+      ido-use-virtual-buffers t
       ido-max-prospects 10
       ido-save-directory-list-file (concat emacs-savefile-dir "ido.hist")
       ido-default-file-method 'selected-window)

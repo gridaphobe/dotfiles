@@ -12,13 +12,17 @@
 
 (defun my-prog-mode-defaults ()
   "Default coding hook, useful with any programming language."
-  (flyspell-prog-mode)
+  ;;(flyspell-prog-mode)
   (my-local-comment-auto-fill)
   (whitespace-mode +1)
   (abbrev-mode +1)
   (my-add-watchwords)
   ;; keep the whitespace decent all the time (in this buffer)
-  (add-hook 'before-save-hook 'whitespace-cleanup nil t))
+  ;;(add-hook 'before-save-hook 'whitespace-cleanup nil t)
+  )
+
+(require 'ws-trim)
+(global-ws-trim-mode 1)
 
 (add-hook 'prog-mode-hook 'my-prog-mode-defaults)
 
