@@ -61,8 +61,13 @@
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/emacs-color-theme-solarized"))
 (require 'solarized-dark-theme)
 (setq solarized-broken-srgb nil)
+(load-theme 'solarized-light t)
 ;; use zenburn as the default theme
-(load-theme 'zenburn t)
+;;(load-theme 'zenburn t)
+
+;; stupid italics
+(make-face-unitalic 'font-lock-comment-face)
+(make-face-unitalic 'font-lock-comment-delimiter-face)
 
 ;; make whitespace-mode less intrusive
 (setq whitespace-line-count 80

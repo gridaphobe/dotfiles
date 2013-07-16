@@ -5,9 +5,9 @@
 
 (set-fontset-font "fontset-default"
                   'unicode
-                  '("Menlo" . "iso10646-1"))
+                  '("DejaVu Sans Mono" . "iso10646-1"))
 (set-face-attribute 'default nil
-                    :family "Menlo"
+                    :family "DejaVu Sans Mono"
                     :slant  'normal
                     :weight 'normal
                     :width  'normal

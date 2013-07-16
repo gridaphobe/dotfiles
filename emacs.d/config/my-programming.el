@@ -13,7 +13,7 @@
 (defun my-prog-mode-defaults ()
   "Default coding hook, useful with any programming language."
   ;;(flyspell-prog-mode)
-  (my-local-comment-auto-fill)
+;;  (my-local-comment-auto-fill)
   (whitespace-mode +1)
   (abbrev-mode +1)
   (my-add-watchwords)

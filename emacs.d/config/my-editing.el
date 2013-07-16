@@ -256,4 +256,6 @@ Behaves just like `zap-to-char' except the final CHAR is not killed."
 (setq semanticdb-default-save-directory
       (concat emacs-savefile-dir "semanticdb"))
 
+(global-undo-tree-mode +1)
+
 (provide 'my-editing)

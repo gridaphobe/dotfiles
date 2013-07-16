@@ -156,5 +156,23 @@ and so on."
 (add-to-list 'tramp-remote-path "~/.cabal/bin")
 (add-to-list 'tramp-remote-path "~/bin")
 
+;; compile
+(setq compilation-scroll-output 'first-error
+      compilation-window-height 10)
+(defun bury-compile-buffer-if-successful (buffer string)
+  "Bury a compilation buffer if succeeded without warnings "
+  (if (and
+       (string-match "compilation" (buffer-name buffer))
+       (string-match "finished" string)
+       (not
+        (with-current-buffer buffer
+          (search-forward "warning" nil t))))
+      (run-with-timer 1 nil
+                      (lambda (buf)
+                        (bury-buffer buf)
+                        (delete-window (get-buffer-window buf)))
+                      buffer)))
+(add-hook 'compilation-finish-functions 'bury-compile-buffer-if-successful)
+
 
 (provide 'my-misc)
