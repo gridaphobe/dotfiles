@@ -1,14 +1,17 @@
 ;; agda!
-(load-file (let ((coding-system-for-read 'utf-8))
-             (shell-command-to-string "~/.cabal/bin/agda-mode locate")))
-(setq agda2-include-dirs '("." "/Users/gridaphobe/Source/agda/lib-0.7/src"))
+;; (load-file (let ((coding-system-for-read 'utf-8))
+;;              (shell-command-to-string "~/.cabal/bin/agda-mode locate")))
+;; (setq agda2-include-dirs '("." "/Users/gridaphobe/Source/agda/lib-0.7/src"))
 
 ;; idris!
 (add-to-list 'load-path "~/.emacs.d/vendor/idris-mode")
 (require 'idris-mode)
 
+(require 'hsenv)
+
 ;; don't show me .hi files!!
 (add-to-list 'completion-ignored-extensions ".hi")
+(add-to-list 'completion-ignored-extensions ".hdevtools.sock")
 
 ;; courtesy of johan tibell
 (defun haskell-style ()
@@ -16,13 +19,17 @@
   added to `haskell-mode-hook'"
   (interactive)
   (setq tab-width 4
-        haskell-indentation-layout-offset 4
-        haskell-indentation-left-offset 4
-        haskell-indentation-ifte-offset 4))
+        ;; haskell-indentation-layout-offset 4
+        ;; haskell-indentation-left-offset 4
+        ;; haskell-indentation-ifte-offset 4
+        ))
 
-(setq ;haskell-process-type 'ghci
+(setq haskell-process-type 'cabal-repl
       haskell-stylish-on-save nil
       haskell-tags-on-save nil)
+
+(eval-after-load "which-func"
+  '(add-to-list 'which-func-modes 'haskell-mode))
 
 (add-to-list 'exec-path "~/.cabal/bin")
 
@@ -33,41 +40,50 @@
 (add-to-list 'auto-mode-alist '("\\.lucius$" . css-mode))
 (add-to-list 'auto-mode-alist '("\\.julius$" . js2-mode))
 
-(require 'virthualenv)
-
 (defun my-haskell-mode-defaults ()
   ;; run manually since haskell-mode is not derived from prog-mode
   (run-hooks 'my-prog-mode-hook)
   (subword-mode +1)
   (turn-on-haskell-doc-mode)
-  (turn-on-haskell-indent)
+  ;; (turn-on-haskell-indent)
+  (turn-on-haskell-indentation)
+  (turn-on-haskell-decl-scan)
+  (when (not (string-equal "spec" (file-name-extension (buffer-file-name))))
+    (flycheck-mode +1))
   (haskell-style)
+  (define-haskell-checkers)
 
+  (defun killall-hdevtools ()
+    (interactive)
+    (shell-command "killall hdevtools")
+    ;; (flyparse-buffer)
+    (flycheck-buffer))
+  (define-key haskell-mode-map (kbd "C-c C") 'killall-hdevtools)
   ;; testing these..
-  ;; ;; Load the current file (and make a session if not already made).
-  ;; (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
-  ;; ;; (define-key haskell-mode-map [f5] 'haskell-process-load-file)
+  ;; Load the current file (and make a session if not already made).
+  (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
+  ;; (define-key haskell-mode-map [f5] 'haskell-process-load-file)
 
-  ;; ;; Switch to the REPL.
-  ;; (define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
-  ;; ;; “Bring” the REPL, hiding all other windows apart from the source
-  ;; ;; and the REPL.
-  ;; (define-key haskell-mode-map (kbd "C-`") 'haskell-interactive-bring)
+  ;; Switch to the REPL.
+  (define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
+  ;; “Bring” the REPL, hiding all other windows apart from the source
+  ;; and the REPL.
+  (define-key haskell-mode-map (kbd "C-`") 'haskell-interactive-bring)
 
-  ;; ;; Build the Cabal project.
-  ;; (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
-  ;; ;; Interactively choose the Cabal command to run.
-  ;; (define-key haskell-mode-map (kbd "C-c c") 'haskell-process-cabal)
+  ;; Build the Cabal project.
+  (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
+  ;; Interactively choose the Cabal command to run.
+  (define-key haskell-mode-map (kbd "C-c c") 'haskell-process-cabal)
 
-  ;; ;; Get the type and info of the symbol at point, print it in the
-  ;; ;; message buffer.
-  ;; (define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
-  ;; (define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
+  ;; Get the type and info of the symbol at point, print it in the
+  ;; message buffer.
+  (define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
+  (define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
 
-  ;; ;; Contextually do clever things on the space key, in particular:
-  ;; ;;   1. Complete imports, letting you choose the module name.
-  ;; ;;   2. Show the type of the symbol after the space.
-  ;; (define-key haskell-mode-map (kbd "SPC") 'haskell-mode-contextual-space)
+  ;; Contextually do clever things on the space key, in particular:
+  ;;   1. Complete imports, letting you choose the module name.
+  ;;   2. Show the type of the symbol after the space.
+  (define-key haskell-mode-map (kbd "SPC") 'haskell-mode-contextual-space)
 
   ;; Jump to the imports. Keep tapping to jump between import
   ;; groups. C-u f8 to jump back again.
@@ -97,5 +113,76 @@
 
 (add-hook 'haskell-mode-hook 'my-haskell-mode-defaults)
 (add-hook 'haskell-cabal-mode-hook 'haskell-cabal-hook)
+
+(defun my/find-cabal-sandbox-pkg-db ()
+  (let* ((cabal-file (haskell-cabal-find-file))
+         (cabal-root (when cabal-file (file-name-directory cabal-file)))
+         (pkg-db (file-expand-wildcards
+                  (concat cabal-root ".cabal-sandbox/*.conf.d"))))
+    (if pkg-db (car pkg-db))))
+
+(defvar flycheck-haskell-options
+  '("-isrc" "-fno-warn-missing-signatures"))
+
+(require 'flycheck)
+
+(flycheck-define-checker haskell-hdevtools
+  "A Haskell syntax and type checker using hdevtools.
+
+See URL `https://github.com/bitc/hdevtools'."
+  :command
+  ("hdevtools" "check"
+   (eval (apply #'append (mapcar (lambda (o) (list "-g" o)) flycheck-haskell-options)))
+   (eval (let ((pkg-db (my/find-cabal-sandbox-pkg-db)))
+           (if pkg-db
+               (list "-g" "-package-db" "-g" pkg-db))))
+   source-inplace)
+  :error-patterns
+  ((warning line-start (file-name) ":" line ":" column ":"
+            (or " " "\n    ") "Warning:" (optional "\n")
+            (one-or-more " ")
+            (message (one-or-more not-newline)
+                     (zero-or-more "\n"
+                                   (one-or-more " ")
+                                   (one-or-more not-newline)))
+            line-end)
+   (error line-start (file-name) ":" line ":" column ":"
+          (or (message (one-or-more not-newline))
+              (and "\n" (one-or-more " ")
+                   (message (one-or-more not-newline)
+                            (zero-or-more "\n"
+                                          (one-or-more " ")
+                                          (one-or-more not-newline)))))
+          line-end))
+  :modes haskell-mode
+  :next-checkers ((warnings-only . haskell-hlint)))
+
+(flycheck-define-checker haskell-ghc
+  "A Haskell syntax and type checker using ghc.
+
+See URL `http://www.haskell.org/ghc/'."
+   :command ("ghc" (eval flycheck-haskell-options)
+             (eval (let ((pkg-db (my/find-cabal-sandbox-pkg-db)))
+                     (if pkg-db (list "-package-db" pkg-db))))
+             source-inplace)
+   :error-patterns
+   ((warning line-start (file-name) ":" line ":" column ":"
+             (or " " "\n    ") "Warning:" (optional "\n")
+             (one-or-more " ")
+             (message (one-or-more not-newline)
+                      (zero-or-more "\n"
+                                    (one-or-more " ")
+                                    (one-or-more not-newline)))
+             line-end)
+    (error line-start (file-name) ":" line ":" column ":"
+           (or (message (one-or-more not-newline))
+               (and "\n" (one-or-more " ")
+                    (message (one-or-more not-newline)
+                             (zero-or-more "\n"
+                                           (one-or-more " ")
+                                           (one-or-more not-newline)))))
+           line-end))
+   :modes haskell-mode
+   :next-checkers ((warnings-only . haskell-hlint)))
 
 (provide 'my-haskell)

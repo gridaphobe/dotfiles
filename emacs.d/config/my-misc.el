@@ -4,7 +4,8 @@
 (keychain-refresh-environment)
 
 ;; Proof General
-;;(load-file "/usr/share/emacs/site-lisp/ProofGeneral/generic/proof-site.el")
+(load-file "~/.emacs.d/vendor/proof-general/generic/proof-site.el")
+
 
 ;; Arch Linux PKGBUILDs
 (add-to-list 'auto-mode-alist '("PKGBUILD$" . pkgbuild-mode))
@@ -18,6 +19,14 @@
   (interactive
    (if mark-active (list (region-beginning) (region-end))
      (message "Copied line")
+     (list (line-beginning-position)
+           (line-beginning-position 2)))))
+
+(defadvice kill-region (before slick-kill activate compile)
+  "When called interactively with no active region, kill a single line instead."
+  (interactive
+   (if mark-active (list (region-beginning) (region-end))
+     (message "Killed line")
      (list (line-beginning-position)
            (line-beginning-position 2)))))
 
@@ -143,7 +152,8 @@ and so on."
 (setq eshell-where-to-jump 'begin
       eshell-review-quick-commands nil
       eshell-smart-space-goes-to-end t
-      eshell-cmpl-cycle-completions nil)
+      eshell-cmpl-cycle-completions nil
+      eshell-cmpl-ignore-case t)
 
 ;; dired
 (setq dired-listing-switches "-alh")
@@ -174,5 +184,9 @@ and so on."
                       buffer)))
 (add-hook 'compilation-finish-functions 'bury-compile-buffer-if-successful)
 
+
+;; flycheck
+(eval-after-load "flycheck"
+  '(setq flycheck-check-syntax-automatically '(mode-enabled save)))
 
 (provide 'my-misc)

@@ -58,12 +58,11 @@
                                          (abbreviate-file-name (buffer-file-name))
                                        "%b"))))
 
-(add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/emacs-color-theme-solarized"))
-(require 'solarized-dark-theme)
-(setq solarized-broken-srgb nil)
-(load-theme 'solarized-light t)
 ;; use zenburn as the default theme
 ;;(load-theme 'zenburn t)
+(setq solarized-distinct-fringe-background t
+      solarized-high-contrast-mode-line t)
+(load-theme 'solarized-dark t)
 
 ;; stupid italics
 (make-face-unitalic 'font-lock-comment-face)

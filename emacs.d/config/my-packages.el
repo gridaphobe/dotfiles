@@ -12,8 +12,7 @@
 (setq url-http-attempt-keepalives nil)
 
 (defvar my-packages
-  '(ac-dabbrev
-    ac-nrepl
+  '(
     ace-jump-mode
     ack-and-a-half
     auctex
@@ -27,7 +26,6 @@
     ebib
     edit-server
     expand-region
-    flymake-cursor
     fwb-cmds
     geiser
     gist
@@ -35,12 +33,10 @@
     google-contacts
     haskell-mode
     js2-mode
-    keychain-environment
     less-css-mode
     logito
     lua-mode
     magit
-    magithub
     markdown-mode
     melpa
     nginx-mode
@@ -57,8 +53,6 @@
     restclient
     scala-mode
     smex
-    ;; solarized-theme
-    sr-speedbar
     switch-window
     tuareg
     undo-tree
@@ -67,7 +61,8 @@
     writegood-mode
     ws-trim
     yaml-mode
-    zenburn-theme)
+    zenburn-theme
+    )
   "A list of packages to ensure are installed at launch.")
 
 (defun my-packages-installed-p ()

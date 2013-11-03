@@ -125,7 +125,7 @@
 ;; auto-completion in minibuffer
 (icomplete-mode +1)
 
-(set-default 'imenu-auto-rescan t)
+(set-default 'imenu-auto-rescan nil)
 
 ;; flyspell-mode does spell-checking on the fly as you type
 (setq ispell-program-name "aspell" ; use aspell instead of ispell
