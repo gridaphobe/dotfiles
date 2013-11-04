@@ -122,7 +122,7 @@
     (if pkg-db (car pkg-db))))
 
 (defvar flycheck-haskell-options
-  '("-isrc" "-fno-warn-missing-signatures"))
+  '("-Wall" "-isrc" "-fno-warn-missing-signatures"))
 
 (require 'flycheck)
 

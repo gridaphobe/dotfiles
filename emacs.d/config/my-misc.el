@@ -189,4 +189,15 @@ and so on."
 (eval-after-load "flycheck"
   '(setq flycheck-check-syntax-automatically '(mode-enabled save)))
 
+;; magit
+
+;; full screen magit-status
+(defadvice magit-status (around magit-fullscreen activate)
+  (window-configuration-to-register :magit-fullscreen)
+  ad-do-it
+  (delete-other-windows))
+
+(defadvice magit-quit-window (after magit-restore-screen activate)
+  (jump-to-register :magit-fullscreen))
+
 (provide 'my-misc)
