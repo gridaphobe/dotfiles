@@ -3,7 +3,7 @@
 
 (defun my-add-watchwords ()
   (font-lock-add-keywords
-   nil '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\):"
+   nil '(("\\<\\(FIX\\|TODO\\|FIXME\\|HACK\\|REFACTOR\\)"
           1 font-lock-warning-face t))))
 
 ;; show the name of the current function definition in the modeline
@@ -13,7 +13,7 @@
 (defun my-prog-mode-defaults ()
   "Default coding hook, useful with any programming language."
   ;;(flyspell-prog-mode)
-;;  (my-local-comment-auto-fill)
+  (my-local-comment-auto-fill)
   (whitespace-mode +1)
   (abbrev-mode +1)
   (my-add-watchwords)
@@ -71,6 +71,5 @@
        (t
         (goto-char position))))))
 (global-set-key (kbd "C-c i")     'ido-goto-symbol)
-(global-set-key (kbd "C-c p")   'ido-goto-symbol-at-point)
 
 (provide 'my-programming)

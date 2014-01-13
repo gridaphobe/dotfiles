@@ -155,6 +155,20 @@ and so on."
       eshell-cmpl-cycle-completions nil
       eshell-cmpl-ignore-case t)
 
+;; Eshell Hooks
+(defun eshell-settings ()
+  (progn
+    (setq show-trailing-whitespace nil)
+    (eshell-smart-initialize)))
+
+(add-hook 'eshell-mode-hook 'eshell-settings)
+
+;; Eshell Commands
+(defun eshell/clear ()
+  (interactive)
+  (let ((inhibit-read-only t))
+    (erase-buffer)))
+
 ;; dired
 (setq dired-listing-switches "-alh")
 
@@ -197,7 +211,12 @@ and so on."
   ad-do-it
   (delete-other-windows))
 
-(defadvice magit-quit-window (after magit-restore-screen activate)
+(defadvice magit-mode-quit-window (after magit-restore-screen activate)
   (jump-to-register :magit-fullscreen))
+
+(require 'projectile)
+(projectile-global-mode)
+
+(require 'helm-config)
 
 (provide 'my-misc)

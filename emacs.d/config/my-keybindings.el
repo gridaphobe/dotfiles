@@ -9,7 +9,7 @@
 (global-set-key (kbd "M-X") 'smex-major-mode-commands)
 
 ;; smarter kill-line
-(global-set-key (kbd "C-k") 'paredit-kill)
+(global-set-key (kbd "C-k") 'sp-kill-sexp)
 
 ;; Align your code in a pretty way.
 (global-set-key (kbd "C-x \\") 'align-regexp)

@@ -25,3 +25,5 @@ xmonad
 /emacs.d/oauth2.plstore
 /emacs.d/tramp
 /emacs.d/var/log
+/emacs.d/ac-comphist.dat
+/emacs.d/projectile-bookmarks.eld

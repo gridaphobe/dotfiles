@@ -11,7 +11,7 @@
                     :slant  'normal
                     :weight 'normal
                     :width  'normal
-                    :height 140)
+                    :height 120)
 
 
 (exec-path-from-shell-initialize)

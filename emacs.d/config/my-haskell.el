@@ -25,6 +25,7 @@
         ))
 
 (setq haskell-process-type 'cabal-repl
+      haskell-process-log t
       haskell-stylish-on-save nil
       haskell-tags-on-save nil)
 
@@ -40,74 +41,35 @@
 (add-to-list 'auto-mode-alist '("\\.lucius$" . css-mode))
 (add-to-list 'auto-mode-alist '("\\.julius$" . js2-mode))
 
+
+(require 'hi2)
+(setq hi2-show-indentations nil)
+(add-to-list 'load-path "~/Source/structured-haskell-mode/elisp")
+(require 'shm)
+
 (defun my-haskell-mode-defaults ()
   ;; run manually since haskell-mode is not derived from prog-mode
   (run-hooks 'my-prog-mode-hook)
   (subword-mode +1)
   (turn-on-haskell-doc-mode)
   ;; (turn-on-haskell-indent)
-  (turn-on-haskell-indentation)
+  ;; (turn-on-haskell-indentation)
+  (turn-on-hi2)
+  ;; (structured-haskell-mode +1)
   (turn-on-haskell-decl-scan)
-  (when (not (string-equal "spec" (file-name-extension (buffer-file-name))))
+  (when (and
+         ;; haskell-process creates temp buffers to parse ghci
+         ;; responses, no buffer-file-name...
+         (stringp (buffer-file-name))
+         (not (string-equal ".spec" (file-name-extension (buffer-file-name) t))))
+    (define-haskell-checkers)
     (flycheck-mode +1))
-  (haskell-style)
-  (define-haskell-checkers)
-
-  (defun killall-hdevtools ()
-    (interactive)
-    (shell-command "killall hdevtools")
-    ;; (flyparse-buffer)
-    (flycheck-buffer))
-  (define-key haskell-mode-map (kbd "C-c C") 'killall-hdevtools)
-  ;; testing these..
-  ;; Load the current file (and make a session if not already made).
-  (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
-  ;; (define-key haskell-mode-map [f5] 'haskell-process-load-file)
-
-  ;; Switch to the REPL.
-  (define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
-  ;; “Bring” the REPL, hiding all other windows apart from the source
-  ;; and the REPL.
-  (define-key haskell-mode-map (kbd "C-`") 'haskell-interactive-bring)
-
-  ;; Build the Cabal project.
-  (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
-  ;; Interactively choose the Cabal command to run.
-  (define-key haskell-mode-map (kbd "C-c c") 'haskell-process-cabal)
-
-  ;; Get the type and info of the symbol at point, print it in the
-  ;; message buffer.
-  (define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
-  (define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
-
-  ;; Contextually do clever things on the space key, in particular:
-  ;;   1. Complete imports, letting you choose the module name.
-  ;;   2. Show the type of the symbol after the space.
-  (define-key haskell-mode-map (kbd "SPC") 'haskell-mode-contextual-space)
-
-  ;; Jump to the imports. Keep tapping to jump between import
-  ;; groups. C-u f8 to jump back again.
-  (define-key haskell-mode-map [f8] 'haskell-navigate-imports)
-
-  ;; Jump to the definition of the current symbol.
-  (define-key haskell-mode-map (kbd "M-.") 'haskell-mode-tag-find)
-
-  ;; Indent the below lines on columns after the current column.
-  (define-key haskell-mode-map (kbd "C-<right>")
-    (lambda ()
-      (interactive)
-      (haskell-move-nested 1)))
-  ;; Same as above but backwards.
-  (define-key haskell-mode-map (kbd "C-<left>")
-    (lambda ()
-      (interactive)
-      (haskell-move-nested -1)))
-  )
+  (haskell-style))
 
 ;; Useful to have these keybindings for .cabal files, too.
 (defun haskell-cabal-hook ()
-  ;; (define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
-  ;; (define-key haskell-cabal-mode-map (kbd "C-c c") 'haskell-process-cabal)
+  (define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
+  (define-key haskell-cabal-mode-map (kbd "C-c c") 'haskell-process-cabal)
   (define-key haskell-cabal-mode-map (kbd "C-`") 'haskell-interactive-bring)
   (define-key haskell-cabal-mode-map [?\C-c ?\C-z] 'haskell-interactive-switch))
 
@@ -135,7 +97,7 @@ See URL `https://github.com/bitc/hdevtools'."
    (eval (apply #'append (mapcar (lambda (o) (list "-g" o)) flycheck-haskell-options)))
    (eval (let ((pkg-db (my/find-cabal-sandbox-pkg-db)))
            (if pkg-db
-               (list "-g" "-package-db" "-g" pkg-db))))
+               (list "-g" "-no-user-package-db" "-g" "-package-db" "-g" pkg-db))))
    source-inplace)
   :error-patterns
   ((warning line-start (file-name) ":" line ":" column ":"
@@ -163,7 +125,7 @@ See URL `https://github.com/bitc/hdevtools'."
 See URL `http://www.haskell.org/ghc/'."
    :command ("ghc" (eval flycheck-haskell-options)
              (eval (let ((pkg-db (my/find-cabal-sandbox-pkg-db)))
-                     (if pkg-db (list "-package-db" pkg-db))))
+                     (if pkg-db (list "-no-user-package-db" "-package-db" pkg-db))))
              source-inplace)
    :error-patterns
    ((warning line-start (file-name) ":" line ":" column ":"
@@ -184,5 +146,57 @@ See URL `http://www.haskell.org/ghc/'."
            line-end))
    :modes haskell-mode
    :next-checkers ((warnings-only . haskell-hlint)))
+
+(defun killall-hdevtools ()
+  (interactive)
+  (shell-command "killall hdevtools")
+  ;; (flyparse-buffer)
+  (flycheck-buffer))
+(define-key haskell-mode-map (kbd "C-c C") 'killall-hdevtools)
+
+;; testing these..
+;; Load the current file (and make a session if not already made).
+(define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
+;; (define-key haskell-mode-map [f5] 'haskell-process-load-file)
+
+;; Switch to the REPL.
+(define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
+;; “Bring” the REPL, hiding all other windows apart from the source
+;; and the REPL.
+(define-key haskell-mode-map (kbd "C-`") 'haskell-interactive-bring)
+
+;; Build the Cabal project.
+(define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
+;; Interactively choose the Cabal command to run.
+(define-key haskell-mode-map (kbd "C-c c") 'haskell-process-cabal)
+
+;; Get the type and info of the symbol at point, print it in the
+;; message buffer.
+(define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
+(define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
+
+;; Contextually do clever things on the space key, in particular:
+;;   1. Complete imports, letting you choose the module name.
+;;   2. Show the type of the symbol after the space.
+(define-key haskell-mode-map (kbd "SPC") 'haskell-mode-contextual-space)
+
+;; Jump to the imports. Keep tapping to jump between import
+;; groups. C-u f8 to jump back again.
+(define-key haskell-mode-map [f8] 'haskell-navigate-imports)
+
+;; Jump to the definition of the current symbol.
+(define-key haskell-mode-map (kbd "M-.") 'haskell-mode-tag-find)
+
+;; Indent the below lines on columns after the current column.
+(define-key haskell-mode-map (kbd "C-<right>")
+  (lambda ()
+    (interactive)
+    (haskell-move-nested 1)))
+;; Same as above but backwards.
+(define-key haskell-mode-map (kbd "C-<left>")
+  (lambda ()
+    (interactive)
+    (haskell-move-nested -1)))
+
 
 (provide 'my-haskell)

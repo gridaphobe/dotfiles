@@ -59,10 +59,10 @@
                                        "%b"))))
 
 ;; use zenburn as the default theme
-;;(load-theme 'zenburn t)
-(setq solarized-distinct-fringe-background t
-      solarized-high-contrast-mode-line t)
-(load-theme 'solarized-dark t)
+(load-theme 'zenburn t)
+;; (setq solarized-distinct-fringe-background t
+;;       solarized-high-contrast-mode-line t)
+;; (load-theme 'solarized-dark t)
 
 ;; stupid italics
 (make-face-unitalic 'font-lock-comment-face)
@@ -72,5 +72,6 @@
 (setq whitespace-line-count 80
       whitespace-style '(face trailing tabs lines-tail indentation
                               space-after-tab space-before-tab))
+
 
 (provide 'my-ui)

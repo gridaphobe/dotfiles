@@ -1,4 +1,4 @@
-(require 'org-special-blocks)
+;(require 'org-special-blocks)
 
 ;; org-mode configuration stuff
 (setq org-directory "~/Dropbox/org"
@@ -48,19 +48,19 @@
       org-export-latex-quotes
       '(("en" ("\\(\\s-\\|[[(]\\)\"" . "\\enquote{") ("\\(\\S-\\)\"" . "}") ("\\(\\s-\\|(\\)'" . "`"))))
 
-(org-add-link-type "ebib" 'ebib)
-(org-add-link-type
- "cite" 'ebib
- (lambda (path desc format)
-   (cond
-    ((eq format 'html)
-     (format "(<cite>%s</cite>)" path))
-    ((eq format 'latex)
-     (if (or (not desc) (equal 0 (search "cite:" desc)))
-         (format "\\cite{%s}" path)
-       (format "\\cite[%s][%s]{%s}"
-               (cadr (split-string desc ";"))
-               (car (split-string desc ";"))  path))))))
+;; (org-add-link-type "ebib" 'ebib)
+;; (org-add-link-type
+;;  "cite" 'ebib
+;;  (lambda (path desc format)
+;;    (cond
+;;     ((eq format 'html)
+;;      (format "(<cite>%s</cite>)" path))
+;;     ((eq format 'latex)
+;;      (if (or (not desc) (equal 0 (search "cite:" desc)))
+;;          (format "\\cite{%s}" path)
+;;        (format "\\cite[%s][%s]{%s}"
+;;                (cadr (split-string desc ";"))
+;;                (car (split-string desc ";"))  path))))))
 
 (define-key global-map "\C-cl" 'org-store-link)
 (define-key global-map "\C-ca" 'org-agenda)

@@ -38,11 +38,11 @@
                                          try-complete-lisp-symbol))
 
 ;; smart pairing for all
-(electric-pair-mode t)
+;; (electric-pair-mode t)
 
 ;; meaningful names for buffers with the same name
 (require 'uniquify)
-(setq uniquify-buffer-name-style 'forward)
+(setq uniquify-buffer-name-style 'post-forward-angle-brackets)
 (setq uniquify-separator "/")
 (setq uniquify-after-kill-buffer-p t)    ; rename after killing uniquified
 (setq uniquify-ignore-buffers-re "^\\*") ; don't muck with special buffers
@@ -97,8 +97,17 @@
   (when buffer-file-name (save-buffer)))
 
 ;; show-paren-mode: subtle highlighting of matching parens (global-mode)
-(show-paren-mode +1)
-(setq show-paren-style 'parenthesis)
+;; (show-paren-mode +1)
+;; (setq show-paren-style 'parenthesis)
+
+;; use smartparens instead
+(require 'smartparens-config)
+(setq sp-base-key-bindings 'paredit)
+(setq sp-autoskip-closing-pair 'always)
+(setq sp-hybrid-kill-entire-symbol nil)
+(sp-use-paredit-bindings)
+(smartparens-global-mode +1)
+(show-smartparens-global-mode +1)
 
 ;; highlight the current line
 (global-hl-line-mode +1)
@@ -257,5 +266,9 @@ Behaves just like `zap-to-char' except the final CHAR is not killed."
       (concat emacs-savefile-dir "semanticdb"))
 
 (global-undo-tree-mode +1)
+(diminish 'undo-tree-mode)
+
+(wrap-region-global-mode +1)
+(diminish 'wrap-region-mode)
 
 (provide 'my-editing)

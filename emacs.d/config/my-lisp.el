@@ -3,11 +3,12 @@
 
 ;; a great lisp coding hook
 (defun my-lisp-coding-defaults ()
-  (paredit-mode +1))
+  ;; (paredit-mode +1)
+  )
 
 ;; interactive modes don't need whitespace checks
 (defun my-interactive-lisp-coding-defaults ()
-  (paredit-mode +1)
+  ;; (paredit-mode +1)
   (whitespace-mode -1))
 
 

@@ -106,4 +106,25 @@
 
 (setq message-kill-buffer-on-exit t)
 
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e/")
+(require 'mu4e)
+(setq mu4e-maildir "~/.mail/gmail"
+      mu4e-sent-folder "/[Gmail].Sent Mail"
+      mu4e-drafts-folder "/[Gmail].Drafts"
+      mu4e-trash-folder "/[Gmail].Trash"
+      mu4e-user-mail-address-list '("gridaphobe@gmail.com"
+                                    "eric@eseidel.org"
+                                    "eric9@mac.com"
+                                    "eric9@me.com"
+                                    "eric9@icloud.com"
+                                    "eric@fluidinfo.com"
+                                    "eseidel01@ccny.cuny.edu"
+                                    "eseidel@eng.ucsd.edu"
+                                    "eseidel@cs.ucsd.edu"
+                                    "eseidel@ucsd.edu")
+      mu4e-use-fancy-chars t
+      mu4e-headers-skip-duplicates t
+      ;; mu4e-headers-include-related t
+      )
+
 (provide 'my-mail)

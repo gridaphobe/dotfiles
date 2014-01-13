@@ -6,7 +6,9 @@ export CHROMIUM_USER_FLAGS="$CHROMIUM_FLAGS --memory-model=low --proxy-pac-url=\
 export PATH="/usr/local/sbin:$PATH"
 export PATH="/usr/local/bin:$PATH"
 export PATH="/usr/texbin:$PATH"
+export PATH="$HOME/.emacs.d/vendor/proof-general/coq:$PATH"
 export PATH="$HOME/.cabal/bin:$PATH"
+export PATH="$HOME/Library/Haskell/bin:$PATH"
 export PATH="$(ruby -rubygems -e "puts Gem.user_dir")/bin:$PATH"
 export PATH="$HOME/bin:$PATH"
 export EDITOR='emacsclient -t -a ""'

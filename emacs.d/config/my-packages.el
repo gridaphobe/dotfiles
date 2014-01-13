@@ -3,9 +3,11 @@
 (require 'cl)
 (require 'package)
 (add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/") t)
+             '("org" . "http://orgmode.org/elpa/") t)
 (add-to-list 'package-archives
-             '("marmalade" . "http://marmalade-repo.org/packages/") t)
+             '("melpa" . "http://melpa.milkbox.net/packages/") t)
+;; (add-to-list 'package-archives
+;;              '("marmalade" . "http://marmalade-repo.org/packages/") t)
 (package-initialize)
 
 ;; required because of a package.el bug
@@ -16,48 +18,57 @@
     ace-jump-mode
     ack-and-a-half
     auctex
+    auctex-latexmk
     bbdb
     browse-kill-ring
-    caml
-    clojure-mode
-    clojure-test-mode
+    cider
+    circe
     cperl-mode
-    deft
+    dash
+    diminish
     ebib
     edit-server
+    evil
+    evil-leader
     expand-region
+    f
+    flycheck
+    flycheck-haskell
     fwb-cmds
     geiser
     gist
     go-mode
-    google-contacts
     haskell-mode
+    helm
+    hi2
+    idris-mode
     js2-mode
     less-css-mode
     logito
     lua-mode
     magit
     markdown-mode
-    melpa
     nginx-mode
-    nrepl
-    oauth2
-    org
-    org-magit
+    org-plus-contrib
     paredit
     pcache
     pkgbuild-mode
+    projectile
     puppet-mode
     quack
     rainbow-mode
     restclient
+    s
     scala-mode
+    smartparens
     smex
+    solarized-theme
     switch-window
     tuareg
     undo-tree
     virtualenv
     volatile-highlights
+    wrap-region
     writegood-mode
     ws-trim
     yaml-mode
