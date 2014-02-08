@@ -290,6 +290,18 @@ re-downloaded in order to locate PACKAGE."
       eshell-cmpl-cycle-completions nil
       eshell-cmpl-ignore-case t)
 
+;; per-project Eshell
+(defun projectile-eshell ()
+  (interactive)
+  (let ((eshell-buffer-name
+         (concat "*eshell"
+                 (if (projectile-project-name)
+                     (concat "-" (projectile-project-name))
+                   "")
+                 "*")))
+    (eshell)))
+(bind-key "C-x m" 'projectile-eshell)
+
 ;; Eshell Hooks
 (defun eshell-settings ()
   (progn
@@ -308,8 +320,8 @@ re-downloaded in order to locate PACKAGE."
 
 ;;;; expand-region
 (require-package 'expand-region)
-(after "expand-region-autoloads"
-  (bind-key "C-=" 'er/expand-region))
+(require 'expand-region)
+(bind-key "C-=" 'er/expand-region)
 
 
 ;;;; flycheck
@@ -636,7 +648,6 @@ See URL `https://github.com/bitc/hdevtools'."
 (bind-key "C-x \\" 'align-regexp)
 (bind-key "C-+" 'text-scale-increase)
 (bind-key "C--" 'text-scale-decrease)
-(bind-key "C-x m" 'eshell)
 (bind-key "C-h A" 'apropos)
 (bind-key "M-/" 'hippie-expand)
 (bind-key "C-x C-b" 'ibuffer)
