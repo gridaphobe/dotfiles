@@ -444,6 +444,10 @@ See URL `https://github.com/bitc/hdevtools'."
 (add-hook 'haskell-mode-hook 'flycheck-mode)
 
 
+;;;; helm
+(require-package 'helm)
+(require 'helm-rdio)
+
 ;;;; ido-mode
 (ido-mode t)
 (ido-everywhere t)
