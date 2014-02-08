@@ -124,7 +124,18 @@
                                     "eseidel@ucsd.edu")
       mu4e-use-fancy-chars t
       mu4e-headers-skip-duplicates t
-      ;; mu4e-headers-include-related t
+      mu4e-headers-include-related nil
+      mu4e-html2text-command 'html2text
+      ;; mu4e-html2text-command "w3m -T text/html"
+      ;; mu4e-html2text-command "textutil -stdin -format html -convert txt -stdout"
+      ;; mu4e-html2text-command "pandoc -f html -t markdown"
       )
+(defun html2text ()
+  "Replacement for standard html2text using shr."
+  (interactive)
+  (let ((dom (libxml-parse-html-region (point-min) (point-max))))
+    (erase-buffer)
+    (shr-insert-document dom)
+    (goto-char (point-min))))
 
 (provide 'my-mail)

@@ -30,8 +30,10 @@
     edit-server
     evil
     evil-leader
+    surround
     expand-region
     f
+    flx-ido
     flycheck
     flycheck-haskell
     fwb-cmds
@@ -40,7 +42,10 @@
     go-mode
     haskell-mode
     helm
+    helm-projectile
     hi2
+    ido-ubiquitous
+    ido-vertical-mode
     idris-mode
     js2-mode
     less-css-mode
@@ -60,6 +65,7 @@
     restclient
     s
     scala-mode
+    shm
     smartparens
     smex
     solarized-theme

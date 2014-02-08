@@ -121,15 +121,13 @@
 (setq tramp-default-method "ssh")
 
 ;; ido-mode
-(ido-mode t)
-(setq ido-enable-prefix nil
-      ido-enable-flex-matching t
-      ido-create-new-buffer 'always
-      ido-use-filename-at-point 'guess
-      ido-use-virtual-buffers t
-      ido-max-prospects 10
-      ido-save-directory-list-file (concat emacs-savefile-dir "ido.hist")
-      ido-default-file-method 'selected-window)
+(require 'flx-ido)
+(ido-mode +1)
+(ido-everywhere +1)
+(flx-ido-mode +1)
+(ido-ubiquitous-mode +1)
+(ido-vertical-mode +1)
+
 
 ;; auto-completion in minibuffer
 (icomplete-mode +1)
@@ -270,5 +268,30 @@ Behaves just like `zap-to-char' except the final CHAR is not killed."
 
 (wrap-region-global-mode +1)
 (diminish 'wrap-region-mode)
+
+(require 'evil)
+(evil-mode 1)
+(define-key evil-motion-state-map (kbd "SPC") #'evil-ace-jump-char-mode)
+(define-key evil-motion-state-map (kbd "C-SPC") #'evil-ace-jump-word-mode)
+
+(define-key evil-operator-state-map (kbd "SPC") #'evil-ace-jump-char-mode)      ; similar to f
+(define-key evil-operator-state-map (kbd "C-SPC") #'evil-ace-jump-char-to-mode) ; similar to t
+(define-key evil-operator-state-map (kbd "M-SPC") #'evil-ace-jump-word-mode)
+
+;; different jumps for different visual modes
+(defadvice evil-visual-line (before spc-for-line-jump activate)
+  (define-key evil-motion-state-map (kbd "SPC") #'evil-ace-jump-line-mode))
+
+(defadvice evil-visual-char (before spc-for-char-jump activate)
+  (define-key evil-motion-state-map (kbd "SPC") #'evil-ace-jump-char-mode))
+
+(defadvice evil-visual-block (before spc-for-char-jump activate)
+  (define-key evil-motion-state-map (kbd "SPC") #'evil-ace-jump-char-mode))
+
+(defadvice evil-exit-visual-state (after spc-for-char-jump activate)
+  (define-key evil-motion-state-map (kbd "SPC") #'evil-ace-jump-char-mode))
+
+(require 'surround)
+(global-surround-mode +1)
 
 (provide 'my-editing)

@@ -44,7 +44,7 @@
 
 (require 'hi2)
 (setq hi2-show-indentations nil)
-(add-to-list 'load-path "~/Source/structured-haskell-mode/elisp")
+;;(add-to-list 'load-path "~/Source/structured-haskell-mode/elisp")
 (require 'shm)
 
 (defun my-haskell-mode-defaults ()
@@ -62,9 +62,11 @@
          ;; responses, no buffer-file-name...
          (stringp (buffer-file-name))
          (not (string-equal ".spec" (file-name-extension (buffer-file-name) t))))
-    (define-haskell-checkers)
+    (flycheck-haskell-setup)
+    (setq flycheck-checker 'haskell-hdevtools)
     (flycheck-mode +1))
-  (haskell-style))
+;  (haskell-style)
+  )
 
 ;; Useful to have these keybindings for .cabal files, too.
 (defun haskell-cabal-hook ()
@@ -83,21 +85,28 @@
                   (concat cabal-root ".cabal-sandbox/*.conf.d"))))
     (if pkg-db (car pkg-db))))
 
-(defvar flycheck-haskell-options
-  '("-Wall" "-isrc" "-fno-warn-missing-signatures"))
+;; (defvar flycheck-haskell-options
+;;   '("-Wall" "-isrc" "-fno-warn-missing-signatures"))
 
 (require 'flycheck)
+(require 'flycheck-haskell)
 
 (flycheck-define-checker haskell-hdevtools
   "A Haskell syntax and type checker using hdevtools.
 
 See URL `https://github.com/bitc/hdevtools'."
   :command
-  ("hdevtools" "check"
-   (eval (apply #'append (mapcar (lambda (o) (list "-g" o)) flycheck-haskell-options)))
-   (eval (let ((pkg-db (my/find-cabal-sandbox-pkg-db)))
-           (if pkg-db
-               (list "-g" "-no-user-package-db" "-g" "-package-db" "-g" pkg-db))))
+  ("hdevtools" "check" "-g" "-Wall"
+   (eval (when flycheck-ghc-no-user-package-database
+           (list "-g" "-no-user-package-db")))
+   (eval (apply #'append (mapcar (lambda (db) (list "-g" "-package-db" "-g" db))
+                                 flycheck-ghc-package-databases)))
+   (eval (concat
+          "-g" "-i" "-g"
+          (flycheck-module-root-directory
+           (flycheck-find-in-buffer flycheck-haskell-module-re))))
+   (eval (apply #'append (mapcar (lambda (db) (list "-g" "-i" "-g" db))
+                                 flycheck-ghc-search-path)))
    source-inplace)
   :error-patterns
   ((warning line-start (file-name) ":" line ":" column ":"
@@ -119,38 +128,9 @@ See URL `https://github.com/bitc/hdevtools'."
   :modes haskell-mode
   :next-checkers ((warnings-only . haskell-hlint)))
 
-(flycheck-define-checker haskell-ghc
-  "A Haskell syntax and type checker using ghc.
-
-See URL `http://www.haskell.org/ghc/'."
-   :command ("ghc" (eval flycheck-haskell-options)
-             (eval (let ((pkg-db (my/find-cabal-sandbox-pkg-db)))
-                     (if pkg-db (list "-no-user-package-db" "-package-db" pkg-db))))
-             source-inplace)
-   :error-patterns
-   ((warning line-start (file-name) ":" line ":" column ":"
-             (or " " "\n    ") "Warning:" (optional "\n")
-             (one-or-more " ")
-             (message (one-or-more not-newline)
-                      (zero-or-more "\n"
-                                    (one-or-more " ")
-                                    (one-or-more not-newline)))
-             line-end)
-    (error line-start (file-name) ":" line ":" column ":"
-           (or (message (one-or-more not-newline))
-               (and "\n" (one-or-more " ")
-                    (message (one-or-more not-newline)
-                             (zero-or-more "\n"
-                                           (one-or-more " ")
-                                           (one-or-more not-newline)))))
-           line-end))
-   :modes haskell-mode
-   :next-checkers ((warnings-only . haskell-hlint)))
-
 (defun killall-hdevtools ()
   (interactive)
   (shell-command "killall hdevtools")
-  ;; (flyparse-buffer)
   (flycheck-buffer))
 (define-key haskell-mode-map (kbd "C-c C") 'killall-hdevtools)
 

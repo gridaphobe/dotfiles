@@ -141,6 +141,9 @@ and so on."
   (intern (concat (symbol-name cmd) "-repeat")))
 
 ;; utf-8 stuff
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-selection-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
 (set-language-environment "UTF-8")
 
@@ -214,9 +217,18 @@ and so on."
 (defadvice magit-mode-quit-window (after magit-restore-screen activate)
   (jump-to-register :magit-fullscreen))
 
+(require 'helm-config)
+
 (require 'projectile)
 (projectile-global-mode)
+(setq projectile-remember-window-configs t)
+(require 'helm-projectile)
 
-(require 'helm-config)
+
+
+(setq debug-on-error nil
+      gc-cons-threshold
+)
+
 
 (provide 'my-misc)
