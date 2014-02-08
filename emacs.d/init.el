@@ -343,6 +343,7 @@ re-downloaded in order to locate PACKAGE."
 ;;;; god-mode
 (require-package 'god-mode)
 (after "god-mode-autoloads"
+  ;; default to god-mode in new buffers
   (god-mode)
   (defun god-mode-update-cursor ()
     (setq cursor-type (if (or god-local-mode buffer-read-only)
@@ -498,9 +499,18 @@ See URL `https://github.com/bitc/hdevtools'."
 
 ;;;; paredit
 (require-package 'paredit)
-(add-hook 'prog-mode-hook 'enable-paredit-mode)
-(add-hook 'haskell-mode-hook 'enable-paredit-mode)
+(after "paredit-autoloads"
+  ;; Enable `paredit-mode' in the minibuffer, during `eval-expression'.
+  (defun conditionally-enable-paredit-mode ()
+    (if (eq this-command 'eval-expression)
+        (paredit-mode 1)))
+
+  (add-hook 'minibuffer-setup-hook 'conditionally-enable-paredit-mode)
+  (add-hook 'prog-mode-hook 'enable-paredit-mode)
+  (add-hook 'haskell-mode-hook 'enable-paredit-mode))
+
 (show-paren-mode)
+
 
 ;;;; prog-mode
 (defun my-local-comment-auto-fill ()
@@ -576,7 +586,9 @@ See URL `https://github.com/bitc/hdevtools'."
 ;;;; smart-mode-line
 (require-package 'smart-mode-line)
 (after "smart-mode-line-autoloads"
+  (setq sml/theme 'respectful)
   (sml/setup))
+
 
 ;;;; smex
 (require-package 'smex)
