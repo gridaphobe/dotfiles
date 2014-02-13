@@ -533,9 +533,9 @@ See URL `https://github.com/bitc/hdevtools'."
 ;;   (add-hook 'haskell-mode-hook 'enable-paredit-mode))
 (electric-indent-mode t)
 (electric-layout-mode t)
-(electric-pair-mode t)
+;;(electric-pair-mode t)
 
-(show-paren-mode t)
+;;(show-paren-mode t)
 
 
 ;;;; prog-mode
@@ -624,6 +624,19 @@ See URL `https://github.com/bitc/hdevtools'."
   (sml/setup))
 
 
+;;;; smartparens
+(require-package 'smartparens)
+(require 'smartparens-config)
+(setq sp-base-key-bindings 'paredit)
+(setq sp-autoskip-closing-pair 'always)
+(setq sp-hybrid-kill-entire-symbol nil)
+(sp-use-paredit-bindings)
+(show-smartparens-global-mode t)
+(smartparens-global-strict-mode t)
+(after 'diminish
+  (diminish 'smartparens-mode))
+(bind-key "C-k" 'sp-kill-hybrid-sexp)
+
 ;;;; smex
 (require-package 'smex)
 (after "smex-autoloads"
@@ -651,6 +664,8 @@ See URL `https://github.com/bitc/hdevtools'."
 
 ;;;; volatile-highlights
 (require-package 'volatile-highlights)
+;; HACK: there's nothing in "volatile-highlights-autoloads.el" so
+;; can't use the standard `after' macro
 (require 'volatile-highlights)
 (volatile-highlights-mode t)
 (diminish 'volatile-highlights-mode)
