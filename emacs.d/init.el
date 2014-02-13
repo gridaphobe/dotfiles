@@ -383,7 +383,27 @@ re-downloaded in order to locate PACKAGE."
   (bind-key "C-c C-i" 'haskell-process-do-info   haskell-mode-map)
   (bind-key "SPC" 'haskell-mode-contextual-space haskell-mode-map)
   (setq haskell-process-type 'cabal-repl
-        haskell-process-log t))
+        haskell-process-log t)
+
+  (defun my/haskell-sp-forward-slurp-sexp (&optional ARG)
+    "For some reason `sp-forward-slurp-sexp' in `haskell-mode'
+  inserts an extra space at the beginning of the line..."
+    (interactive)
+    (sp-forward-slurp-sexp ARG)
+    (save-excursion
+      (beginning-of-line)
+      (delete-forward-char 1)))
+  (bind-key "C-)" 'my/haskell-sp-forward-slurp-sexp haskell-mode-map)
+
+  (defun my/haskell-sp-forward-barf-sexp (&optional ARG)
+    "For some reason `sp-forward-barf-sexp' in `haskell-mode'
+  inserts an extra space at the beginning of the line..."
+    (interactive)
+    (sp-forward-barf-sexp ARG)
+    (save-excursion
+      (beginning-of-line)
+      (delete-forward-char 1)))
+  (bind-key "C-}" 'my/haskell-sp-forward-barf-sexp haskell-mode-map))
 
 (require-package 'hi2)
 (after 'hi2
@@ -627,15 +647,17 @@ See URL `https://github.com/bitc/hdevtools'."
 ;;;; smartparens
 (require-package 'smartparens)
 (require 'smartparens-config)
-(setq sp-base-key-bindings 'paredit)
-(setq sp-autoskip-closing-pair 'always)
+(setq-default sp-autoskip-closing-pair 'always)
 (setq sp-hybrid-kill-entire-symbol nil)
-(sp-use-paredit-bindings)
 (show-smartparens-global-mode t)
 (smartparens-global-strict-mode t)
 (after 'diminish
   (diminish 'smartparens-mode))
+;; only using these keys for now since smartparens seems to override
+;; any buffer-local bindings
 (bind-key "C-k" 'sp-kill-hybrid-sexp)
+(bind-key "C-)" 'sp-forward-slurp-sexp)
+(bind-key "C-}" 'sp-forward-barf-sexp)
 
 ;;;; smex
 (require-package 'smex)
