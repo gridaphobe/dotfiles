@@ -1,7 +1,5 @@
 ;;; init.el --- Emacs' configuration entry point.
 
-(require 'cl)
-
 (defconst on-mac (eq system-type 'darwin)
   "Are we on a Mac?")
 
@@ -64,12 +62,14 @@ re-downloaded in order to locate PACKAGE."
 (require-package 'bind-key)
 (require 'bind-key)
 
+
 ;;;; diminish
 (require-package 'diminish)
 
 
 ;;;; misc
 (blink-cursor-mode -1)
+
 (setq ring-bell-function 'ignore)
 
 ;; nice scrolling
@@ -93,23 +93,6 @@ re-downloaded in order to locate PACKAGE."
 (setq whitespace-line-count 80
       whitespace-style '(face trailing tabs lines-tail indentation
                               space-after-tab space-before-tab))
-
-;; add the ability to copy and cut the current line, without marking it
-(defadvice kill-ring-save (before slick-copy activate compile)
-  "When called interactively with no active region, copy a single line instead."
-  (interactive
-   (if mark-active (list (region-beginning) (region-end))
-     (message "Copied line")
-     (list (line-beginning-position)
-           (line-beginning-position 2)))))
-
-(defadvice kill-region (before slick-kill activate compile)
-  "When called interactively with no active region, kill a single line instead."
-  (interactive
-   (if mark-active (list (region-beginning) (region-end))
-     (message "Killed line")
-     (list (line-beginning-position)
-           (line-beginning-position 2)))))
 
 ;; utf-8 stuff
 (set-terminal-coding-system 'utf-8)
@@ -161,6 +144,9 @@ re-downloaded in order to locate PACKAGE."
         try-complete-lisp-symbol-partially
         try-complete-lisp-symbol))
 
+;; try to complete at point if already indented
+(setq tab-always-indent 'complete)
+
 ;; Behave like vi's o command
 (defun open-next-line (arg)
   "Move to the next line and then opens a line.
@@ -190,13 +176,31 @@ re-downloaded in order to locate PACKAGE."
 (add-hook 'after-save-hook
           'executable-make-buffer-file-executable-if-script-p)
 
+;; kill old buffers
+(require 'midnight)
+(setq midnight-mode t)
+
 ;; saner regex syntax
 (require 're-builder)
 (setq reb-re-syntax 'string)
 
-;; subword-mode
+;; enable narrowing commands
+(put 'narrow-to-region 'disabled nil)
+(put 'narrow-to-page 'disabled nil)
+(put 'narrow-to-defun 'disabled nil)
+
+;; enabled change region case commands
+(put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
+
+;; enable erase-buffer command
+(put 'erase-buffer 'disabled nil)
+
+
+;;;; subword-mode
 (global-subword-mode t)
 (diminish 'subword-mode)
+
 
 ;;;; rainbow-mode
 (require-package 'rainbow-mode)
@@ -218,17 +222,6 @@ re-downloaded in order to locate PACKAGE."
   (defalias 'ack-same 'ack-and-a-half-same)
   (defalias 'ack-find-file 'ack-and-a-half-find-file)
   (defalias 'ack-find-file-same 'ack-and-a-half-find-file-same))
-
-
-;;;; auctex
-(require-package 'auctex)
-(require-package 'auctex-latexmk)
-(after 'latex
-  (setq-default TeX-PDF-mode t)
-  (add-hook 'LaTeX-mode-hook 'flyspell-mode)
-  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-  (setq reftex-plug-into-AUCTeX t))
 
 
 ;;;; compile
@@ -282,6 +275,12 @@ re-downloaded in order to locate PACKAGE."
 (bind-key "M-." 'find-function-at-point emacs-lisp-mode-map)
 (bind-key "TAB" 'lisp-complete-symbol read-expression-map)
 
+
+;;;; email
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/")
+(require 'notmuch)
+
+
 ;;;; eshell
 (require 'em-smart)
 (setq eshell-where-to-jump 'begin
@@ -327,6 +326,8 @@ re-downloaded in order to locate PACKAGE."
 ;;;; flycheck
 (require-package 'flycheck)
 (require-package 'flycheck-haskell)
+(after "flycheck-autoloads"
+  (global-flycheck-mode t))
 (after 'flycheck
   (setq flycheck-check-syntax-automatically '(mode-enabled save)))
 
@@ -345,13 +346,15 @@ re-downloaded in order to locate PACKAGE."
 (after "god-mode-autoloads"
   ;; default to god-mode in new buffers
   (god-mode)
-  (defun god-mode-update-cursor ()
-    (setq cursor-type (if (or god-local-mode buffer-read-only)
-                          'box
-                        'bar)))
 
-  (add-hook 'god-mode-enabled-hook 'god-mode-update-cursor)
-  (add-hook 'god-mode-disabled-hook 'god-mode-update-cursor)
+  (defun set-cursor-according-to-mode ()
+    "change cursor color and type according to some minor modes."
+    (cond
+     (god-local-mode
+      (setq cursor-type 'box))
+     (t
+      (setq cursor-type 'bar))))
+  (add-hook 'post-command-hook 'set-cursor-according-to-mode)
 
   (defun god-toggle-on-overwrite ()
     "Toggle god-mode on overwrite-mode."
@@ -367,7 +370,7 @@ re-downloaded in order to locate PACKAGE."
   (add-to-list 'god-exempt-major-modes 'haskell-interactive-mode))
 
 (after 'god-mode
-  (diminish 'god-local-mode)
+  ;; (diminish 'god-local-mode)
   (bind-key "." 'repeat god-local-mode-map)
   (bind-key "i" 'god-local-mode god-local-mode-map))
 
@@ -448,6 +451,7 @@ See URL `https://github.com/bitc/hdevtools'."
 (require-package 'helm)
 (require 'helm-rdio)
 
+
 ;;;; ido-mode
 (ido-mode t)
 (ido-everywhere t)
@@ -484,6 +488,20 @@ See URL `https://github.com/bitc/hdevtools'."
         js2-indent-on-enter-key t
         js2-pretty-multiline-declarations t))
 
+
+;;;; latex
+(require-package 'auctex)
+(require-package 'auctex-latexmk)
+(after "auctex-autoloads"
+  (setq-default TeX-PDF-mode t)
+  (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (setq reftex-plug-into-AUCTeX t
+        TeX-auto-save t
+        TeX-parse-self t))
+
+
 ;;;; magit
 (require-package 'magit)
 (after "magit-autoloads"
@@ -499,21 +517,25 @@ See URL `https://github.com/bitc/hdevtools'."
 
 ;;;; org-mode
 (require-package 'org-plus-contrib)
-
+(require 'org)
+(setq org-src-fontify-natively t)
 
 ;;;; paredit
-(require-package 'paredit)
-(after "paredit-autoloads"
-  ;; Enable `paredit-mode' in the minibuffer, during `eval-expression'.
-  (defun conditionally-enable-paredit-mode ()
-    (if (eq this-command 'eval-expression)
-        (paredit-mode 1)))
+;; (require-package 'paredit)
+;; (after "paredit-autoloads"
+;;   ;; Enable `paredit-mode' in the minibuffer, during `eval-expression'.
+;;   (defun conditionally-enable-paredit-mode ()
+;;     (if (eq this-command 'eval-expression)
+;;         (paredit-mode 1)))
 
-  (add-hook 'minibuffer-setup-hook 'conditionally-enable-paredit-mode)
-  (add-hook 'prog-mode-hook 'enable-paredit-mode)
-  (add-hook 'haskell-mode-hook 'enable-paredit-mode))
+;;   (add-hook 'minibuffer-setup-hook 'conditionally-enable-paredit-mode)
+;;   (add-hook 'prog-mode-hook 'enable-paredit-mode)
+;;   (add-hook 'haskell-mode-hook 'enable-paredit-mode))
+(electric-indent-mode t)
+(electric-layout-mode t)
+(electric-pair-mode t)
 
-(show-paren-mode)
+(show-paren-mode t)
 
 
 ;;;; prog-mode
@@ -580,6 +602,13 @@ See URL `https://github.com/bitc/hdevtools'."
 (bind-key "C-c i" 'ido-goto-symbol)
 
 
+;;;; pretty symbols
+(global-prettify-symbols-mode t)
+(add-hook 'haskell-mode-hook
+          (lambda ()
+            (push '("\\" . ?λ) prettify-symbols-alist)))
+
+
 ;;;; projectile
 (require-package 'projectile)
 (after "projectile-autoloads"
@@ -591,6 +620,7 @@ See URL `https://github.com/bitc/hdevtools'."
 (require-package 'smart-mode-line)
 (after "smart-mode-line-autoloads"
   (setq sml/theme 'respectful)
+  ;; (push " Paredit" sml/hidden-modes)
   (sml/setup))
 
 
@@ -621,8 +651,27 @@ See URL `https://github.com/bitc/hdevtools'."
 
 ;;;; volatile-highlights
 (require-package 'volatile-highlights)
-(after "volatile-highlights"
-  (volatile-highlights-mode t))
+(require 'volatile-highlights)
+(volatile-highlights-mode t)
+(diminish 'volatile-highlights-mode)
+
+;; note - this should be after volatile-highlights is required
+;; add the ability to copy and cut the current line, without marking it
+(defadvice kill-ring-save (before slick-copy activate compile)
+  "When called interactively with no active region, copy a single line instead."
+  (interactive
+   (if mark-active (list (region-beginning) (region-end))
+     (message "Copied line")
+     (list (line-beginning-position)
+           (line-beginning-position 2)))))
+
+(defadvice kill-region (before slick-kill activate compile)
+  "When called interactively with no active region, kill a single line instead."
+  (interactive
+   (if mark-active (list (region-beginning) (region-end))
+     (message "Killed line")
+     (list (line-beginning-position)
+           (line-beginning-position 2)))))
 
 
 ;;;; whitespace
