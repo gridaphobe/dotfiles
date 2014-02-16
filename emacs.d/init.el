@@ -472,6 +472,69 @@ See URL `https://github.com/bitc/hdevtools'."
 (require 'helm-rdio)
 
 
+;;;; irc
+(defvar znc-server "")
+(defvar znc-port "")
+(defvar znc-tls nil)
+(defvar znc-user "")
+(defvar znc-pass "")
+(load "~/.emacs.d/private.el")
+(require-package 'circe)
+(after "circe-autoloads"
+  (setq circe-network-options `(("Freenode"
+                                 :host ,znc-server
+                                 :port ,znc-port
+                                 :tls  ,znc-tls
+                                 :user ,znc-user
+                                 :pass ,znc-pass
+                                 :nick ,znc-user))
+        circe-reduce-lurker-spam t
+        circe-format-server-topic "*** Topic change by {origin}: {topic-diff}"
+        lui-flyspell-p t
+        lui-flyspell-alist '((".*" "american"))
+        lui-time-stamp-position 'right-margin
+        lui-time-stamp-format "%H:%M"
+        lui-fill-type nil
+        tracking-ignored-buffers '(("#emacs" circe-highlight-nick-face)
+                                   ("#haskell" circe-highlight-nick-face))
+        circe-format-self-say "<{nick}> {body}")
+  (require 'lui-autopaste)
+  (add-hook 'circe-channel-mode-hook 'enable-lui-autopaste)
+  (add-hook 'circe-chat-mode-hook 'my/circe-prompt)
+  (defun my/circe-prompt ()
+    (lui-set-prompt
+     (concat (propertize (concat (buffer-name) ">")
+                         'face 'circe-prompt-face)
+             " ")))
+  (require 'lui-logging)
+  (add-hook 'circe-channel-mode-hook 'enable-lui-logging)
+  (add-hook 'lui-mode-hook 'my/lui-setup)
+  (defun my/lui-setup ()
+    (setq
+     fringes-outside-margins t
+     right-margin-width 5)
+    (turn-on-visual-line-mode))
+  (require 'circe-color-nicks)
+  (enable-circe-color-nicks)
+  (setq circe-color-nicks-everywhere t)
+
+  ;; make channel-join messages display in the right buffer..
+  (defun my/circe-message-option-chanserv (nick user host command args)
+    (when (and (string= "ChanServ" nick)
+               (string-match "^\\[#.+?\\]" (cadr args)))
+      '((dont-display . t))))
+  (add-hook 'circe-message-option-functions 'my/circe-message-option-chanserv)
+
+  (defun my/circe-chanserv-message-handler (nick user host command args)
+    (when (and (string= "ChanServ" nick)
+               (string-match "^\\[\\(#.+?\\)\\]" (cadr args)))
+      (let* ((channel (match-string 1 (cadr args)))
+             (buffer (circe-server-get-chat-buffer channel t)))
+        (let ((circe-server-last-active-buffer buffer))
+          (circe-display-NOTICE nick user host command args)))))
+  (circe-add-message-handler "NOTICE" 'my/circe-chanserv-message-handler))
+
+
 ;;;; ido-mode
 (ido-mode t)
 (ido-everywhere t)
@@ -653,11 +716,18 @@ See URL `https://github.com/bitc/hdevtools'."
 (smartparens-global-strict-mode t)
 (after 'diminish
   (diminish 'smartparens-mode))
+
+(defun conditionally-enable-smartparens-strict-mode ()
+  (if (eq this-command 'eval-expression)
+      (smartparens-strict-mode t)))
+(add-hook 'minibuffer-setup-hook 'conditionally-enable-smartparens-strict-mode)
+
 ;; only using these keys for now since smartparens seems to override
 ;; any buffer-local bindings
 (bind-key "C-k" 'sp-kill-hybrid-sexp)
 (bind-key "C-)" 'sp-forward-slurp-sexp)
 (bind-key "C-}" 'sp-forward-barf-sexp)
+
 
 ;;;; smex
 (require-package 'smex)
