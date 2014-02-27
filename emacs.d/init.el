@@ -131,6 +131,14 @@ re-downloaded in order to locate PACKAGE."
 ;; revert buffers automatically when underlying files are changed externally
 (global-auto-revert-mode t)
 
+;; auto-save when switching buffers
+(defadvice switch-to-buffer (before save-buffer-now activate)
+  (when buffer-file-name (save-buffer)))
+(defadvice other-window (before other-window-now activate)
+  (when buffer-file-name (save-buffer)))
+(defadvice other-frame (before other-frame-now activate)
+  (when buffer-file-name (save-buffer)))
+
 ;; hippie expand is dabbrev expand on steroids
 (setq hippie-expand-try-functions-list
       '(try-expand-dabbrev
@@ -224,6 +232,12 @@ re-downloaded in order to locate PACKAGE."
   (defalias 'ack-find-file-same 'ack-and-a-half-find-file-same))
 
 
+;;;; auto complete
+(require-package 'company)
+(after "company-autoloads"
+  (global-company-mode t))
+
+
 ;;;; compile
 (setq compilation-scroll-output 'first-error
       compilation-window-height 10)
@@ -256,7 +270,7 @@ re-downloaded in order to locate PACKAGE."
   (setq imenu-prev-index-position-function nil)
   (add-to-list 'imenu-generic-expression '(nil "^;;;; \\(.+\\)$" 1) t))
 
-(defun my-remove-elc-on-save ()
+(defun my/remove-elc-on-save ()
   "If you're saving an elisp file, likely the .elc is no longer valid."
   (make-local-variable 'after-save-hook)
   (add-hook 'after-save-hook
@@ -267,7 +281,7 @@ re-downloaded in order to locate PACKAGE."
 (add-hook 'emacs-lisp-mode-hook 'imenu-elisp-sections)
 (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'emacs-lisp-mode-hook 'rainbow-mode)
-(add-hook 'emacs-lisp-mode-hook 'my-remove-elc-on-save)
+(add-hook 'emacs-lisp-mode-hook 'my/remove-elc-on-save)
 
 (after "eldoc"
   (diminish 'eldoc-mode))
@@ -459,7 +473,7 @@ See URL `https://github.com/bitc/hdevtools'."
 (add-to-list 'completion-ignored-extensions ".hdevtools.sock")
 
 ;; haskell-mode doesn't derive from prog-mode
-(add-hook 'haskell-mode-hook 'my-prog-mode-defaults)
+(add-hook 'haskell-mode-hook 'my/prog-mode-defaults)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 (add-hook 'haskell-mode-hook 'turn-on-hi2)
@@ -492,6 +506,7 @@ See URL `https://github.com/bitc/hdevtools'."
         circe-format-server-topic "*** Topic change by {origin}: {topic-diff}"
         lui-flyspell-p t
         lui-flyspell-alist '((".*" "american"))
+        lui-max-buffer-size (* 10 1024)
         lui-time-stamp-position 'right-margin
         lui-time-stamp-format "%H:%M"
         lui-fill-type nil
@@ -580,9 +595,11 @@ See URL `https://github.com/bitc/hdevtools'."
   (add-hook 'LaTeX-mode-hook 'flyspell-mode)
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (add-hook 'doc-view-mode-hook 'auto-revert-mode)
   (setq reftex-plug-into-AUCTeX t
         TeX-auto-save t
-        TeX-parse-self t))
+        TeX-parse-self t
+        TeX-save-query nil))
 
 
 ;;;; magit
@@ -603,6 +620,7 @@ See URL `https://github.com/bitc/hdevtools'."
 (require 'org)
 (setq org-src-fontify-natively t)
 
+
 ;;;; paredit
 ;; (require-package 'paredit)
 ;; (after "paredit-autoloads"
@@ -622,10 +640,10 @@ See URL `https://github.com/bitc/hdevtools'."
 
 
 ;;;; prog-mode
-(defun my-local-comment-auto-fill ()
+(defun my/local-comment-auto-fill ()
   (set (make-local-variable 'comment-auto-fill-only-comments) t))
 
-(defun my-add-watchwords ()
+(defun my/add-watchwords ()
   (font-lock-add-keywords
    nil '(("\\<\\(FIXME\\|TODO\\|FIX\\|HACK\\|REFACTOR\\)"
           1 font-lock-warning-face t))))
@@ -634,17 +652,17 @@ See URL `https://github.com/bitc/hdevtools'."
 (require 'which-func)
 (which-function-mode 1)
 
-(defun my-prog-mode-defaults ()
+(defun my/prog-mode-defaults ()
   "Default coding hook, useful with any programming language."
-  (my-local-comment-auto-fill)
+  (my/local-comment-auto-fill)
   (whitespace-mode +1)
   (abbrev-mode +1)
-  (my-add-watchwords))
+  (my/add-watchwords))
 
 (after "abbrev"
   (diminish 'abbrev-mode))
 
-(add-hook 'prog-mode-hook 'my-prog-mode-defaults)
+(add-hook 'prog-mode-hook 'my/prog-mode-defaults)
 
 (defun ido-goto-symbol (&optional a-symbol)
   "Will update the imenu index and then use ido to select a symbol to navigate to"
@@ -713,14 +731,18 @@ See URL `https://github.com/bitc/hdevtools'."
 (setq-default sp-autoskip-closing-pair 'always)
 (setq sp-hybrid-kill-entire-symbol nil)
 (show-smartparens-global-mode t)
-(smartparens-global-strict-mode t)
+(smartparens-global-mode t)
+
+(add-hook 'emacs-lisp-mode-hook 'turn-on-smartparens-strict-mode)
+(add-hook 'lisp-mode-hook       'turn-on-smartparens-strict-mode)
+
 (after 'diminish
   (diminish 'smartparens-mode))
 
-(defun conditionally-enable-smartparens-strict-mode ()
+(defun conditionally-enable-smartparens-mode ()
   (if (eq this-command 'eval-expression)
-      (smartparens-strict-mode t)))
-(add-hook 'minibuffer-setup-hook 'conditionally-enable-smartparens-strict-mode)
+      (smartparens-mode t)))
+(add-hook 'minibuffer-setup-hook 'conditionally-enable-smartparens-mode)
 
 ;; only using these keys for now since smartparens seems to override
 ;; any buffer-local bindings
@@ -743,6 +765,12 @@ See URL `https://github.com/bitc/hdevtools'."
 
 ;;;; switch-window
 (require-package 'switch-window)
+(bind-key "C-x o"   'switch-window)
+(bind-key "C-x C-o" 'switch-window)
+
+;;;; tramp
+(require 'tramp)
+(setq tramp-default-method "ssh")
 
 
 ;;;; undo-tree
