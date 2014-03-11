@@ -319,16 +319,11 @@ re-downloaded in order to locate PACKAGE."
       '(nnimap "gmail"
         (nnimap-stream shell)
         (nnimap-shell-program "/usr/local/libexec/dovecot/imap")
-      ;;   (nnimap-address "imap.gmail.com")
-      ;;   (nnimap-server-port 993)
-      ;;   (nnimap-stream ssl)
         (nnir-search-method imap)))
 
 (spam-initialize)
 
 (setq message-send-mail-function 'smtpmail-send-it
-      ;smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
-      ;smtpmail-auth-credentials '(("smtp.gmail.com" 587 "gridaphobe@gmail.com" nil))
       smtpmail-default-smtp-server "smtp.gmail.com"
       smtpmail-smtp-server "smtp.gmail.com"
       smtpmail-smtp-service 587
@@ -969,14 +964,6 @@ See URL `https://github.com/bitc/hdevtools'."
   (diminish 'whitespace-mode))
 
 
-;;;; wrap-region
-;;(require-package 'wrap-region)
-;;(after "wrap-region-autoloads"
-;;  (wrap-region-global-mode t))
-;;(after 'wrap-region
-;;  (diminish 'wrap-region-mode))
-
-
 ;;;; ws-butler
 ;; (require-package 'ws-butler)
 ;; (after "ws-butler-autoloads"
@@ -1031,9 +1018,9 @@ See URL `https://github.com/bitc/hdevtools'."
 
   (set-fontset-font "fontset-default"
                     'unicode
-                    '("DejaVu Sans Mono" . "iso10646-1"))
+                    '("Menlo" . "iso10646-1"))
   (set-face-attribute 'default nil
-                      :family "DejaVu Sans Mono"
+                      :family "Menlo"
                       :slant  'normal
                       :weight 'normal
                       :width  'normal

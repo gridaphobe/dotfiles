@@ -1,0 +1,374 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# Synchronize a local dovecot to Gmail using mbsync, and watch Gmail's
+# "All Mail" folder using IDLE, resynchronizing when it changes, or
+# every 5 minutes, whichever comes first.
+
+# This code was originally based on
+# http://www.cocoaforge.com/viewtopic.php?f=45&t=20355 but has since
+# been almost completely rewritten.
+# http://yuji.wordpress.com/2011/06/22/python-imaplib-imap-example-with-gmail/
+# was also very helpful.
+#
+# It will exit with an error occasionally due to dropped IMAP
+# connections, so you should do something to restart it when that
+# happens.
+
+import imaplib2
+import os
+import subprocess
+import email
+import re
+import sys
+import traceback
+from threading import *
+
+#
+# Constants you may want to tune for your installation
+#
+MAIL_ICON='http://zachkvet.files.wordpress.com/2011/04/email-icon.png'
+
+IMAP_USERNAME = "gridaphobe@gmail.com"
+
+# It will try your OSX keychain if you leave this as None
+IMAP_PASSWORD = None
+
+# Local mailboxes to scan for new unread messages
+LOCAL_NOTIFY_INCOMING = ['INBOX']
+
+LOCAL_FTS_MAILBOXES = ['INBOX', '[Gmail]/All Mail']
+
+# Dovecot's imap program
+PREAUTH_TUNNEL = '/usr/local/libexec/dovecot/imap'
+
+# How many characters of a message body should we present in notifications
+NOTIFY_MAX_BODY_LENGTH = 100
+
+# For how many messages at once shall we post growl notifications before we consolidate?
+NOTIFY_MAX_MSGS = 3
+
+# sync email every 15 minutes, regardless of IDLE
+SYNC_INTERVAL = 15*60
+
+# If any sync goes on without generating output for more than a minute, kill it
+SYNC_TIMEOUT = 60
+
+def notify(title='', subtitle='', message=''):
+    template = ' '.join(['terminal-notifier -title "{}" -subtitle "{}"',
+                         '-group org.gnu.Emacs -sender org.gnu.Emacs',
+                         '-execute "/usr/local/bin/emacsclient -n -e \'(gnus)\'" -message "{}"'])
+    cmd = template.format(title, subtitle, message)
+    print cmd
+    os.system(cmd)
+
+def log(*args, **kw):
+    if not (kw.get('always') or '--verbose' in sys.argv):
+        return
+    print >>sys.stderr, 'mbsync-idle:',
+    for a in args:
+        print >>sys.stderr, a,
+    print >>sys.stderr
+    sys.stderr.flush()
+
+#
+# Grab the password from the keychain to avoid exposing it as plain text
+#
+def osxkeychain(service, account = None, type="internet"):
+    acct = account and [ '-a', account ] or []
+    args = ['/usr/bin/security', 'find-'+type+'-password', '-gws', service] # + acct
+    print args
+    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+    lines = p.stdout.readlines()
+    return lines[0] # .split('"')[1]
+
+def text_part(msg):
+    maintype = msg.get_content_maintype()
+    if maintype == 'text':
+        return msg
+    elif maintype == 'multipart':
+        for part in msg.get_payload():
+            found = text_part(part)
+            if found:
+                return found
+
+def check_call_with_timeout(timeout, args, *popenargs, **kwargs):
+    """Like subprocess.check_call, but will kill the subprocess if it
+    generates no output on stdout during any timeout window.
+    """
+    p = subprocess.Popen(args, *popenargs, stdout=subprocess.PIPE, **kwargs)
+
+    def killp():
+        log(
+            'Command %s has not generated output in %d seconds; killing!'
+            % (args, timeout), always=True)
+        sys.stdout.flush()
+        p.kill()
+    
+    t = None
+    try:
+        # repeatedly try to read a character after launching a timer that
+        # will kill the process in timeout seconds.
+        while p.poll() == None:
+            t = Timer(timeout, killp)
+            t.start()
+            c = p.stdout.read(1)
+            t.cancel()
+            sys.stdout.write(c)
+            t = None
+    except:
+        # The timer is apparently associated with a non-daemon thread,
+        # which will keep the process alive if we don't cancel it.
+        if t: 
+            t.cancel()
+        raise
+
+    # Error reporting code lifted from subprocess.check_call
+    retcode = p.poll()
+    if retcode:
+        raise subprocess.CalledProcessError(retcode, args)
+    return 0
+
+def message_text(msg):
+    text = text_part(msg)
+    return text.get_payload(decode=True).replace('\r','') if text else ''
+
+def sender(msg):
+    return re.sub(r'([^<]+?)(\s+<[^@<>]+@[^@<>]+>)$', r'\1', msg['from'])
+
+class ReadOnlyRetryConnection(object):
+    def __init__(self, class_, *args, **kw):
+        self.__class = class_
+        self.__args = args
+        self.__kw = dict(kw)
+        self.__username = self.__kw.pop('username', None)
+        self.__password = self.__kw.pop('password', None)
+        self.__mailbox = self.__kw.pop('mailbox', None)
+        self.__connection = None
+
+        if '--verbose' in sys.argv:
+            self.__kw['debug'] = 9
+            self.__kw['debug_buf_lvl'] = 9
+
+    def examine(self, *args, **kw):
+        self.__command('examine', *args, **kw)
+        self.__mailbox = args[0]
+
+    def select(self, *args, **kw):
+        self.examine(*args, **kw)
+
+    def idle(self, *args, **kw):
+        
+        # idle needs special handling, because its errors don't demand an immediate retry
+        self.__prepare()
+        log('idle>', (args, kw))
+        self.__connection.idle(*args, **kw)
+        log('idle<')
+
+    def update_search_indices(self, mailboxes):
+        pass
+        # for m in mailboxes:
+        #     log('    ', m, '...')
+        #     self.examine(m)
+        #     response = self.__connection.search(None, 'BODY', '"THISwontBEfoundIbet"')
+        #     log('    ...done.')
+        #     if response[0] != 'OK':
+        #         log('Search index update failed with', response, always=True)
+        # log('...done.')
+
+    def __prepare(self):
+        if self.__connection is None:
+            self.__connection = self.__class(*self.__args, **self.__kw)
+        if self.__connection.state == 'NONAUTH':
+            self.__connection.login(self.__username, self.__password)
+        if self.__mailbox and self.__connection.state != 'SELECTED':
+            mailbox = self.__mailbox
+            # temporarily unset the mailbox to avoid an infinite recursion
+            self.__mailbox = None
+            try:
+                self.examine(mailbox)
+            finally:
+                self.__mailbox = mailbox
+
+    def __getattr__(self, attr):
+        self.__prepare()
+        a = getattr(self.__connection, attr)
+        if not isinstance(a, type(self.__getattr__)):
+            return a
+        return lambda *args, **kw: self.__command(attr, *args, **kw)
+
+    def __command(self, cmd, *args, **kw):
+        self.__prepare()
+        error_count = 0
+        
+        while True:
+            try:
+                self.__prepare()
+                return getattr(self.__connection, cmd)(*args, **kw)
+            except self.__connection.abort:
+                if error_count > 0:
+                    raise
+                error_count += 1 
+                # reset the connection
+                self.__exit__(None,None,None)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, ty, value, tb):
+        self.__connection = None
+
+def unseen_uids(connection, mailbox_name):
+    connection.examine(mailbox_name)
+    ok, messages = connection.uid('search', None, 'NOT', 'DELETED')
+    return set(int(x) for x in messages[0].split())
+
+def dns_up():
+    return os.name == 'nt' or os.path.exists('/etc/resolv.conf')
+
+class Contexts(object):
+    def __init__(self, *args):
+        self.__children = args
+        self.__entered = []
+
+    def __enter__(self):
+        for c in self.__children:
+            c.__enter__()
+            self.__entered.append(c)
+        return self
+
+    def __exit__(self, type, value, tb):
+        while self.__entered:
+            c = self.__entered.pop()
+            c.__exit__(type, value, tb)
+
+class ScopedLock(object):
+    def __init__(self, mutex):
+        self.mutex = mutex
+    def __enter__(self):
+        self.mutex.acquire()
+        return self
+    def __exit__(self, type, value, tb):
+        self.mutex.release()
+
+class Synchronizer(Contexts):
+    idle_thread = None
+    idle_error = None
+    need_sync = False
+    
+    def __init__(self):
+        self.cv = Condition()
+        self.local = ReadOnlyRetryConnection(imaplib2.IMAP4_stream, PREAUTH_TUNNEL)
+        self.remote = ReadOnlyRetryConnection(
+                    imaplib2.IMAP4_SSL, "imap.gmail.com",
+                    username=IMAP_USERNAME,
+                    password=IMAP_PASSWORD or osxkeychain('imap.gmail.com', IMAP_USERNAME),
+                    mailbox='[Gmail]/All Mail'
+                    )
+        super(Synchronizer,self).__init__(self.local, self.remote)
+        self.idle_thread = Thread(target=self.idle)
+        self.idle_thread.daemon = True
+
+    def run(self):
+        if dns_up():
+            self.idle_thread.start()
+
+            self.local_known_uids = dict(
+                ((mailbox, unseen_uids(self.local, mailbox)) 
+                 for mailbox in LOCAL_NOTIFY_INCOMING))
+
+        while dns_up():
+
+            with ScopedLock(self.cv):
+                while not self.need_sync and not self.idle_error:
+                    # Without a timeout, KeyboardInterrupt won't stop this script
+                    self.cv.wait(999)
+                if self.idle_error:
+                    raise self.idle_error[0], self.idle_error[1], self.idle_error[2]
+                self.need_sync = False
+            
+            log('Invoking mbsync...', always=True)
+            check_call_with_timeout(SYNC_TIMEOUT, ['/usr/local/bin/mbsync', '-a'])
+            log('...mbsync Done', always=True)
+
+            self.notify_user()
+
+            log('user notified; updating FTS index')
+            self.local.update_search_indices(LOCAL_FTS_MAILBOXES)
+
+    def idle(self):
+        idle_timeout = 0 # initial sync is immediate
+        error = None
+        while not error:
+            try:
+                self.remote.idle(idle_timeout)
+            except:
+                error = sys.exc_info()
+
+            with ScopedLock(self.cv):
+                if error:
+                    self.idle_error = error
+                else:
+                    self.need_sync = True
+                self.cv.notify_all()
+
+            idle_timeout = SYNC_INTERVAL
+        
+    def notify_user(self):
+        log('notifying user')
+        notifications = []
+        for mailbox, uids in self.local_known_uids.items():
+            log('checking', mailbox)
+            new_unseen = unseen_uids(self.local, mailbox) - uids
+            uids |= new_unseen
+            for uid in sorted(new_unseen):
+
+                # Don't fetch more than 10K
+                ok, ((open, rfc822), close) = self.local.uid('fetch', uid, '(BODY.PEEK[]<0.10240>)')
+
+                # Was the message likely truncated?
+                if open.split()[-1] == '{10240}':
+                    # if so, drop the last line to aid decoding
+                    rfc822 = rfc822.rsplit('/r/n',1)[0]
+
+                message = email.message_from_string(rfc822)
+
+                text = message_text(message)
+                description = text[:NOTIFY_MAX_BODY_LENGTH]
+                if description != text:
+                    description += '…'
+                notifications.append(
+                    (sender(message) + ': ' + message['subject'],
+                     description))
+
+        log('notifying %d message(s)' % len(notifications))
+        if len(notifications) > NOTIFY_MAX_MSGS:
+            notifications = [(
+                    '%d new messages' % len(notifications), 
+                    '\n'.join(title for title,description in notifications))]
+
+        for title,description in notifications:
+            notify(
+                title = 'GMail',
+                subtitle = title,
+                message = description,
+                )
+
+if __name__ == '__main__':
+    while dns_up():
+        try:
+            with Synchronizer() as s:
+                s.run()
+        except KeyboardInterrupt, e:
+            log('Keyboard interrupt; shutting down', always=True)
+            sys.exit(1)
+        except Exception, e:
+            if '--verbose' in sys.argv:
+                log(traceback.format_exc())
+            else:
+                log(e, always=True)
+            log('retrying...', always=True)
+
+    log('no network; exiting mbsync idle', always=True)
+            
+
