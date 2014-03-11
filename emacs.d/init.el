@@ -8,13 +8,17 @@
 (defvar emacs-vendor-dir (concat emacs-dir "vendor/")
   "This folder houses Emacs Lisp packages that are not yet available in
 ELPA (or MELPA).")
-(defvar emacs-savefile-dir (concat emacs-dir "savefile/")
+(defvar emacs-var-dir (concat emacs-dir "var/"))
+(defvar emacs-savefile-dir (concat emacs-var-dir "savefile/")
   "This folder stores all the automatically generated save/history-files.")
 
 ;; config changes made through the customize UI will be store here
 (setq custom-file (concat emacs-dir "custom.el"))
-(load custom-file)
+(when (file-exists-p custom-file)
+  (load custom-file))
 
+(unless (file-exists-p emacs-var-dir)
+  (make-directory emacs-var-dir))
 (unless (file-exists-p emacs-savefile-dir)
   (make-directory emacs-savefile-dir))
 
@@ -30,7 +34,7 @@ ELPA (or MELPA).")
 
 ;;;; package.el
 (require 'package)
-(setq package-user-dir "~/.emacs.d/elpa/")
+(setq package-user-dir (concat emacs-dir "elpa/"))
 (add-to-list 'package-archives
              '("org" . "http://orgmode.org/elpa/") t)
 (add-to-list 'package-archives
@@ -74,8 +78,8 @@ re-downloaded in order to locate PACKAGE."
 
 ;; nice scrolling
 (setq scroll-margin 0
-      scroll-conservatively 100000
-      scroll-preserve-screen-position t)
+      scroll-conservatively 10000
+      scroll-preserve-screen-position 1)
 
 ;; mode line settings
 (line-number-mode t)
@@ -104,7 +108,7 @@ re-downloaded in order to locate PACKAGE."
 (setq require-final-newline t)
 
 ;; (setq debug-on-error t)
-(setq gc-cons-threshold 20000000)
+(setq gc-cons-threshold (* 20 (expt 2 20))) ; gc after 20MB
 
 ;; Death to the tabs!  However, tabs historically indent to the next
 ;; 8-character offset; specifying anything else will cause *mass*
@@ -127,6 +131,8 @@ re-downloaded in order to locate PACKAGE."
       `((".*" . ,temporary-file-directory)))
 (setq auto-save-file-name-transforms
       `((".*" ,temporary-file-directory t)))
+(setq auto-save-list-file-prefix
+      temporary-file-directory)
 
 ;; revert buffers automatically when underlying files are changed externally
 (global-auto-revert-mode t)
@@ -155,6 +161,10 @@ re-downloaded in order to locate PACKAGE."
 ;; try to complete at point if already indented
 (setq tab-always-indent 'complete)
 
+;; Autoindent open-*-lines
+(defvar newline-and-indent t
+  "Modify the behavior of the open-*-line functions to cause them to autoindent.")
+
 ;; Behave like vi's o command
 (defun open-next-line (arg)
   "Move to the next line and then opens a line.
@@ -162,7 +172,7 @@ re-downloaded in order to locate PACKAGE."
   (interactive "p")
   (end-of-line)
   (open-line arg)
-  (next-line 1)
+  (forward-line 1)
   (when newline-and-indent
     (indent-according-to-mode)))
 
@@ -175,10 +185,6 @@ re-downloaded in order to locate PACKAGE."
   (open-line arg)
   (when newline-and-indent
     (indent-according-to-mode)))
-
-;; Autoindent open-*-lines
-(defvar newline-and-indent t
-  "Modify the behavior of the open-*-line functions to cause them to autoindent.")
 
 ;; make a shell script executable automatically on save
 (add-hook 'after-save-hook
@@ -194,15 +200,25 @@ re-downloaded in order to locate PACKAGE."
 
 ;; enable narrowing commands
 (put 'narrow-to-region 'disabled nil)
-(put 'narrow-to-page 'disabled nil)
-(put 'narrow-to-defun 'disabled nil)
+(put 'narrow-to-page   'disabled nil)
+(put 'narrow-to-defun  'disabled nil)
 
 ;; enabled change region case commands
-(put 'upcase-region 'disabled nil)
+(put 'upcase-region   'disabled nil)
 (put 'downcase-region 'disabled nil)
 
 ;; enable erase-buffer command
 (put 'erase-buffer 'disabled nil)
+
+;; remember things between sessions
+(recentf-mode t)
+(setq recentf-save-file (concat emacs-var-dir "recentf"))
+(savehist-mode t)
+(setq savehist-file (concat emacs-var-dir "savehist"))
+(setq-default save-place t)
+(require 'saveplace)
+(setq save-place-file (concat emacs-var-dir "saveplace"))
+
 
 
 ;;;; subword-mode
@@ -235,7 +251,8 @@ re-downloaded in order to locate PACKAGE."
 ;;;; auto complete
 (require-package 'company)
 (after "company-autoloads"
-  (global-company-mode t))
+  (global-company-mode t)
+  (diminish 'company-mode))
 
 
 ;;;; compile
@@ -287,12 +304,62 @@ re-downloaded in order to locate PACKAGE."
   (diminish 'eldoc-mode))
 
 (bind-key "M-." 'find-function-at-point emacs-lisp-mode-map)
-(bind-key "TAB" 'lisp-complete-symbol read-expression-map)
+(bind-key "TAB" 'completion-at-point read-expression-map)
 
 
 ;;;; email
-(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/")
-(require 'notmuch)
+;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/")
+;; (require 'notmuch)
+(require 'gnus)
+(require 'nnir)
+(require 'smtpmail)
+(require 'org-gnus)
+
+(setq gnus-select-method
+      '(nnimap "gmail"
+        (nnimap-stream shell)
+        (nnimap-shell-program "/usr/local/libexec/dovecot/imap")
+      ;;   (nnimap-address "imap.gmail.com")
+      ;;   (nnimap-server-port 993)
+      ;;   (nnimap-stream ssl)
+        (nnir-search-method imap)))
+
+(spam-initialize)
+
+(setq message-send-mail-function 'smtpmail-send-it
+      ;smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
+      ;smtpmail-auth-credentials '(("smtp.gmail.com" 587 "gridaphobe@gmail.com" nil))
+      smtpmail-default-smtp-server "smtp.gmail.com"
+      smtpmail-smtp-server "smtp.gmail.com"
+      smtpmail-smtp-service 587
+
+      user-full-name "Eric Seidel"
+      user-mail-address "gridaphobe@gmail.com"
+      message-alternative-emails (regexp-opt '("gridaphobe@gmail.com"
+                                               "eseidel@ucsd.edu"
+                                               "eseidel@cs.ucsd.edu"
+                                               "eseidel@eng.ucsd.edu"
+                                               "eric@eseidel.org"
+                                               "eseidel01@ccny.cuny.edu"
+                                               "eric9@mac.com"
+                                               "eric9@me.com"
+                                               "eric9@icloud.com"
+                                               "eric@fluidinfo.com"))
+
+      gnus-suppress-duplicates t
+      gnus-completing-read-function 'gnus-ido-completing-read
+      gnus-ignored-newsgroups nil ;;"^to\\.\\|^[0-9. ]+\\( \\|$\\)\\|^[\"]\"[#'()]"
+      gnus-spam-newsgroup-contents '((".*[Ss][Pp][Aa][Mm].*"
+                                      gnus-group-spam-classification-spam)
+                                     (".*" neither)))
+
+(defadvice gnus (around gnus-fullscreen activate)
+  (window-configuration-to-register :gnus-fullscreen)
+  ad-do-it
+  (delete-other-windows))
+
+(defadvice gnus-group-exit (after gnus-restore-screen activate)
+  (jump-to-register :gnus-fullscreen))
 
 
 ;;;; eshell
@@ -301,7 +368,8 @@ re-downloaded in order to locate PACKAGE."
       eshell-review-quick-commands nil
       eshell-smart-space-goes-to-end t
       eshell-cmpl-cycle-completions nil
-      eshell-cmpl-ignore-case t)
+      eshell-cmpl-ignore-case t
+      eshell-directory-name (concat emacs-var-dir "eshell/"))
 
 ;; per-project Eshell
 (defun projectile-eshell ()
@@ -337,6 +405,55 @@ re-downloaded in order to locate PACKAGE."
 (bind-key "C-=" 'er/expand-region)
 
 
+;;;; evil
+(require-package 'evil)
+(require 'evil)
+(evil-mode t)
+(require-package 'surround)
+(global-surround-mode t)
+
+(defun evil-undefine ()
+ (interactive)
+ (let (evil-mode-map-alist)
+   (call-interactively (key-binding (this-command-keys)))))
+
+(bind-key "C-e" 'evil-end-of-line    evil-normal-state-map)
+(bind-key "C-e" 'end-of-line         evil-insert-state-map)
+(bind-key "C-e" 'evil-end-of-line    evil-visual-state-map)
+(bind-key "C-e" 'evil-end-of-line    evil-motion-state-map)
+(bind-key "C-f" 'evil-forward-char   evil-normal-state-map)
+(bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
+(bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
+(bind-key "C-b" 'evil-backward-char  evil-normal-state-map)
+(bind-key "C-b" 'evil-backward-char  evil-insert-state-map)
+(bind-key "C-b" 'evil-backward-char  evil-visual-state-map)
+(bind-key "C-d" 'evil-delete-char    evil-normal-state-map)
+(bind-key "C-d" 'evil-delete-char    evil-insert-state-map)
+(bind-key "C-d" 'evil-delete-char    evil-visual-state-map)
+(bind-key "C-n" 'evil-next-line      evil-normal-state-map)
+(bind-key "C-n" 'evil-next-line      evil-insert-state-map)
+(bind-key "C-n" 'evil-next-line      evil-visual-state-map)
+(bind-key "C-p" 'evil-previous-line  evil-normal-state-map)
+(bind-key "C-p" 'evil-previous-line  evil-insert-state-map)
+(bind-key "C-p" 'evil-previous-line  evil-visual-state-map)
+(bind-key "C-w" 'evil-delete         evil-normal-state-map)
+(bind-key "C-w" 'evil-delete         evil-insert-state-map)
+(bind-key "C-w" 'evil-delete         evil-visual-state-map)
+(bind-key "C-y" 'yank                evil-normal-state-map)
+(bind-key "C-y" 'yank                evil-insert-state-map)
+(bind-key "C-y" 'yank                evil-visual-state-map)
+(bind-key "C-k" 'kill-line           evil-normal-state-map)
+(bind-key "C-k" 'kill-line           evil-insert-state-map)
+(bind-key "C-k" 'kill-line           evil-visual-state-map)
+(bind-key "C-r" 'isearch-backward    evil-normal-state-map)
+(bind-key "C-r" 'isearch-backward    evil-insert-state-map)
+(bind-key "C-r" 'isearch-backward    evil-visual-state-map)
+(bind-key "Q"   'call-last-kbd-macro evil-normal-state-map)
+(bind-key "Q"   'call-last-kbd-macro evil-visual-state-map)
+(bind-key "TAB" 'evil-undefine       evil-normal-state-map)
+(bind-key "RET" 'evil-undefine       evil-insert-state-map)
+
+
 ;;;; flycheck
 (require-package 'flycheck)
 (require-package 'flycheck-haskell)
@@ -356,37 +473,42 @@ re-downloaded in order to locate PACKAGE."
 
 
 ;;;; god-mode
-(require-package 'god-mode)
-(after "god-mode-autoloads"
-  ;; default to god-mode in new buffers
-  (god-mode)
+;;(require-package 'god-mode)
+;;(after "god-mode-autoloads"
+;;  ;; default to god-mode in new buffers
+;;  (god-mode)
+;;
+;;  (defun set-cursor-according-to-mode ()
+;;    "change cursor color and type according to some minor modes."
+;;    (cond
+;;     (god-local-mode
+;;      (setq cursor-type 'box))
+;;     (t
+;;      (setq cursor-type 'bar))))
+;;  (add-hook 'post-command-hook 'set-cursor-according-to-mode)
+;;
+;;  (defun god-toggle-on-overwrite ()
+;;    "Toggle god-mode on overwrite-mode."
+;;    (if (bound-and-true-p overwrite-mode)
+;;        (god-local-mode-pause)
+;;      (god-local-mode-resume)))
+;;
+;;  (add-hook 'overwrite-mode-hook 'god-toggle-on-overwrite)
+;;
 
-  (defun set-cursor-according-to-mode ()
-    "change cursor color and type according to some minor modes."
-    (cond
-     (god-local-mode
-      (setq cursor-type 'box))
-     (t
-      (setq cursor-type 'bar))))
-  (add-hook 'post-command-hook 'set-cursor-according-to-mode)
 
-  (defun god-toggle-on-overwrite ()
-    "Toggle god-mode on overwrite-mode."
-    (if (bound-and-true-p overwrite-mode)
-        (god-local-mode-pause)
-      (god-local-mode-resume)))
 
-  (add-hook 'overwrite-mode-hook 'god-toggle-on-overwrite)
 
-  (bind-key "<escape>" 'god-local-mode)
 
-  (add-to-list 'god-exempt-major-modes 'eshell-mode)
-  (add-to-list 'god-exempt-major-modes 'haskell-interactive-mode))
-
-(after 'god-mode
-  ;; (diminish 'god-local-mode)
-  (bind-key "." 'repeat god-local-mode-map)
-  (bind-key "i" 'god-local-mode god-local-mode-map))
+;;  (bind-key "<escape>" 'god-local-mode)
+;;
+;;  (add-to-list 'god-exempt-major-modes 'eshell-mode)
+;;  (add-to-list 'god-exempt-major-modes 'haskell-interactive-mode))
+;;
+;;(after 'god-mode
+;;  ;; (diminish 'god-local-mode)
+;;  (bind-key "." 'repeat god-local-mode-map)
+;;  (bind-key "i" 'god-local-mode god-local-mode-map))
 
 
 ;;;; haskell
@@ -397,6 +519,8 @@ re-downloaded in order to locate PACKAGE."
   (bind-key "C-c C-i" 'haskell-process-do-info   haskell-mode-map)
   (bind-key "SPC" 'haskell-mode-contextual-space haskell-mode-map)
   (setq haskell-process-type 'cabal-repl
+        haskell-process-args-cabal-repl '("--ghc-option=-ferror-spans"
+                                          "--with-ghc=ghci-ng")
         haskell-process-log t)
 
   (defun my/haskell-sp-forward-slurp-sexp (&optional ARG)
@@ -404,9 +528,10 @@ re-downloaded in order to locate PACKAGE."
   inserts an extra space at the beginning of the line..."
     (interactive)
     (sp-forward-slurp-sexp ARG)
-    (save-excursion
-      (beginning-of-line)
-      (delete-forward-char 1)))
+    ;; (save-excursion
+    ;;   (beginning-of-line)
+    ;;   (delete-forward-char 1))
+    )
   (bind-key "C-)" 'my/haskell-sp-forward-slurp-sexp haskell-mode-map)
 
   (defun my/haskell-sp-forward-barf-sexp (&optional ARG)
@@ -419,10 +544,16 @@ re-downloaded in order to locate PACKAGE."
       (delete-forward-char 1)))
   (bind-key "C-}" 'my/haskell-sp-forward-barf-sexp haskell-mode-map))
 
-(require-package 'hi2)
-(after 'hi2
-  (diminish 'hi2-mode)
-  (setq hi2-show-indentations nil))
+;; (require-package 'hi2)
+;; (after 'hi2
+;;   (diminish 'hi2-mode)
+;;   (add-hook 'haskell-mode-hook 'turn-on-hi2)
+;;   (setq hi2-show-indentations nil))
+
+(require-package 'shm)
+(after "shm-autoloads"
+  (add-hook 'haskell-mode-hook 'structured-haskell-mode)
+  (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode))
 
 (after 'flycheck-haskell
   (flycheck-define-checker haskell-hdevtools
@@ -435,7 +566,7 @@ See URL `https://github.com/bitc/hdevtools'."
            (list "-g" "-no-user-package-db")))
    (eval (apply #'append (mapcar (lambda (db) (list "-g" "-package-db" "-g" db))
                                  flycheck-ghc-package-databases)))
-   (eval (concat
+   (eval (list
           "-g" "-i" "-g"
           (flycheck-module-root-directory
            (flycheck-find-in-buffer flycheck-haskell-module-re))))
@@ -467,7 +598,8 @@ See URL `https://github.com/bitc/hdevtools'."
     (shell-command "killall hdevtools")
     (flycheck-buffer))
   (bind-key "C-c C" 'killall-hdevtools haskell-mode-map)
-  (setq flycheck-checker 'haskell-hdevtools))
+  ;(setq flycheck-checker 'haskell-hdevtools)
+  )
 
 (add-to-list 'completion-ignored-extensions ".hi")
 (add-to-list 'completion-ignored-extensions ".hdevtools.sock")
@@ -476,14 +608,13 @@ See URL `https://github.com/bitc/hdevtools'."
 (add-hook 'haskell-mode-hook 'my/prog-mode-defaults)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-(add-hook 'haskell-mode-hook 'turn-on-hi2)
 (add-hook 'haskell-mode-hook 'flycheck-haskell-setup)
 (add-hook 'haskell-mode-hook 'flycheck-mode)
 
 
 ;;;; helm
 (require-package 'helm)
-(require 'helm-rdio)
+;;(require 'helm-rdio)
 
 
 ;;;; irc
@@ -492,7 +623,7 @@ See URL `https://github.com/bitc/hdevtools'."
 (defvar znc-tls nil)
 (defvar znc-user "")
 (defvar znc-pass "")
-(load "~/.emacs.d/private.el")
+(load (concat emacs-dir "private.el"))
 (require-package 'circe)
 (after "circe-autoloads"
   (setq circe-network-options `(("Freenode"
@@ -551,6 +682,7 @@ See URL `https://github.com/bitc/hdevtools'."
 
 
 ;;;; ido-mode
+(require 'ido)
 (ido-mode t)
 (ido-everywhere t)
 (setq ido-enable-prefix nil
@@ -615,6 +747,12 @@ See URL `https://github.com/bitc/hdevtools'."
     (jump-to-register :magit-fullscreen)))
 
 
+;;;; markdown
+(require-package 'markdown-mode)
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . gfm-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . gfm-mode))
+
+
 ;;;; org-mode
 (require-package 'org-plus-contrib)
 (require 'org)
@@ -638,9 +776,9 @@ See URL `https://github.com/bitc/hdevtools'."
 
 ;;(show-paren-mode t)
 
-
 ;;;; prog-mode
 (defun my/local-comment-auto-fill ()
+  (auto-fill-mode t)
   (set (make-local-variable 'comment-auto-fill-only-comments) t))
 
 (defun my/add-watchwords ()
@@ -655,51 +793,65 @@ See URL `https://github.com/bitc/hdevtools'."
 (defun my/prog-mode-defaults ()
   "Default coding hook, useful with any programming language."
   (my/local-comment-auto-fill)
-  (whitespace-mode +1)
-  (abbrev-mode +1)
+  (whitespace-mode t)
+  (abbrev-mode t)
   (my/add-watchwords))
 
 (after "abbrev"
+  (setq abbrev-file-name (concat emacs-var-dir "abbrev"))
   (diminish 'abbrev-mode))
 
 (add-hook 'prog-mode-hook 'my/prog-mode-defaults)
 
-(defun ido-goto-symbol (&optional a-symbol)
-  "Will update the imenu index and then use ido to select a symbol to navigate to"
+(defun ido-goto-symbol (&optional symbol-list)
+  "Refresh imenu and jump to a place in the buffer using Ido."
   (interactive)
-  (imenu--make-index-alist)
-  (let ((name-and-pos '())
-        (symbol-names '()))
-    (flet ((addsymbols (symbol-list)
-                       (when (listp symbol-list)
-                         (dolist (symbol symbol-list)
-                           (let ((name nil) (position nil))
-                             (cond
-                              ((and (listp symbol) (imenu--subalist-p symbol))
-                               (addsymbols symbol))
-
-                              ((listp symbol)
-                               (setq name (car symbol))
-                               (setq position (cdr symbol)))
-
-                              ((stringp symbol)
-                               (setq name symbol)
-                               (setq position (get-text-property 1 'org-imenu-marker symbol))))
-
-                             (unless (or (null position) (null name))
-                               (add-to-list 'symbol-names name)
-                               (add-to-list 'name-and-pos (cons name position))))))))
-      (addsymbols imenu--index-alist))
-    (let* ((selected-symbol
-            (if (null a-symbol)
-                (ido-completing-read "Symbol? " symbol-names)
-              a-symbol))
-           (position (cdr (assoc selected-symbol name-and-pos))))
+  (unless (featurep 'imenu)
+    (require 'imenu nil t))
+  (cond
+   ((not symbol-list)
+    (let ((ido-mode ido-mode)
+          (ido-enable-flex-matching
+           (if (boundp 'ido-enable-flex-matching)
+               ido-enable-flex-matching t))
+          name-and-pos symbol-names position)
+      (unless ido-mode
+        (ido-mode 1)
+        (setq ido-enable-flex-matching t))
+      (while (progn
+               (imenu--cleanup)
+               (setq imenu--index-alist nil)
+               (ido-goto-symbol (imenu--make-index-alist))
+               (setq selected-symbol
+                     (ido-completing-read "Symbol? " symbol-names))
+               (string= (car imenu--rescan-item) selected-symbol)))
+      (unless (and (boundp 'mark-active) mark-active)
+        (push-mark nil t nil))
+      (setq position (cdr (assoc selected-symbol name-and-pos)))
       (cond
        ((overlayp position)
         (goto-char (overlay-start position)))
        (t
-        (goto-char position))))))
+        (goto-char position)))
+      (recenter)))
+   ((listp symbol-list)
+    (dolist (symbol symbol-list)
+      (let (name position)
+        (cond
+         ((and (listp symbol) (imenu--subalist-p symbol))
+          (ido-goto-symbol symbol))
+         ((listp symbol)
+          (setq name (car symbol))
+          (setq position (cdr symbol)))
+         ((stringp symbol)
+          (setq name symbol)
+          (setq position
+                (get-text-property 1 'org-imenu-marker symbol))))
+        (unless (or (null position) (null name)
+                    (string= (car imenu--rescan-item) name))
+          (add-to-list 'symbol-names (substring-no-properties name))
+          (add-to-list 'name-and-pos (cons (substring-no-properties name) position))))))))
+
 (bind-key "C-c i" 'ido-goto-symbol)
 
 
@@ -714,13 +866,15 @@ See URL `https://github.com/bitc/hdevtools'."
 (require-package 'projectile)
 (after "projectile-autoloads"
   (projectile-global-mode)
-  (setq projectile-remember-window-configs t))
+  (setq projectile-remember-window-configs t
+        projectile-cache-file (concat emacs-var-dir "projectile.cache")
+        ))
 
 
 ;;;; smart-mode-line
 (require-package 'smart-mode-line)
 (after "smart-mode-line-autoloads"
-  (setq sml/theme 'respectful)
+  (setq sml/theme 'dark)
   ;; (push " Paredit" sml/hidden-modes)
   (sml/setup))
 
@@ -755,6 +909,7 @@ See URL `https://github.com/bitc/hdevtools'."
 (require-package 'smex)
 (after "smex-autoloads"
   (smex-initialize)
+  (setq smex-save-file (concat emacs-var-dir "smex"))
   (bind-key "M-x" 'smex)
   (bind-key "M-X" 'smex-major-mode-commands))
 
@@ -770,8 +925,8 @@ See URL `https://github.com/bitc/hdevtools'."
 
 ;;;; tramp
 (require 'tramp)
-(setq tramp-default-method "ssh")
-
+(setq tramp-default-method "ssh"
+      tramp-persistency-file-name (concat emacs-var-dir "tramp"))
 
 ;;;; undo-tree
 (require-package 'undo-tree)
@@ -815,11 +970,11 @@ See URL `https://github.com/bitc/hdevtools'."
 
 
 ;;;; wrap-region
-(require-package 'wrap-region)
-(after "wrap-region-autoloads"
-  (wrap-region-global-mode t))
-(after 'wrap-region
-  (diminish 'wrap-region-mode))
+;;(require-package 'wrap-region)
+;;(after "wrap-region-autoloads"
+;;  (wrap-region-global-mode t))
+;;(after 'wrap-region
+;;  (diminish 'wrap-region-mode))
 
 
 ;;;; ws-butler
@@ -889,5 +1044,10 @@ See URL `https://github.com/bitc/hdevtools'."
 
   (setq browse-url-browser-function 'browse-url-default-macosx-browser))
 
+
+;; finally, start the server for emacsclient
+(require 'server)
+(unless (server-running-p)
+  (server-start))
 
 (message "Emacs is ready to do thy bidding, Master %s!" (getenv "USER"))
