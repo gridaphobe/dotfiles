@@ -868,7 +868,7 @@ See URL `https://github.com/bitc/hdevtools'."
   (projectile-global-mode)
   (setq projectile-remember-window-configs t
         projectile-cache-file (concat emacs-var-dir "projectile.cache")
-        ))
+        projectile-known-projects-file (concat emacs-var-dir "projectile-bookmarks.eld")))
 
 
 ;;;; smart-mode-line
