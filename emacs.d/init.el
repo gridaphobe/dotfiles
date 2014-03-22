@@ -110,6 +110,8 @@ re-downloaded in order to locate PACKAGE."
 ;; (setq debug-on-error t)
 (setq gc-cons-threshold (* 20 (expt 2 20))) ; gc after 20MB
 
+(setq-default fill-column 80)
+
 ;; Death to the tabs!  However, tabs historically indent to the next
 ;; 8-character offset; specifying anything else will cause *mass*
 ;; confusion, as it will change the appearance of every existing file.
@@ -193,6 +195,8 @@ re-downloaded in order to locate PACKAGE."
 ;; kill old buffers
 (require 'midnight)
 (setq midnight-mode t)
+(add-to-list 'clean-buffer-list-kill-never-regexps
+             "^#\w+")
 
 ;; saner regex syntax
 (require 're-builder)
@@ -308,20 +312,78 @@ re-downloaded in order to locate PACKAGE."
 
 
 ;;;; email
-;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/")
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/")
+(require 'mu4e)
 ;; (require 'notmuch)
 (require 'gnus)
 (require 'nnir)
 (require 'smtpmail)
 (require 'org-gnus)
 
+(defvar my/emails '("gridaphobe@gmail.com"
+                    "eseidel@ucsd.edu"
+                    "eseidel@cs.ucsd.edu"
+                    "eseidel@eng.ucsd.edu"
+                    "eric@eseidel.org"
+                    "eseidel01@ccny.cuny.edu"
+                    "eric9@mac.com"
+                    "eric9@me.com"
+                    "eric9@icloud.com"
+                    "eric@fluidinfo.com"))
+
+(when (fboundp 'imagemagick-register-types)
+  (imagemagick-register-types))
+(setq mu4e-user-mail-address-list my/emails
+      mu4e-view-show-images t
+      mu4e-mu-binary "/usr/local/bin/mu"
+      mu4e-maildir "~/.gmail"
+      mu4e-sent-folder "/[Gmail].Sent Mail"
+      mu4e-refile-folder "/[Gmail].All Mail"
+      mu4e-drafts-folder "/[Gmail].Drafts"
+      mu4e-trash-folder "/[Gmail].Trash"
+      mu4e-headers-skip-duplicates t
+      mu4e-headers-include-related nil
+      mu4e-sent-messages-behavior 'delete
+      mu4e-html2text-command "w3m -dump -T text/html" ;"pandoc -f html -t org"
+      mu4e-view-actions '(("bview in browser" . mu4e-action-view-in-browser)
+                          ("pview as pdf" . mu4e-action-view-as-pdf)
+                          ("cmodify tags" . mu4e-action-retag-message))
+      mu4e-bookmarks '(("flag:unread AND NOT (maildir:/[Gmail].Trash OR maildir:/[Gmail].Spam)"
+                        "Unread messages" ?n)
+                       ("tag:\\\\Inbox" "Inbox" ?i)
+                       ("flag:flagged" "Important" ?!)
+                       ("maildir:[Gmail].Drafts" "Drafts" ?d)
+                       ("tag:UCSD" "UCSD" ?u)
+                       ("maildir:\"/[Gmail].Sent Mail\"" "Sent" ?s)
+                       ("date:today..now"
+                        "Today's messages" ?t)
+                       ("maildir:/[Gmail].Spam" "Spam" ?j))
+      )
+
+(defadvice mu4e (around mu4e-fullscreen activate)
+  (window-configuration-to-register :mu4e-fullscreen)
+  ad-do-it
+  (delete-other-windows))
+
+(defadvice mu4e-quit (after mu4e-restore-screen activate)
+  (jump-to-register :mu4e-fullscreen))
+
+;; mu4e-bookmarks
+;; (("flag:unread AND NOT flag:trashed" "Unread messages" 117) ("date:today..now" "Today's messages" 116) ("date:7d..now" "Last 7 days" 119) ("mime:image/*" "Messages with images" 112))
+
+
 (setq gnus-select-method
       '(nnimap "gmail"
         (nnimap-stream shell)
         (nnimap-shell-program "/usr/local/libexec/dovecot/imap")
-        (nnir-search-method imap)))
+        (nnir-search-method imap))
+      gnus-message-archive-group nil)
 
-(spam-initialize)
+;; (spam-initialize)
+
+(require-package 'bbdb)
+(require 'bbdb)
+(bbdb-initialize 'gnus 'message)
 
 (setq message-send-mail-function 'smtpmail-send-it
       smtpmail-default-smtp-server "smtp.gmail.com"
@@ -330,23 +392,19 @@ re-downloaded in order to locate PACKAGE."
 
       user-full-name "Eric Seidel"
       user-mail-address "gridaphobe@gmail.com"
-      message-alternative-emails (regexp-opt '("gridaphobe@gmail.com"
-                                               "eseidel@ucsd.edu"
-                                               "eseidel@cs.ucsd.edu"
-                                               "eseidel@eng.ucsd.edu"
-                                               "eric@eseidel.org"
-                                               "eseidel01@ccny.cuny.edu"
-                                               "eric9@mac.com"
-                                               "eric9@me.com"
-                                               "eric9@icloud.com"
-                                               "eric@fluidinfo.com"))
+      message-kill-buffer-on-exit t
+      message-alternative-emails (regexp-opt my/emails)
 
+      mm-discouraged-alternatives '("text/html" "text/richtext")
+      gnus-buttonized-mime-types '("multipart/alternative")
       gnus-suppress-duplicates t
       gnus-completing-read-function 'gnus-ido-completing-read
-      gnus-ignored-newsgroups nil ;;"^to\\.\\|^[0-9. ]+\\( \\|$\\)\\|^[\"]\"[#'()]"
+      ;; gnus-ignored-newsgroups nil ;;"^to\\.\\|^[0-9. ]+\\( \\|$\\)\\|^[\"]\"[#'()]"
       gnus-spam-newsgroup-contents '((".*[Ss][Pp][Aa][Mm].*"
                                       gnus-group-spam-classification-spam)
                                      (".*" neither)))
+
+(setq message-dont-reply-to-names message-alternative-emails)
 
 (defadvice gnus (around gnus-fullscreen activate)
   (window-configuration-to-register :gnus-fullscreen)
@@ -380,9 +438,8 @@ re-downloaded in order to locate PACKAGE."
 
 ;; Eshell Hooks
 (defun eshell-settings ()
-  (progn
-    (setq show-trailing-whitespace nil)
-    (eshell-smart-initialize)))
+  (setq show-trailing-whitespace nil)
+  (eshell-smart-initialize))
 
 (add-hook 'eshell-mode-hook 'eshell-settings)
 (add-hook 'eshell-mode-hook 'exec-path-from-shell-initialize)
@@ -406,6 +463,16 @@ re-downloaded in order to locate PACKAGE."
 (evil-mode t)
 (require-package 'surround)
 (global-surround-mode t)
+
+(setq evil-search-module 'evil-search
+      evil-cross-lines t
+      evil-move-cursor-back nil)
+
+;; Make movement keys work like they should
+(define-key evil-normal-state-map (kbd "<remap> <evil-next-line>")     'evil-next-visual-line)
+(define-key evil-normal-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
+(define-key evil-motion-state-map (kbd "<remap> <evil-next-line>")     'evil-next-visual-line)
+(define-key evil-motion-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
 
 (defun evil-undefine ()
  (interactive)
@@ -468,7 +535,22 @@ re-downloaded in order to locate PACKAGE."
 
 
 ;;;; god-mode
-;;(require-package 'god-mode)
+(require-package 'god-mode)
+(require 'god-mode)
+
+(defvar god-local-buffer nil)
+
+(defadvice god-mode-self-insert (after disable-god-mode activate)
+  (with-current-buffer god-local-buffer
+    (god-local-mode -1)
+    (evil-force-normal-state)))
+
+(evil-define-key 'normal global-map ","
+  (lambda () (interactive)
+    (setq god-local-buffer (current-buffer))
+    (evil-emacs-state)
+    (god-local-mode 1)))
+
 ;;(after "god-mode-autoloads"
 ;;  ;; default to god-mode in new buffers
 ;;  (god-mode)
@@ -862,6 +944,7 @@ See URL `https://github.com/bitc/hdevtools'."
 (after "projectile-autoloads"
   (projectile-global-mode)
   (setq projectile-remember-window-configs t
+        projectile-enable-caching t
         projectile-cache-file (concat emacs-var-dir "projectile.cache")
         projectile-known-projects-file (concat emacs-var-dir "projectile-bookmarks.eld")))
 
@@ -980,7 +1063,12 @@ See URL `https://github.com/bitc/hdevtools'."
 (setq nxml-slash-auto-complete-flag t)
 
 
-;;;; zenburn
+;;;; theme
+(defadvice load-theme (around disable-other-themes activate)
+  (mapc #'disable-theme custom-enabled-themes)
+  ad-do-it
+  (sml/apply-theme 'respectful))
+
 (require-package 'zenburn-theme)
 (after "zenburn-theme-autoloads"
   (load-theme 'zenburn))
