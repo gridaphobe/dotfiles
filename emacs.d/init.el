@@ -81,11 +81,6 @@ re-downloaded in order to locate PACKAGE."
       scroll-conservatively 10000
       scroll-preserve-screen-position 1)
 
-;; mode line settings
-(line-number-mode t)
-(column-number-mode t)
-(size-indication-mode t)
-
 ;; enable y/n answers
 (fset 'yes-or-no-p 'y-or-n-p)
 
@@ -126,7 +121,7 @@ re-downloaded in order to locate PACKAGE."
 (setq-default tab-width 8)            ;; but maintain correct appearance
 
 ;; delete the selection with a keypress
-(delete-selection-mode t)
+(delete-selection-mode 1)
 
 ;; store all backup and autosave files in the tmp dir
 (setq backup-directory-alist
@@ -137,7 +132,7 @@ re-downloaded in order to locate PACKAGE."
       temporary-file-directory)
 
 ;; revert buffers automatically when underlying files are changed externally
-(global-auto-revert-mode t)
+(global-auto-revert-mode 1)
 
 ;; auto-save when switching buffers
 (defadvice switch-to-buffer (before save-buffer-now activate)
@@ -215,9 +210,9 @@ re-downloaded in order to locate PACKAGE."
 (put 'erase-buffer 'disabled nil)
 
 ;; remember things between sessions
-(recentf-mode t)
+(recentf-mode 1)
 (setq recentf-save-file (concat emacs-var-dir "recentf"))
-(savehist-mode t)
+(savehist-mode 1)
 (setq savehist-file (concat emacs-var-dir "savehist"))
 (setq-default save-place t)
 (require 'saveplace)
@@ -226,7 +221,7 @@ re-downloaded in order to locate PACKAGE."
 
 
 ;;;; subword-mode
-(global-subword-mode t)
+(global-subword-mode 1)
 (diminish 'subword-mode)
 
 
@@ -255,7 +250,7 @@ re-downloaded in order to locate PACKAGE."
 ;;;; auto complete
 (require-package 'company)
 (after "company-autoloads"
-  (global-company-mode t)
+  (global-company-mode 1)
   (diminish 'company-mode))
 
 
@@ -460,9 +455,9 @@ re-downloaded in order to locate PACKAGE."
 ;;;; evil
 (require-package 'evil)
 (require 'evil)
-(evil-mode t)
+(evil-mode 1)
 (require-package 'surround)
-(global-surround-mode t)
+(global-surround-mode 1)
 
 (setq evil-search-module 'evil-search
       evil-cross-lines t
@@ -520,7 +515,7 @@ re-downloaded in order to locate PACKAGE."
 (require-package 'flycheck)
 (require-package 'flycheck-haskell)
 (after "flycheck-autoloads"
-  (global-flycheck-mode t))
+  (global-flycheck-mode 1))
 (after 'flycheck
   (setq flycheck-check-syntax-automatically '(mode-enabled save)))
 
@@ -538,18 +533,57 @@ re-downloaded in order to locate PACKAGE."
 (require-package 'god-mode)
 (require 'god-mode)
 
-(defvar god-local-buffer nil)
+(evil-define-state god
+  "God state."
+  :tag " <G> "
+  :message "-- GOD MODE --"
+  :entry-hook (evil-god-start-hook)
+  :exit-hook (evil-god-stop-hook)
+  :input-method t
+  :intercept-esc nil)
 
-(defadvice god-mode-self-insert (after disable-god-mode activate)
-  (with-current-buffer god-local-buffer
-    (god-local-mode -1)
-    (evil-force-normal-state)))
+(defun evil-god-start-hook ()
+  (diminish 'god-local-mode)
+  (god-local-mode 1))
 
-(evil-define-key 'normal global-map ","
-  (lambda () (interactive)
-    (setq god-local-buffer (current-buffer))
-    (evil-emacs-state)
-    (god-local-mode 1)))
+(defun evil-god-stop-hook ()
+  (god-local-mode -1)
+  (diminish-undo 'god-local-mode))
+
+(defvar evil-execute-in-god-state-buffer nil)
+
+(defun evil-stop-execute-in-god-state ()
+  (when (and (not (eq this-command #'evil-execute-in-god-state))
+             (not (minibufferp)))
+    (remove-hook 'post-command-hook 'evil-stop-execute-in-god-state)
+    (when (buffer-live-p evil-execute-in-god-state-buffer)
+      (with-current-buffer evil-execute-in-god-state-buffer
+        (if (and (eq evil-previous-state 'visual)
+                 (not (use-region-p)))
+            (progn
+              (evil-change-to-previous-state)
+              (evil-exit-visual-state))
+          (evil-change-to-previous-state))))
+    (setq evil-execute-in-god-state-buffer nil)))
+
+(evil-define-command evil-execute-in-god-state ()
+  "Execute the next command in God state."
+  (add-hook 'post-command-hook #'evil-stop-execute-in-god-state t)
+  (setq evil-execute-in-god-state-buffer (current-buffer))
+  (cond
+   ((evil-visual-state-p)
+    (let ((mrk (mark))
+          (pnt (point)))
+      (evil-god-state)
+      (set-mar mrk)
+      (goto-char pnt)))
+   (t
+    (evil-god-state)))
+  (evil-echo "Switched to God state for the next command ..."))
+
+(evil-define-key 'normal global-map "," 'evil-execute-in-god-state)
+
+
 
 ;;(after "god-mode-autoloads"
 ;;  ;; default to god-mode in new buffers
@@ -760,8 +794,8 @@ See URL `https://github.com/bitc/hdevtools'."
 
 ;;;; ido-mode
 (require 'ido)
-(ido-mode t)
-(ido-everywhere t)
+(ido-mode 1)
+(ido-everywhere 1)
 (setq ido-enable-prefix nil
       ido-enable-flex-matching t
       ido-create-new-buffer 'always
@@ -774,15 +808,15 @@ See URL `https://github.com/bitc/hdevtools'."
 
 (require-package 'flx-ido)
 (after "flx-ido-autoloads"
-  (flx-ido-mode t))
+  (flx-ido-mode 1))
 
 (require-package 'ido-ubiquitous)
 (after "ido-ubiquitous-autoloads"
-  (ido-ubiquitous-mode t))
+  (ido-ubiquitous-mode 1))
 
 (require-package 'ido-vertical-mode)
 (after "ido-vertical-mode-autoloads"
-  (ido-vertical-mode t))
+  (ido-vertical-mode 1))
 
 
 ;;;; javascript
@@ -847,15 +881,15 @@ See URL `https://github.com/bitc/hdevtools'."
 ;;   (add-hook 'minibuffer-setup-hook 'conditionally-enable-paredit-mode)
 ;;   (add-hook 'prog-mode-hook 'enable-paredit-mode)
 ;;   (add-hook 'haskell-mode-hook 'enable-paredit-mode))
-(electric-indent-mode t)
-(electric-layout-mode t)
+(electric-indent-mode 1)
+(electric-layout-mode 1)
 ;;(electric-pair-mode t)
 
 ;;(show-paren-mode t)
 
 ;;;; prog-mode
 (defun my/local-comment-auto-fill ()
-  (auto-fill-mode t)
+  (auto-fill-mode 1)
   (set (make-local-variable 'comment-auto-fill-only-comments) t))
 
 (defun my/add-watchwords ()
@@ -870,8 +904,8 @@ See URL `https://github.com/bitc/hdevtools'."
 (defun my/prog-mode-defaults ()
   "Default coding hook, useful with any programming language."
   (my/local-comment-auto-fill)
-  (whitespace-mode t)
-  (abbrev-mode t)
+  (whitespace-mode 1)
+  (abbrev-mode 1)
   (my/add-watchwords))
 
 (after "abbrev"
@@ -933,7 +967,7 @@ See URL `https://github.com/bitc/hdevtools'."
 
 
 ;;;; pretty symbols
-(global-prettify-symbols-mode t)
+(global-prettify-symbols-mode 1)
 (add-hook 'haskell-mode-hook
           (lambda ()
             (push '("\\" . ?λ) prettify-symbols-alist)))
@@ -952,8 +986,6 @@ See URL `https://github.com/bitc/hdevtools'."
 ;;;; smart-mode-line
 (require-package 'smart-mode-line)
 (after "smart-mode-line-autoloads"
-  (setq sml/theme 'dark)
-  ;; (push " Paredit" sml/hidden-modes)
   (sml/setup))
 
 
@@ -962,8 +994,8 @@ See URL `https://github.com/bitc/hdevtools'."
 (require 'smartparens-config)
 (setq-default sp-autoskip-closing-pair 'always)
 (setq sp-hybrid-kill-entire-symbol nil)
-(show-smartparens-global-mode t)
-(smartparens-global-mode t)
+(show-smartparens-global-mode 1)
+(smartparens-global-mode 1)
 
 (add-hook 'emacs-lisp-mode-hook 'turn-on-smartparens-strict-mode)
 (add-hook 'lisp-mode-hook       'turn-on-smartparens-strict-mode)
@@ -971,10 +1003,19 @@ See URL `https://github.com/bitc/hdevtools'."
 (after 'diminish
   (diminish 'smartparens-mode))
 
+(setq sp-ignore-modes-list
+      (delete 'minibuffer-inactive-mode sp-ignore-modes-list))
+
 (defun conditionally-enable-smartparens-mode ()
-  (if (eq this-command 'eval-expression)
-      (smartparens-mode t)))
+  (when (eq this-command 'eval-expression)
+    (smartparens-strict-mode 1)
+    (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil)))
 (add-hook 'minibuffer-setup-hook 'conditionally-enable-smartparens-mode)
+
+(add-hook 'minibuffer-exit-hook
+          (lambda () (sp-local-pair 'minibuffer-inactive-mode "'" "'"
+                               :unless '(sp-point-after-word-p))))
+
 
 ;; only using these keys for now since smartparens seems to override
 ;; any buffer-local bindings
@@ -1009,7 +1050,7 @@ See URL `https://github.com/bitc/hdevtools'."
 ;;;; undo-tree
 (require-package 'undo-tree)
 (after "undo-tree-autoloads"
-  (global-undo-tree-mode t)
+  (global-undo-tree-mode 1)
   (diminish 'undo-tree-mode)
   (setq undo-tree-visualizer-relative-timestamps t)
   (setq undo-tree-visualizer-timestamps t))
@@ -1020,7 +1061,7 @@ See URL `https://github.com/bitc/hdevtools'."
 ;; HACK: there's nothing in "volatile-highlights-autoloads.el" so
 ;; can't use the standard `after' macro
 (require 'volatile-highlights)
-(volatile-highlights-mode t)
+(volatile-highlights-mode 1)
 (diminish 'volatile-highlights-mode)
 
 ;; note - this should be after volatile-highlights is required
@@ -1071,7 +1112,8 @@ See URL `https://github.com/bitc/hdevtools'."
 
 (require-package 'zenburn-theme)
 (after "zenburn-theme-autoloads"
-  (load-theme 'zenburn))
+  (load-theme 'zenburn)
+  (sml/apply-theme 'dark))
 
 
 ;;;; generic keybindings
@@ -1124,5 +1166,12 @@ See URL `https://github.com/bitc/hdevtools'."
 (require 'server)
 (unless (server-running-p)
   (server-start))
+
+;;;; mode line settings
+;; FIXME: something in this file is toggling `line-number-mode' so I have to put
+;; this at the end......
+(line-number-mode 1)
+(column-number-mode 1)
+(size-indication-mode 1)
 
 (message "Emacs is ready to do thy bidding, Master %s!" (getenv "USER"))
