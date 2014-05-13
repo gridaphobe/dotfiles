@@ -2,6 +2,9 @@
 
 (defconst on-mac (eq system-type 'darwin)
   "Are we on a Mac?")
+(defconst is-netmacs (string= invocation-name "Netmacs")
+  "Are we just running mail/irc?")
+(defconst ns-bundle-id (concat "org.gnu." invocation-name))
 
 (defvar emacs-dir (file-name-directory load-file-name)
   "The root folder of the configuration.")
@@ -137,9 +140,17 @@ re-downloaded in order to locate PACKAGE."
 ;; auto-save when switching buffers
 (defadvice switch-to-buffer (before save-buffer-now activate)
   (when buffer-file-name (save-buffer)))
-(defadvice other-window (before other-window-now activate)
+(defadvice other-window (before save-buffer-now activate)
   (when buffer-file-name (save-buffer)))
-(defadvice other-frame (before other-frame-now activate)
+(defadvice other-frame (before save-buffer-now activate)
+  (when buffer-file-name (save-buffer)))
+(defadvice windmove-up (before save-buffer-now activate)
+  (when buffer-file-name (save-buffer)))
+(defadvice windmove-down (before save-buffer-now activate)
+  (when buffer-file-name (save-buffer)))
+(defadvice windmove-left (before save-buffer-now activate)
+  (when buffer-file-name (save-buffer)))
+(defadvice windmove-right (before save-buffer-now activate)
   (when buffer-file-name (save-buffer)))
 
 ;; hippie expand is dabbrev expand on steroids
@@ -192,6 +203,8 @@ re-downloaded in order to locate PACKAGE."
 (setq midnight-mode t)
 (add-to-list 'clean-buffer-list-kill-never-regexps
              "^#\w+")
+(add-to-list 'clean-buffer-list-kill-never-buffer-names
+             "192.241.212.224:5000")
 
 ;; saner regex syntax
 (require 're-builder)
@@ -307,107 +320,153 @@ re-downloaded in order to locate PACKAGE."
 
 
 ;;;; email
-(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/")
-(require 'mu4e)
-;; (require 'notmuch)
-(require 'gnus)
-(require 'nnir)
-(require 'smtpmail)
-(require 'org-gnus)
+;; (when is-netmacs
+;;   (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/")
+  ;; (require 'mu4e)
+  (require 'gnus)
+  (require 'nnir)
+  (require 'smtpmail)
+  (require 'org-gnus)
+  (require-package 'notmuch)
+  (require 'notmuch)
 
-(defvar my/emails '("gridaphobe@gmail.com"
-                    "eseidel@ucsd.edu"
-                    "eseidel@cs.ucsd.edu"
-                    "eseidel@eng.ucsd.edu"
-                    "eric@eseidel.org"
-                    "eseidel01@ccny.cuny.edu"
-                    "eric9@mac.com"
-                    "eric9@me.com"
-                    "eric9@icloud.com"
-                    "eric@fluidinfo.com"))
 
-(when (fboundp 'imagemagick-register-types)
-  (imagemagick-register-types))
-(setq mu4e-user-mail-address-list my/emails
-      mu4e-view-show-images t
-      mu4e-mu-binary "/usr/local/bin/mu"
-      mu4e-maildir "~/.gmail"
-      mu4e-sent-folder "/[Gmail].Sent Mail"
-      mu4e-refile-folder "/[Gmail].All Mail"
-      mu4e-drafts-folder "/[Gmail].Drafts"
-      mu4e-trash-folder "/[Gmail].Trash"
-      mu4e-headers-skip-duplicates t
-      mu4e-headers-include-related nil
-      mu4e-sent-messages-behavior 'delete
-      mu4e-html2text-command "w3m -dump -T text/html" ;"pandoc -f html -t org"
-      mu4e-view-actions '(("bview in browser" . mu4e-action-view-in-browser)
-                          ("pview as pdf" . mu4e-action-view-as-pdf)
-                          ("cmodify tags" . mu4e-action-retag-message))
-      mu4e-bookmarks '(("flag:unread AND NOT (maildir:/[Gmail].Trash OR maildir:/[Gmail].Spam)"
-                        "Unread messages" ?n)
-                       ("tag:\\\\Inbox" "Inbox" ?i)
-                       ("flag:flagged" "Important" ?!)
-                       ("maildir:[Gmail].Drafts" "Drafts" ?d)
-                       ("tag:UCSD" "UCSD" ?u)
-                       ("maildir:\"/[Gmail].Sent Mail\"" "Sent" ?s)
-                       ("date:today..now"
-                        "Today's messages" ?t)
-                       ("maildir:/[Gmail].Spam" "Spam" ?j))
-      )
+  (defvar my/emails '("gridaphobe@gmail.com"
+                      "eseidel@ucsd.edu"
+                      "eseidel@cs.ucsd.edu"
+                      "eseidel@eng.ucsd.edu"
+                      "eric@eseidel.org"
+                      "eseidel01@ccny.cuny.edu"
+                      "eric9@mac.com"
+                      "eric9@me.com"
+                      "eric9@icloud.com"
+                      "eric@fluidinfo.com"))
 
-(defadvice mu4e (around mu4e-fullscreen activate)
-  (window-configuration-to-register :mu4e-fullscreen)
-  ad-do-it
-  (delete-other-windows))
+  (when (fboundp 'imagemagick-register-types)
+    (imagemagick-register-types))
+;;   (setq mu4e-user-mail-address-list my/emails
+;;         mu4e-view-show-images t
+;;         mu4e-mu-binary "/usr/local/bin/mu"
+;;         mu4e-maildir "~/.gmail"
+;;         mu4e-sent-folder "/[Gmail].Sent Mail"
+;;         mu4e-refile-folder "/[Gmail].All Mail"
+;;         mu4e-drafts-folder "/[Gmail].Drafts"
+;;         mu4e-trash-folder "/[Gmail].Trash"
+;;         mu4e-headers-skip-duplicates t
+;;         mu4e-headers-include-related nil
+;;         mu4e-compose-cite-function 'message-cite-original
+;;         mu4e-compose-signature-auto-include nil
+;;         mu4e-compose-dont-reply-to-self t
+;;         mu4e-sent-messages-behavior 'delete
+;;         mu4e-html2text-command "w3m -dump -T text/html" ;"pandoc -f html -t org"
+;;         mu4e-view-actions '(("bview in browser" . mu4e-action-view-in-browser)
+;;                             ("pview as pdf" . mu4e-action-view-as-pdf)
+;;                             ("cmodify tags" . mu4e-action-retag-message))
+;;         mu4e-bookmarks '(("flag:unread AND NOT (maildir:/[Gmail].Trash OR maildir:/[Gmail].Spam)"
+;;                           "Unread messages" ?n)
+;;                          ("tag:\\\\Inbox" "Inbox" ?i)
+;;                          ("flag:flagged" "Important" ?!)
+;;                          ("maildir:[Gmail].Drafts" "Drafts" ?d)
+;;                          ("tag:UCSD" "UCSD" ?u)
+;;                          ("maildir:\"/[Gmail].Sent Mail\"" "Sent" ?s)
+;;                          ("date:today..now"
+;;                           "Today's messages" ?t)
+;;                          ("maildir:/[Gmail].Spam" "Spam" ?j)))
 
-(defadvice mu4e-quit (after mu4e-restore-screen activate)
-  (jump-to-register :mu4e-fullscreen))
+;;   (setq mu4e-debug t)
+;;   (setq mu4e-hide-index-messages t)
+  (defun my/terminal-notifier (msg &optional title subtitle action)
+    (start-process "terminal-notifier"
+                   "*terminal-notifier"
+                   "terminal-notifier"
+                   "-message" msg
+                   "-title" (or title invocation-name)
+                   "-subtitle" (or subtitle "Alert")
+                   "-sender" ns-bundle-id))
+;;   ;; (my/terminal-notifier "hola" "hello" "hi" nil)
+;;   (defun my/mu-notify (msg &optional point)
+;;     (my/terminal-notifier (mu4e-message-field msg :subject)
+;;                           "New Mail"
+;;                           (mu4e~headers-contact-str
+;;                            (mu4e-message-field msg :from)))
+;;     (mu4e~proc-move (mu4e-message-field msg :docid) nil "-N"))
+;;   (defun my/mu4e~headers-header-handler (msg &optional point)
+;;     (if (eq major-mode 'mu4e-headers-mode)
+;;         (mu4e~headers-header-handler msg point)
+;;       (my/mu-notify msg point)))
+;;   (setq mu4e-header-func 'my/mu4e~headers-header-handler)
+;;   (defun my/update-mu-and-notify ()
+;;     (mu4e~start
+;;      (lambda ()
+;;        (mu4e-update-index)
+;;        (mu4e~proc-find "flag:new AND tag:\\\\INBOX" nil :date 'descending nil nil nil))))
 
-;; mu4e-bookmarks
-;; (("flag:unread AND NOT flag:trashed" "Unread messages" 117) ("date:today..now" "Today's messages" 116) ("date:7d..now" "Last 7 days" 119) ("mime:image/*" "Messages with images" 112))
+;;   (defadvice mu4e (around mu4e-fullscreen activate)
+;;     (window-configuration-to-register :mu4e-fullscreen)
+;;     ad-do-it
+;;     (delete-other-windows))
 
+;;   (defadvice mu4e-quit (after mu4e-restore-screen activate)
+;;     (jump-to-register :mu4e-fullscreen))
+
+
+;;   (setq gnus-select-method
+;;         '(nnimap "gmail"
+;;                  (nnimap-stream shell)
+;;                  (nnimap-shell-program "/usr/local/libexec/dovecot/imap")
+;;                  (nnir-search-method imap))
+;;         gnus-message-archive-group nil)
 
 (setq gnus-select-method
       '(nnimap "gmail"
-        (nnimap-stream shell)
-        (nnimap-shell-program "/usr/local/libexec/dovecot/imap")
-        (nnir-search-method imap))
-      gnus-message-archive-group nil)
+               (nnimap-address "imap.gmail.com")
+               (nnimap-server-port 993)
+               (nnimap-stream ssl)
+               (nnir-search-engine imap)))
 
-;; (spam-initialize)
+  (require-package 'bbdb)
+  (require 'bbdb)
+  (bbdb-initialize 'gnus 'message)
 
-(require-package 'bbdb)
-(require 'bbdb)
-(bbdb-initialize 'gnus 'message)
+  (setq message-send-mail-function 'smtpmail-send-it
+        smtpmail-default-smtp-server "smtp.gmail.com"
+        smtpmail-smtp-server "smtp.gmail.com"
+        smtpmail-smtp-service 587
+        smtpmail-stream-type 'starttls
 
-(setq message-send-mail-function 'smtpmail-send-it
-      smtpmail-default-smtp-server "smtp.gmail.com"
-      smtpmail-smtp-server "smtp.gmail.com"
-      smtpmail-smtp-service 587
+        user-full-name "Eric Seidel"
+        user-mail-address "gridaphobe@gmail.com"
+        message-kill-buffer-on-exit t
+        message-alternative-emails (regexp-opt my/emails)
 
-      user-full-name "Eric Seidel"
-      user-mail-address "gridaphobe@gmail.com"
-      message-kill-buffer-on-exit t
-      message-alternative-emails (regexp-opt my/emails)
+        ;; gnus-parameters '(("nnimap.*"
+        ;;                    (gnus-use-scoring nil)
+        ;;                    (display . all))
+        ;;                   )
+        gnus-read-active-file 'some
+        gnus-summary-thread-gathering-function 'gnus-gather-threads-by-subject
+        mm-discouraged-alternatives '("text/html" "text/richtext")
+        gnus-buttonized-mime-types '("multipart/alternative")
+        gnus-suppress-duplicates t
+        gnus-use-cache t
+        gnus-use-adaptive-scoring t
+        gnus-completing-read-function 'gnus-ido-completing-read
+        ;; gnus-ignored-newsgroups nil ;;"^to\\.\\|^[0-9. ]+\\( \\|$\\)\\|^[\"]\"[#'()]"
+        gnus-spam-newsgroup-contents '((".*[Ss][Pp][Aa][Mm].*"
+                                        gnus-group-spam-classification-spam)
+                                       (".*" neither)))
 
-      mm-discouraged-alternatives '("text/html" "text/richtext")
-      gnus-buttonized-mime-types '("multipart/alternative")
-      gnus-suppress-duplicates t
-      gnus-completing-read-function 'gnus-ido-completing-read
-      ;; gnus-ignored-newsgroups nil ;;"^to\\.\\|^[0-9. ]+\\( \\|$\\)\\|^[\"]\"[#'()]"
-      gnus-spam-newsgroup-contents '((".*[Ss][Pp][Aa][Mm].*"
-                                      gnus-group-spam-classification-spam)
-                                     (".*" neither)))
+  (setq message-dont-reply-to-names message-alternative-emails)
 
-(setq message-dont-reply-to-names message-alternative-emails)
+  (gnus-demon-add-handler 'gnus-demon-scan-news 5 t)
 
-(defadvice gnus (around gnus-fullscreen activate)
-  (window-configuration-to-register :gnus-fullscreen)
-  ad-do-it
-  (delete-other-windows))
+;;   (defadvice gnus (around gnus-fullscreen activate)
+;;     (window-configuration-to-register :gnus-fullscreen)
+;;     ad-do-it
+;;     (delete-other-windows))
 
-(defadvice gnus-group-exit (after gnus-restore-screen activate)
-  (jump-to-register :gnus-fullscreen))
+;;   (defadvice gnus-group-exit (after gnus-restore-screen activate)
+;;     (jump-to-register :gnus-fullscreen)))
 
 
 ;;;; eshell
@@ -463,6 +522,34 @@ re-downloaded in order to locate PACKAGE."
       evil-cross-lines t
       evil-move-cursor-back nil)
 
+(defadvice switch-to-buffer (before evil-back-to-initial-state activate)
+  (evil-change-state
+   (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;; (defadvice select-window (around evil-back-to-initial-state activate)
+;;   (when (ad-get-arg 1)
+;;     (evil-change-state
+;;      (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;;   ad-do-it)
+;; (defadvice other-window (before evil-back-to-initial-state activate)
+;;   (evil-change-state
+;;    (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;; (defadvice other-frame (before evil-back-to-initial-state activate)
+;;   (evil-change-state
+;;    (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;; (defadvice windmove-up (before evil-back-to-initial-state activate)
+;;   (evil-change-state
+;;    (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;; (defadvice windmove-down (before evil-back-to-initial-state activate)
+;;   (evil-change-state
+;;    (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;; (defadvice windmove-left (before evil-back-to-initial-state activate)
+;;   (evil-change-state
+;;    (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;; (defadvice windmove-right (before evil-back-to-initial-state activate)
+;;   (evil-change-state
+;;    (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+
+
 ;; Make movement keys work like they should
 (define-key evil-normal-state-map (kbd "<remap> <evil-next-line>")     'evil-next-visual-line)
 (define-key evil-normal-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
@@ -514,10 +601,11 @@ re-downloaded in order to locate PACKAGE."
 ;;;; flycheck
 (require-package 'flycheck)
 (require-package 'flycheck-haskell)
-(after "flycheck-autoloads"
-  (global-flycheck-mode 1))
-(after 'flycheck
-  (setq flycheck-check-syntax-automatically '(mode-enabled save)))
+;; (after "flycheck-autoloads"
+;;   (global-flycheck-mode 1))
+;; (after 'flycheck
+;;   (setq flycheck-check-syntax-automatically '(mode-enabled save)
+;;         flycheck-highlighting-mode nil))
 
 
 ;;;; flyspell
@@ -531,57 +619,62 @@ re-downloaded in order to locate PACKAGE."
 
 ;;;; god-mode
 (require-package 'god-mode)
-(require 'god-mode)
 
-(evil-define-state god
-  "God state."
-  :tag " <G> "
-  :message "-- GOD MODE --"
-  :entry-hook (evil-god-start-hook)
-  :exit-hook (evil-god-stop-hook)
-  :input-method t
-  :intercept-esc nil)
+;; (require 'god-mode)
+;; (require 'evil)
 
-(defun evil-god-start-hook ()
-  (diminish 'god-local-mode)
-  (god-local-mode 1))
+;; (evil-define-state god
+;;   "God state."
+;;   :tag " <G> "
+;;   :message "-- GOD MODE --"
+;;   :entry-hook (evil-god-start-hook)
+;;   :exit-hook (evil-god-stop-hook)
+;;   :input-method t
+;;   :intercept-esc nil)
 
-(defun evil-god-stop-hook ()
-  (god-local-mode -1)
-  (diminish-undo 'god-local-mode))
+;; (defun evil-god-start-hook ()
+;;   (god-local-mode 1))
 
-(defvar evil-execute-in-god-state-buffer nil)
+;; (defun evil-god-stop-hook ()
+;;   (god-local-mode -1))
 
-(defun evil-stop-execute-in-god-state ()
-  (when (and (not (eq this-command #'evil-execute-in-god-state))
-             (not (minibufferp)))
-    (remove-hook 'post-command-hook 'evil-stop-execute-in-god-state)
-    (when (buffer-live-p evil-execute-in-god-state-buffer)
-      (with-current-buffer evil-execute-in-god-state-buffer
-        (if (and (eq evil-previous-state 'visual)
-                 (not (use-region-p)))
-            (progn
-              (evil-change-to-previous-state)
-              (evil-exit-visual-state))
-          (evil-change-to-previous-state))))
-    (setq evil-execute-in-god-state-buffer nil)))
+;; (defvar evil-execute-in-god-state-buffer nil)
 
-(evil-define-command evil-execute-in-god-state ()
-  "Execute the next command in God state."
-  (add-hook 'post-command-hook #'evil-stop-execute-in-god-state t)
-  (setq evil-execute-in-god-state-buffer (current-buffer))
-  (cond
-   ((evil-visual-state-p)
-    (let ((mrk (mark))
-          (pnt (point)))
-      (evil-god-state)
-      (set-mar mrk)
-      (goto-char pnt)))
-   (t
-    (evil-god-state)))
-  (evil-echo "Switched to God state for the next command ..."))
+;; (defun evil-stop-execute-in-god-state ()
+;;   (when (and (not (eq this-command #'evil-execute-in-god-state))
+;;              (not (minibufferp)))
+;;     (remove-hook 'post-command-hook 'evil-stop-execute-in-god-state)
+;;     (when (buffer-live-p evil-execute-in-god-state-buffer)
+;;       (with-current-buffer evil-execute-in-god-state-buffer
+;;         (if (and (eq evil-previous-state 'visual)
+;;                  (not (use-region-p)))
+;;             (progn
+;;               (evil-change-to-previous-state)
+;;               (evil-exit-visual-state))
+;;           (evil-change-to-previous-state))))
+;;     (setq evil-execute-in-god-state-buffer nil)))
 
+;; (evil-define-command evil-execute-in-god-state ()
+;;   "Execute the next command in God state."
+;;   (add-hook 'post-command-hook #'evil-stop-execute-in-god-state t)
+;;   (setq evil-execute-in-god-state-buffer (current-buffer))
+;;   (cond
+;;    ((evil-visual-state-p)
+;;     (let ((mrk (mark))
+;;           (pnt (point)))
+;;       (evil-god-state)
+;;       (set-mar mrk)
+;;       (goto-char pnt)))
+;;    (t
+;;     (evil-god-state)))
+;;  (evil-echo "Switched to God state for the next command ..."))
+
+;; (load-file "~/Source/evil-god-state/evil-god-state.el")
+
+(require-package 'evil-god-state)
 (evil-define-key 'normal global-map "," 'evil-execute-in-god-state)
+(add-hook 'evil-god-start-hook (lambda () (diminish 'god-local-mode)))
+(add-hook 'evil-god-stop-hook (lambda () (diminish-undo 'god-local-mode)))
 
 
 
@@ -631,7 +724,10 @@ re-downloaded in order to locate PACKAGE."
   (bind-key "SPC" 'haskell-mode-contextual-space haskell-mode-map)
   (setq haskell-process-type 'cabal-repl
         haskell-process-args-cabal-repl '("--ghc-option=-ferror-spans"
-                                          "--with-ghc=ghci-ng")
+                                          ;;"--with-ghc=ghci-ng"
+                                          )
+        haskell-process-type 'ghci
+        haskell-process-path-ghci "ghci"
         haskell-process-log t)
 
   (defun my/haskell-sp-forward-slurp-sexp (&optional ARG)
@@ -639,10 +735,9 @@ re-downloaded in order to locate PACKAGE."
   inserts an extra space at the beginning of the line..."
     (interactive)
     (sp-forward-slurp-sexp ARG)
-    ;; (save-excursion
-    ;;   (beginning-of-line)
-    ;;   (delete-forward-char 1))
-    )
+    (save-excursion
+      (beginning-of-line)
+      (delete-forward-char 1)))
   (bind-key "C-)" 'my/haskell-sp-forward-slurp-sexp haskell-mode-map)
 
   (defun my/haskell-sp-forward-barf-sexp (&optional ARG)
@@ -655,62 +750,62 @@ re-downloaded in order to locate PACKAGE."
       (delete-forward-char 1)))
   (bind-key "C-}" 'my/haskell-sp-forward-barf-sexp haskell-mode-map))
 
-;; (require-package 'hi2)
-;; (after 'hi2
-;;   (diminish 'hi2-mode)
-;;   (add-hook 'haskell-mode-hook 'turn-on-hi2)
-;;   (setq hi2-show-indentations nil))
+(require-package 'hi2)
+(after "hi2-autoloads"
+  (add-hook 'haskell-mode-hook 'turn-on-hi2)
+  (setq hi2-show-indentations nil))
+(after 'hi2
+  (diminish 'hi2-mode))
 
-(require-package 'shm)
-(after "shm-autoloads"
-  (add-hook 'haskell-mode-hook 'structured-haskell-mode)
-  (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode))
+;; (require-package 'shm)
+;; (after "shm-autoloads"
+;;   (add-hook 'haskell-mode-hook 'structured-haskell-mode)
+;;   (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode))
 
-(after 'flycheck-haskell
-  (flycheck-define-checker haskell-hdevtools
-  "A Haskell syntax and type checker using hdevtools.
+;; (after 'flycheck-haskell
+;;   (flycheck-define-checker haskell-hdevtools
+;;   "A Haskell syntax and type checker using hdevtools.
 
-See URL `https://github.com/bitc/hdevtools'."
-  :command
-  ("hdevtools" "check" "-g" "-Wall"
-   (eval (when flycheck-ghc-no-user-package-database
-           (list "-g" "-no-user-package-db")))
-   (eval (apply #'append (mapcar (lambda (db) (list "-g" "-package-db" "-g" db))
-                                 flycheck-ghc-package-databases)))
-   (eval (list
-          "-g" "-i" "-g"
-          (flycheck-module-root-directory
-           (flycheck-find-in-buffer flycheck-haskell-module-re))))
-   (eval (apply #'append (mapcar (lambda (db) (list "-g" "-i" "-g" db))
-                                 flycheck-ghc-search-path)))
-   source-inplace)
-  :error-patterns
-  ((warning line-start (file-name) ":" line ":" column ":"
-            (or " " "\n    ") "Warning:" (optional "\n")
-            (one-or-more " ")
-            (message (one-or-more not-newline)
-                     (zero-or-more "\n"
-                                   (one-or-more " ")
-                                   (one-or-more not-newline)))
-            line-end)
-   (error line-start (file-name) ":" line ":" column ":"
-          (or (message (one-or-more not-newline))
-              (and "\n" (one-or-more " ")
-                   (message (one-or-more not-newline)
-                            (zero-or-more "\n"
-                                          (one-or-more " ")
-                                          (one-or-more not-newline)))))
-          line-end))
-  :modes haskell-mode
-  :next-checkers ((warnings-only . haskell-hlint)))
+;; See URL `https://github.com/bitc/hdevtools'."
+;;   :command
+;;   ("hdevtools" "check" "-g" "-Wall"
+;;    (eval (when flycheck-ghc-no-user-package-database
+;;            (list "-g" "-no-user-package-db")))
+;;    (eval (apply #'append (mapcar (lambda (db) (list "-g" "-package-db" "-g" db))
+;;                                  flycheck-ghc-package-databases)))
+;;    (eval (list
+;;           "-g" "-i" "-g"
+;;           (flycheck-module-root-directory
+;;            (flycheck-find-in-buffer flycheck-haskell-module-re))))
+;;    (eval (apply #'append (mapcar (lambda (db) (list "-g" "-i" "-g" db))
+;;                                  flycheck-ghc-search-path)))
+;;    source-inplace)
+;;   :error-patterns
+;;   ((warning line-start (file-name) ":" line ":" column ":"
+;;             (or " " "\n    ") "Warning:" (optional "\n")
+;;             (one-or-more " ")
+;;             (message (one-or-more not-newline)
+;;                      (zero-or-more "\n"
+;;                                    (one-or-more " ")
+;;                                    (one-or-more not-newline)))
+;;             line-end)
+;;    (error line-start (file-name) ":" line ":" column ":"
+;;           (or (message (one-or-more not-newline))
+;;               (and "\n" (one-or-more " ")
+;;                    (message (one-or-more not-newline)
+;;                             (zero-or-more "\n"
+;;                                           (one-or-more " ")
+;;                                           (one-or-more not-newline)))))
+;;           line-end))
+;;   :modes haskell-mode
+;;   :next-checkers ((warnings-only . haskell-hlint)))
 
-  (defun killall-hdevtools ()
-    (interactive)
-    (shell-command "killall hdevtools")
-    (flycheck-buffer))
-  (bind-key "C-c C" 'killall-hdevtools haskell-mode-map)
-  ;(setq flycheck-checker 'haskell-hdevtools)
-  )
+;;   (defun killall-hdevtools ()
+;;     (interactive)
+;;     (shell-command "killall hdevtools")
+;;     (flycheck-buffer))
+;;   (bind-key "C-c C" 'killall-hdevtools haskell-mode-map)
+;;   )
 
 (add-to-list 'completion-ignored-extensions ".hi")
 (add-to-list 'completion-ignored-extensions ".hdevtools.sock")
@@ -719,77 +814,79 @@ See URL `https://github.com/bitc/hdevtools'."
 (add-hook 'haskell-mode-hook 'my/prog-mode-defaults)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-(add-hook 'haskell-mode-hook 'flycheck-haskell-setup)
-(add-hook 'haskell-mode-hook 'flycheck-mode)
+;; (add-hook 'haskell-mode-hook 'flycheck-haskell-setup)
+;; (add-hook 'haskell-mode-hook 'flycheck-mode)
 
 
 ;;;; helm
-(require-package 'helm)
-;;(require 'helm-rdio)
+;; (require-package 'helm)
+;; (require 'helm-rdio)
 
 
 ;;;; irc
-(defvar znc-server "")
-(defvar znc-port "")
-(defvar znc-tls nil)
-(defvar znc-user "")
-(defvar znc-pass "")
-(load (concat emacs-dir "private.el"))
-(require-package 'circe)
-(after "circe-autoloads"
-  (setq circe-network-options `(("Freenode"
-                                 :host ,znc-server
-                                 :port ,znc-port
-                                 :tls  ,znc-tls
-                                 :user ,znc-user
-                                 :pass ,znc-pass
-                                 :nick ,znc-user))
-        circe-reduce-lurker-spam t
-        circe-format-server-topic "*** Topic change by {origin}: {topic-diff}"
-        lui-flyspell-p t
-        lui-flyspell-alist '((".*" "american"))
-        lui-max-buffer-size (* 10 1024)
-        lui-time-stamp-position 'right-margin
-        lui-time-stamp-format "%H:%M"
-        lui-fill-type nil
-        tracking-ignored-buffers '(("#emacs" circe-highlight-nick-face)
-                                   ("#haskell" circe-highlight-nick-face))
-        circe-format-self-say "<{nick}> {body}")
-  (require 'lui-autopaste)
-  (add-hook 'circe-channel-mode-hook 'enable-lui-autopaste)
-  (add-hook 'circe-chat-mode-hook 'my/circe-prompt)
-  (defun my/circe-prompt ()
-    (lui-set-prompt
-     (concat (propertize (concat (buffer-name) ">")
-                         'face 'circe-prompt-face)
-             " ")))
-  (require 'lui-logging)
-  (add-hook 'circe-channel-mode-hook 'enable-lui-logging)
-  (add-hook 'lui-mode-hook 'my/lui-setup)
-  (defun my/lui-setup ()
-    (setq
-     fringes-outside-margins t
-     right-margin-width 5)
-    (turn-on-visual-line-mode))
-  (require 'circe-color-nicks)
-  (enable-circe-color-nicks)
-  (setq circe-color-nicks-everywhere t)
+(when is-netmacs
+  (defvar znc-server "")
+  (defvar znc-port "")
+  (defvar znc-tls nil)
+  (defvar znc-user "")
+  (defvar znc-pass "")
+  (load (concat emacs-dir "private.el"))
+  (require-package 'circe)
+  (after "circe-autoloads"
+    (setq circe-network-options `(("Freenode"
+                                   :host ,znc-server
+                                   :port ,znc-port
+                                   :tls  ,znc-tls
+                                   :user ,znc-user
+                                   :pass ,znc-pass
+                                   :nick ,znc-user))
+          circe-reduce-lurker-spam t
+          circe-format-server-topic "*** Topic change by {origin}: {topic-diff}"
+          lui-flyspell-p t
+          lui-flyspell-alist '((".*" "american"))
+          lui-max-buffer-size 10000
+          lui-time-stamp-position 'right-margin
+          lui-time-stamp-format "%H:%M"
+          lui-fill-type nil
+          tracking-ignored-buffers '(("#emacs" circe-highlight-nick-face)
+                                     ("#haskell" circe-highlight-nick-face))
+          circe-format-self-say "<{nick}> {body}")
+    (require 'lui-autopaste)
+    (add-hook 'circe-channel-mode-hook 'enable-lui-autopaste)
+    (add-hook 'circe-chat-mode-hook 'my/circe-prompt)
+    (defun my/circe-prompt ()
+      (lui-set-prompt
+       (concat (propertize (concat (buffer-name) ">")
+                           'face 'circe-prompt-face)
+               " ")))
+    (require 'lui-logging)
+    (add-hook 'circe-channel-mode-hook 'enable-lui-logging)
+    (add-hook 'lui-mode-hook 'my/lui-setup)
+    (defun my/lui-setup ()
+      (setq wrap-prefix "    "
+            fringes-outside-margins t
+            right-margin-width 5)
+      (turn-on-visual-line-mode))
+    (require 'circe-color-nicks)
+    (enable-circe-color-nicks)
+    (setq circe-color-nicks-everywhere t)
 
-  ;; make channel-join messages display in the right buffer..
-  (defun my/circe-message-option-chanserv (nick user host command args)
-    (when (and (string= "ChanServ" nick)
-               (string-match "^\\[#.+?\\]" (cadr args)))
-      '((dont-display . t))))
-  (add-hook 'circe-message-option-functions 'my/circe-message-option-chanserv)
+    ;; make channel-join messages display in the right buffer..
+    (defun my/circe-message-option-chanserv (nick user host command args)
+      (when (and (string= "ChanServ" nick)
+                 (string-match "^\\[#.+?\\]" (cadr args)))
+        '((dont-display . t))))
+    (add-hook 'circe-message-option-functions 'my/circe-message-option-chanserv)
 
-  (defun my/circe-chanserv-message-handler (nick user host command args)
-    (when (and (string= "ChanServ" nick)
-               (string-match "^\\[\\(#.+?\\)\\]" (cadr args)))
-      (let* ((channel (match-string 1 (cadr args)))
-             (buffer (circe-server-get-chat-buffer channel t)))
-        (let ((circe-server-last-active-buffer buffer))
-          (circe-display-NOTICE nick user host command args)))))
-  (circe-add-message-handler "NOTICE" 'my/circe-chanserv-message-handler))
+    (defun my/circe-chanserv-message-handler (nick user host command args)
+      (when (and (string= "ChanServ" nick)
+                 (string-match "^\\[\\(#.+?\\)\\]" (cadr args)))
+        (let* ((channel (match-string 1 (cadr args)))
+               (buffer (circe-server-get-chat-buffer channel t)))
+          (let ((circe-server-last-active-buffer buffer))
+            (circe-display-NOTICE nick user host command args)))))
+    (circe-add-message-handler "NOTICE" 'my/circe-chanserv-message-handler))
+  )
 
 
 ;;;; ido-mode
@@ -968,17 +1065,15 @@ See URL `https://github.com/bitc/hdevtools'."
 
 ;;;; pretty symbols
 (global-prettify-symbols-mode 1)
-(add-hook 'haskell-mode-hook
-          (lambda ()
-            (push '("\\" . ?λ) prettify-symbols-alist)))
 
 
 ;;;; projectile
 (require-package 'projectile)
 (after "projectile-autoloads"
   (projectile-global-mode)
+  (diminish 'projectile-mode)
   (setq projectile-remember-window-configs t
-        projectile-enable-caching t
+        ;; projectile-enable-caching t
         projectile-cache-file (concat emacs-var-dir "projectile.cache")
         projectile-known-projects-file (concat emacs-var-dir "projectile-bookmarks.eld")))
 
@@ -1164,6 +1259,8 @@ See URL `https://github.com/bitc/hdevtools'."
 
 ;; finally, start the server for emacsclient
 (require 'server)
+(when is-netmacs
+  (setq server-name "netmacs"))
 (unless (server-running-p)
   (server-start))
 
