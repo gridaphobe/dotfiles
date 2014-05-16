@@ -376,13 +376,28 @@ re-downloaded in order to locate PACKAGE."
 ;;   (setq mu4e-debug t)
 ;;   (setq mu4e-hide-index-messages t)
   (defun my/terminal-notifier (msg &optional title subtitle action)
-    (start-process "terminal-notifier"
-                   "*terminal-notifier"
-                   "terminal-notifier"
-                   "-message" msg
-                   "-title" (or title invocation-name)
-                   "-subtitle" (or subtitle "Alert")
-                   "-sender" ns-bundle-id))
+    (call-process "terminal-notifier"
+                  nil ;"*terminal-notifier*"
+                  nil ;"terminal-notifier"
+                  nil
+                  "-message" (my/shell-escape msg)
+                  "-title" (my/shell-escape (or title invocation-name))
+                  "-subtitle" (my/shell-escape (or subtitle "Alert"))
+                  "-sender" ns-bundle-id))
+(defun my/shell-escape (s)
+  (s-replace-all
+   '(("[" . "\\\\[")
+     ("(" . "\\\\(")
+     ("{" . "\\\\{"))
+   s))
+(defun my/notify-new-mail ()
+  (let ((mails (read (shell-command-to-string
+                      "notmuch search --format=sexp tag:new"))))
+    (--each mails
+      (let ((from (plist-get it :authors))
+            (subject (plist-get it :subject)))
+        (my/terminal-notifier subject "New Mail" from)))
+  ))
 ;;   ;; (my/terminal-notifier "hola" "hello" "hi" nil)
 ;;   (defun my/mu-notify (msg &optional point)
 ;;     (my/terminal-notifier (mu4e-message-field msg :subject)
@@ -522,9 +537,10 @@ re-downloaded in order to locate PACKAGE."
       evil-cross-lines t
       evil-move-cursor-back nil)
 
-(defadvice switch-to-buffer (before evil-back-to-initial-state activate)
-  (evil-change-state
-   (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;; (defadvice switch-to-buffer (before evil-back-to-initial-state activate)
+;;   (evil-change-state
+;;    (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+
 ;; (defadvice select-window (around evil-back-to-initial-state activate)
 ;;   (when (ad-get-arg 1)
 ;;     (evil-change-state
@@ -726,29 +742,32 @@ re-downloaded in order to locate PACKAGE."
         haskell-process-args-cabal-repl '("--ghc-option=-ferror-spans"
                                           ;;"--with-ghc=ghci-ng"
                                           )
-        haskell-process-type 'ghci
-        haskell-process-path-ghci "ghci"
+        ;; haskell-process-type 'ghci
+        ;; haskell-process-path-ghci "ghci"
         haskell-process-log t)
 
-  (defun my/haskell-sp-forward-slurp-sexp (&optional ARG)
-    "For some reason `sp-forward-slurp-sexp' in `haskell-mode'
-  inserts an extra space at the beginning of the line..."
-    (interactive)
-    (sp-forward-slurp-sexp ARG)
-    (save-excursion
-      (beginning-of-line)
-      (delete-forward-char 1)))
-  (bind-key "C-)" 'my/haskell-sp-forward-slurp-sexp haskell-mode-map)
+  ;; (defun my/haskell-sp-forward-slurp-sexp (&optional ARG)
+  ;;   "For some reason `sp-forward-slurp-sexp' in `haskell-mode'
+  ;; inserts an extra space at the beginning of the line..."
+  ;;   (interactive)
+  ;;   (sp-forward-slurp-sexp ARG)
+  ;;   ;; (save-excursion
+  ;;   ;;   (beginning-of-line)
+  ;;   ;;   (delete-forward-char 1))
+  ;;   )
+  ;; (bind-key "C-)" 'my/haskell-sp-forward-slurp-sexp haskell-mode-map)
 
-  (defun my/haskell-sp-forward-barf-sexp (&optional ARG)
-    "For some reason `sp-forward-barf-sexp' in `haskell-mode'
-  inserts an extra space at the beginning of the line..."
-    (interactive)
-    (sp-forward-barf-sexp ARG)
-    (save-excursion
-      (beginning-of-line)
-      (delete-forward-char 1)))
-  (bind-key "C-}" 'my/haskell-sp-forward-barf-sexp haskell-mode-map))
+  ;; (defun my/haskell-sp-forward-barf-sexp (&optional ARG)
+  ;;   "For some reason `sp-forward-barf-sexp' in `haskell-mode'
+  ;; inserts an extra space at the beginning of the line..."
+  ;;   (interactive)
+  ;;   (sp-forward-barf-sexp ARG)
+  ;;   ;; (save-excursion
+  ;;   ;;   (beginning-of-line)
+  ;;   ;;   (delete-forward-char 1))
+  ;;   )
+  ;; (bind-key "C-}" 'my/haskell-sp-forward-barf-sexp haskell-mode-map)
+  )
 
 (require-package 'hi2)
 (after "hi2-autoloads"
@@ -757,10 +776,13 @@ re-downloaded in order to locate PACKAGE."
 (after 'hi2
   (diminish 'hi2-mode))
 
-;; (require-package 'shm)
-;; (after "shm-autoloads"
-;;   (add-hook 'haskell-mode-hook 'structured-haskell-mode)
-;;   (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode))
+(require-package 'shm)
+(after "shm-autoloads"
+  (add-hook 'haskell-mode-hook 'structured-haskell-mode)
+  (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
+  ;; (add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
+  ;; (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
+  )
 
 ;; (after 'flycheck-haskell
 ;;   (flycheck-define-checker haskell-hdevtools
@@ -1080,8 +1102,8 @@ re-downloaded in order to locate PACKAGE."
 
 ;;;; smart-mode-line
 (require-package 'smart-mode-line)
-(after "smart-mode-line-autoloads"
-  (sml/setup))
+;; (after "smart-mode-line-autoloads"
+;;   (sml/setup))
 
 
 ;;;; smartparens
@@ -1203,13 +1225,18 @@ re-downloaded in order to locate PACKAGE."
 (defadvice load-theme (around disable-other-themes activate)
   (mapc #'disable-theme custom-enabled-themes)
   ad-do-it
-  (sml/apply-theme 'respectful))
+  ;;(sml/apply-theme 'respectful)
+  )
 
 (require-package 'zenburn-theme)
-(after "zenburn-theme-autoloads"
-  (load-theme 'zenburn)
-  (sml/apply-theme 'dark))
-
+;; (after "zenburn-theme-autoloads"
+;;   (load-theme 'zenburn)
+;;   (sml/apply-theme 'dark))
+(require-package 'leuven-theme)
+(load-theme 'leuven)
+(set-background-color "WhiteSmoke")
+(require-package 'powerline)
+(powerline-center-evil-theme)
 
 ;;;; generic keybindings
 (bind-key "C-x \\" 'align-regexp)
