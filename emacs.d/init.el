@@ -61,8 +61,8 @@ re-downloaded in order to locate PACKAGE."
 (defmacro after (mode &rest body)
   "`eval-after-load' MODE evaluate BODY."
   (declare (indent defun))
-  `(eval-after-load ,mode
-     '(progn ,@body)))
+  `(with-eval-after-load ,mode
+     ,@body))
 
 
 ;;;; bind-key
@@ -234,8 +234,8 @@ re-downloaded in order to locate PACKAGE."
 
 
 ;;;; subword-mode
-(global-subword-mode 1)
-(diminish 'subword-mode)
+;; (global-subword-mode 1)
+;; (diminish 'subword-mode)
 
 
 ;;;; rainbow-mode
@@ -617,11 +617,11 @@ re-downloaded in order to locate PACKAGE."
 ;;;; flycheck
 (require-package 'flycheck)
 (require-package 'flycheck-haskell)
-;; (after "flycheck-autoloads"
-;;   (global-flycheck-mode 1))
-;; (after 'flycheck
-;;   (setq flycheck-check-syntax-automatically '(mode-enabled save)
-;;         flycheck-highlighting-mode nil))
+(after "flycheck-autoloads"
+  (global-flycheck-mode 1))
+(after 'flycheck
+  (setq flycheck-check-syntax-automatically '(mode-enabled save)
+        flycheck-highlighting-mode nil))
 
 
 ;;;; flyspell
@@ -636,99 +636,10 @@ re-downloaded in order to locate PACKAGE."
 ;;;; god-mode
 (require-package 'god-mode)
 
-;; (require 'god-mode)
-;; (require 'evil)
-
-;; (evil-define-state god
-;;   "God state."
-;;   :tag " <G> "
-;;   :message "-- GOD MODE --"
-;;   :entry-hook (evil-god-start-hook)
-;;   :exit-hook (evil-god-stop-hook)
-;;   :input-method t
-;;   :intercept-esc nil)
-
-;; (defun evil-god-start-hook ()
-;;   (god-local-mode 1))
-
-;; (defun evil-god-stop-hook ()
-;;   (god-local-mode -1))
-
-;; (defvar evil-execute-in-god-state-buffer nil)
-
-;; (defun evil-stop-execute-in-god-state ()
-;;   (when (and (not (eq this-command #'evil-execute-in-god-state))
-;;              (not (minibufferp)))
-;;     (remove-hook 'post-command-hook 'evil-stop-execute-in-god-state)
-;;     (when (buffer-live-p evil-execute-in-god-state-buffer)
-;;       (with-current-buffer evil-execute-in-god-state-buffer
-;;         (if (and (eq evil-previous-state 'visual)
-;;                  (not (use-region-p)))
-;;             (progn
-;;               (evil-change-to-previous-state)
-;;               (evil-exit-visual-state))
-;;           (evil-change-to-previous-state))))
-;;     (setq evil-execute-in-god-state-buffer nil)))
-
-;; (evil-define-command evil-execute-in-god-state ()
-;;   "Execute the next command in God state."
-;;   (add-hook 'post-command-hook #'evil-stop-execute-in-god-state t)
-;;   (setq evil-execute-in-god-state-buffer (current-buffer))
-;;   (cond
-;;    ((evil-visual-state-p)
-;;     (let ((mrk (mark))
-;;           (pnt (point)))
-;;       (evil-god-state)
-;;       (set-mar mrk)
-;;       (goto-char pnt)))
-;;    (t
-;;     (evil-god-state)))
-;;  (evil-echo "Switched to God state for the next command ..."))
-
-;; (load-file "~/Source/evil-god-state/evil-god-state.el")
-
 (require-package 'evil-god-state)
 (evil-define-key 'normal global-map "," 'evil-execute-in-god-state)
 (add-hook 'evil-god-start-hook (lambda () (diminish 'god-local-mode)))
 (add-hook 'evil-god-stop-hook (lambda () (diminish-undo 'god-local-mode)))
-
-
-
-;;(after "god-mode-autoloads"
-;;  ;; default to god-mode in new buffers
-;;  (god-mode)
-;;
-;;  (defun set-cursor-according-to-mode ()
-;;    "change cursor color and type according to some minor modes."
-;;    (cond
-;;     (god-local-mode
-;;      (setq cursor-type 'box))
-;;     (t
-;;      (setq cursor-type 'bar))))
-;;  (add-hook 'post-command-hook 'set-cursor-according-to-mode)
-;;
-;;  (defun god-toggle-on-overwrite ()
-;;    "Toggle god-mode on overwrite-mode."
-;;    (if (bound-and-true-p overwrite-mode)
-;;        (god-local-mode-pause)
-;;      (god-local-mode-resume)))
-;;
-;;  (add-hook 'overwrite-mode-hook 'god-toggle-on-overwrite)
-;;
-
-
-
-
-
-;;  (bind-key "<escape>" 'god-local-mode)
-;;
-;;  (add-to-list 'god-exempt-major-modes 'eshell-mode)
-;;  (add-to-list 'god-exempt-major-modes 'haskell-interactive-mode))
-;;
-;;(after 'god-mode
-;;  ;; (diminish 'god-local-mode)
-;;  (bind-key "." 'repeat god-local-mode-map)
-;;  (bind-key "i" 'god-local-mode god-local-mode-map))
 
 
 ;;;; haskell
@@ -742,8 +653,8 @@ re-downloaded in order to locate PACKAGE."
         haskell-process-args-cabal-repl '("--ghc-option=-ferror-spans"
                                           ;;"--with-ghc=ghci-ng"
                                           )
-        ;; haskell-process-type 'ghci
-        ;; haskell-process-path-ghci "ghci"
+        haskell-process-type 'ghci
+        haskell-process-path-ghci "ghci"
         haskell-process-log t)
 
   ;; (defun my/haskell-sp-forward-slurp-sexp (&optional ARG)
@@ -769,65 +680,65 @@ re-downloaded in order to locate PACKAGE."
   ;; (bind-key "C-}" 'my/haskell-sp-forward-barf-sexp haskell-mode-map)
   )
 
-(require-package 'hi2)
-(after "hi2-autoloads"
-  (add-hook 'haskell-mode-hook 'turn-on-hi2)
-  (setq hi2-show-indentations nil))
-(after 'hi2
-  (diminish 'hi2-mode))
+;; (require-package 'hi2)
+;; (after "hi2-autoloads"
+;;   (add-hook 'haskell-mode-hook 'turn-on-hi2)
+;;   (setq hi2-show-indentations nil))
+;; (after 'hi2
+;;   (diminish 'hi2-mode))
 
 (require-package 'shm)
 (after "shm-autoloads"
   (add-hook 'haskell-mode-hook 'structured-haskell-mode)
-  (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
-  ;; (add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
+  ;; (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
+  (add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
   ;; (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
   )
 
-;; (after 'flycheck-haskell
-;;   (flycheck-define-checker haskell-hdevtools
-;;   "A Haskell syntax and type checker using hdevtools.
+(after 'flycheck-haskell
+  (flycheck-define-checker haskell-hdevtools
+  "A Haskell syntax and type checker using hdevtools.
 
-;; See URL `https://github.com/bitc/hdevtools'."
-;;   :command
-;;   ("hdevtools" "check" "-g" "-Wall"
-;;    (eval (when flycheck-ghc-no-user-package-database
-;;            (list "-g" "-no-user-package-db")))
-;;    (eval (apply #'append (mapcar (lambda (db) (list "-g" "-package-db" "-g" db))
-;;                                  flycheck-ghc-package-databases)))
-;;    (eval (list
-;;           "-g" "-i" "-g"
-;;           (flycheck-module-root-directory
-;;            (flycheck-find-in-buffer flycheck-haskell-module-re))))
-;;    (eval (apply #'append (mapcar (lambda (db) (list "-g" "-i" "-g" db))
-;;                                  flycheck-ghc-search-path)))
-;;    source-inplace)
-;;   :error-patterns
-;;   ((warning line-start (file-name) ":" line ":" column ":"
-;;             (or " " "\n    ") "Warning:" (optional "\n")
-;;             (one-or-more " ")
-;;             (message (one-or-more not-newline)
-;;                      (zero-or-more "\n"
-;;                                    (one-or-more " ")
-;;                                    (one-or-more not-newline)))
-;;             line-end)
-;;    (error line-start (file-name) ":" line ":" column ":"
-;;           (or (message (one-or-more not-newline))
-;;               (and "\n" (one-or-more " ")
-;;                    (message (one-or-more not-newline)
-;;                             (zero-or-more "\n"
-;;                                           (one-or-more " ")
-;;                                           (one-or-more not-newline)))))
-;;           line-end))
-;;   :modes haskell-mode
-;;   :next-checkers ((warnings-only . haskell-hlint)))
+See URL `https://github.com/bitc/hdevtools'."
+  :command
+  ("hdevtools" "check" "-g" "-Wall"
+   (eval (when flycheck-ghc-no-user-package-database
+           (list "-g" "-no-user-package-db")))
+   (eval (apply #'append (mapcar (lambda (db) (list "-g" "-package-db" "-g" db))
+                                 flycheck-ghc-package-databases)))
+   (eval (list
+          "-g" "-i" "-g"
+          (flycheck-module-root-directory
+           (flycheck-find-in-buffer flycheck-haskell-module-re))))
+   (eval (apply #'append (mapcar (lambda (db) (list "-g" "-i" "-g" db))
+                                 flycheck-ghc-search-path)))
+   source-inplace)
+  :error-patterns
+  ((warning line-start (file-name) ":" line ":" column ":"
+            (or " " "\n    ") "Warning:" (optional "\n")
+            (one-or-more " ")
+            (message (one-or-more not-newline)
+                     (zero-or-more "\n"
+                                   (one-or-more " ")
+                                   (one-or-more not-newline)))
+            line-end)
+   (error line-start (file-name) ":" line ":" column ":"
+          (or (message (one-or-more not-newline))
+              (and "\n" (one-or-more " ")
+                   (message (one-or-more not-newline)
+                            (zero-or-more "\n"
+                                          (one-or-more " ")
+                                          (one-or-more not-newline)))))
+          line-end))
+  :modes haskell-mode
+  :next-checkers ((warnings-only . haskell-hlint)))
 
-;;   (defun killall-hdevtools ()
-;;     (interactive)
-;;     (shell-command "killall hdevtools")
-;;     (flycheck-buffer))
-;;   (bind-key "C-c C" 'killall-hdevtools haskell-mode-map)
-;;   )
+  (defun killall-hdevtools ()
+    (interactive)
+    (shell-command "killall hdevtools")
+    (flycheck-buffer))
+  (bind-key "C-c C" 'killall-hdevtools haskell-mode-map)
+  )
 
 (add-to-list 'completion-ignored-extensions ".hi")
 (add-to-list 'completion-ignored-extensions ".hdevtools.sock")
@@ -841,74 +752,93 @@ re-downloaded in order to locate PACKAGE."
 
 
 ;;;; helm
-;; (require-package 'helm)
+(require-package 'helm)
+;; (helm-mode 1)
+(setq helm-buffers-fuzzy-matching t)
+;; (bind-key "M-x" 'helm-M-x)
+(require-package 'popwin)
+(require 'popwin)
+(popwin-mode 1)
+(push '("^\*helm.+\*$" :regexp t) popwin:special-display-config)
+;; (push '("*helm M-x*" :height 20) popwin:special-display-config)
 ;; (require 'helm-rdio)
 
 
 ;;;; irc
-(when is-netmacs
-  (defvar znc-server "")
-  (defvar znc-port "")
-  (defvar znc-tls nil)
-  (defvar znc-user "")
-  (defvar znc-pass "")
-  (load (concat emacs-dir "private.el"))
-  (require-package 'circe)
-  (after "circe-autoloads"
-    (setq circe-network-options `(("Freenode"
-                                   :host ,znc-server
-                                   :port ,znc-port
-                                   :tls  ,znc-tls
-                                   :user ,znc-user
-                                   :pass ,znc-pass
-                                   :nick ,znc-user))
-          circe-reduce-lurker-spam t
-          circe-format-server-topic "*** Topic change by {origin}: {topic-diff}"
-          lui-flyspell-p t
-          lui-flyspell-alist '((".*" "american"))
-          lui-max-buffer-size 10000
-          lui-time-stamp-position 'right-margin
-          lui-time-stamp-format "%H:%M"
-          lui-fill-type nil
-          tracking-ignored-buffers '(("#emacs" circe-highlight-nick-face)
-                                     ("#haskell" circe-highlight-nick-face))
-          circe-format-self-say "<{nick}> {body}")
-    (require 'lui-autopaste)
-    (add-hook 'circe-channel-mode-hook 'enable-lui-autopaste)
-    (add-hook 'circe-chat-mode-hook 'my/circe-prompt)
-    (defun my/circe-prompt ()
-      (lui-set-prompt
-       (concat (propertize (concat (buffer-name) ">")
-                           'face 'circe-prompt-face)
-               " ")))
-    (require 'lui-logging)
-    (add-hook 'circe-channel-mode-hook 'enable-lui-logging)
-    (add-hook 'lui-mode-hook 'my/lui-setup)
-    (defun my/lui-setup ()
-      (setq wrap-prefix "    "
-            fringes-outside-margins t
-            right-margin-width 5)
-      (turn-on-visual-line-mode))
-    (require 'circe-color-nicks)
-    (enable-circe-color-nicks)
-    (setq circe-color-nicks-everywhere t)
+;; (when is-netmacs)
+(defvar znc-server "")
+(defvar znc-port "")
+(defvar znc-tls nil)
+(defvar znc-user "")
+(defvar znc-pass "")
+(load (concat emacs-dir "private.el"))
+(require 'erc)
+(require 'tls)
+(require 'znc)
+(setq erc-server   znc-server
+      erc-port     znc-port
+      erc-nick     znc-user
+      erc-password znc-pass
+      erc-server-auto-reconnect nil
+      )
+(require 'erc-terminal-notifier)
 
-    ;; make channel-join messages display in the right buffer..
-    (defun my/circe-message-option-chanserv (nick user host command args)
-      (when (and (string= "ChanServ" nick)
-                 (string-match "^\\[#.+?\\]" (cadr args)))
-        '((dont-display . t))))
-    (add-hook 'circe-message-option-functions 'my/circe-message-option-chanserv)
+(require-package 'circe)
+(after "circe-autoloads"
+  (setq circe-network-options `(("Freenode"
+                                 :host ,znc-server
+                                 :port ,znc-port
+                                 :tls  ,znc-tls
+                                 :user ,znc-user
+                                 :pass ,znc-pass
+                                 :nick ,znc-user))
+        circe-reduce-lurker-spam t
+        circe-format-server-topic "*** Topic change by {origin}: {topic-diff}"
+        lui-flyspell-p t
+        lui-flyspell-alist '((".*" "american"))
+        lui-max-buffer-size 10000
+        lui-time-stamp-position 'right-margin
+        lui-time-stamp-format "%H:%M"
+        lui-fill-type nil
+        tracking-ignored-buffers '(("#emacs" circe-highlight-nick-face)
+                                   ("#haskell" circe-highlight-nick-face))
+        circe-format-self-say "<{nick}> {body}")
+  (require 'lui-autopaste)
+  (add-hook 'circe-channel-mode-hook 'enable-lui-autopaste)
+  (add-hook 'circe-chat-mode-hook 'my/circe-prompt)
+  (defun my/circe-prompt ()
+    (lui-set-prompt
+     (concat (propertize (concat (buffer-name) ">")
+                         'face 'circe-prompt-face)
+             " ")))
+  (require 'lui-logging)
+  (add-hook 'circe-channel-mode-hook 'enable-lui-logging)
+  (add-hook 'lui-mode-hook 'my/lui-setup)
+  (defun my/lui-setup ()
+    (setq wrap-prefix "    "
+          fringes-outside-margins t
+          right-margin-width 5)
+    (turn-on-visual-line-mode))
+  (require 'circe-color-nicks)
+  (enable-circe-color-nicks)
+  (setq circe-color-nicks-everywhere t)
 
-    (defun my/circe-chanserv-message-handler (nick user host command args)
-      (when (and (string= "ChanServ" nick)
-                 (string-match "^\\[\\(#.+?\\)\\]" (cadr args)))
-        (let* ((channel (match-string 1 (cadr args)))
-               (buffer (circe-server-get-chat-buffer channel t)))
-          (let ((circe-server-last-active-buffer buffer))
-            (circe-display-NOTICE nick user host command args)))))
-    (circe-add-message-handler "NOTICE" 'my/circe-chanserv-message-handler))
-  )
+  ;; make channel-join messages display in the right buffer..
+  (defun my/circe-message-option-chanserv (nick user host command args)
+    (when (and (string= "ChanServ" nick)
+               (string-match "^\\[#.+?\\]" (cadr args)))
+      '((dont-display . t))))
+  (add-hook 'circe-message-option-functions 'my/circe-message-option-chanserv)
+
+  (defun my/circe-chanserv-message-handler (nick user host command args)
+    (when (and (string= "ChanServ" nick)
+               (string-match "^\\[\\(#.+?\\)\\]" (cadr args)))
+      (let* ((channel (match-string 1 (cadr args)))
+             (buffer (circe-server-get-chat-buffer channel t)))
+        (let ((circe-server-last-active-buffer buffer))
+          (circe-display-NOTICE nick user host command args)))))
+  (circe-add-message-handler "NOTICE" 'my/circe-chanserv-message-handler))
+
 
 
 ;;;; ido-mode
@@ -939,14 +869,14 @@ re-downloaded in order to locate PACKAGE."
 
 
 ;;;; javascript
-(require-package 'js2-mode)
-(after "js2-mode-autoloads"
-  (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-  (setq js2-auto-indent-p t
-        js2-cleanup-whitespace t
-        js2-enter-indents-newline t
-        js2-indent-on-enter-key t
-        js2-pretty-multiline-declarations t))
+(require-package 'js3-mode)
+;; (after "js2-mode-autoloads"
+;;   (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+;;   (setq js2-auto-indent-p t
+;;         js2-cleanup-whitespace t
+;;         js2-enter-indents-newline t
+;;         js2-indent-on-enter-key t
+;;         js2-pretty-multiline-declarations t))
 
 
 ;;;; latex
@@ -968,13 +898,15 @@ re-downloaded in order to locate PACKAGE."
 (require-package 'magit)
 (after "magit-autoloads"
   (bind-key "C-x g" 'magit-status)
+  ;; (setq magit-restore-window-configuration t)
   (defadvice magit-status (around magit-fullscreen activate)
     (window-configuration-to-register :magit-fullscreen)
     ad-do-it
     (delete-other-windows))
 
   (defadvice magit-mode-quit-window (after magit-restore-screen activate)
-    (jump-to-register :magit-fullscreen)))
+    (jump-to-register :magit-fullscreen))
+  )
 
 
 ;;;; markdown
@@ -1000,9 +932,10 @@ re-downloaded in order to locate PACKAGE."
 ;;   (add-hook 'minibuffer-setup-hook 'conditionally-enable-paredit-mode)
 ;;   (add-hook 'prog-mode-hook 'enable-paredit-mode)
 ;;   (add-hook 'haskell-mode-hook 'enable-paredit-mode))
-(electric-indent-mode 1)
-(electric-layout-mode 1)
-;;(electric-pair-mode t)
+
+;; (electric-indent-mode 1)
+;; (electric-layout-mode 1)
+;; (electric-pair-mode t)
 
 ;;(show-paren-mode t)
 
@@ -1020,10 +953,15 @@ re-downloaded in order to locate PACKAGE."
 (require 'which-func)
 (which-function-mode 1)
 
+(require-package 'ws-butler)
+(ws-butler-global-mode 1)
+(diminish 'ws-butler-mode)
+(diminish 'highlight-changes-mode)
+
 (defun my/prog-mode-defaults ()
   "Default coding hook, useful with any programming language."
   (my/local-comment-auto-fill)
-  (whitespace-mode 1)
+  ;; (whitespace-mode 1)
   (abbrev-mode 1)
   (my/add-watchwords))
 
@@ -1114,24 +1052,22 @@ re-downloaded in order to locate PACKAGE."
 (show-smartparens-global-mode 1)
 (smartparens-global-mode 1)
 
-(add-hook 'emacs-lisp-mode-hook 'turn-on-smartparens-strict-mode)
-(add-hook 'lisp-mode-hook       'turn-on-smartparens-strict-mode)
-
 (after 'diminish
   (diminish 'smartparens-mode))
+(sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil)
 
-(setq sp-ignore-modes-list
-      (delete 'minibuffer-inactive-mode sp-ignore-modes-list))
+;; (setq sp-ignore-modes-list
+;;       (delete 'minibuffer-inactive-mode sp-ignore-modes-list))
 
-(defun conditionally-enable-smartparens-mode ()
-  (when (eq this-command 'eval-expression)
-    (smartparens-strict-mode 1)
-    (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil)))
-(add-hook 'minibuffer-setup-hook 'conditionally-enable-smartparens-mode)
+;; (defun conditionally-enable-smartparens-mode ()
+;;   (when (eq this-command 'eval-expression)
+;;     (smartparens-strict-mode 1)
+;;     (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil)))
+;; (add-hook 'minibuffer-setup-hook 'conditionally-enable-smartparens-mode)
 
-(add-hook 'minibuffer-exit-hook
-          (lambda () (sp-local-pair 'minibuffer-inactive-mode "'" "'"
-                               :unless '(sp-point-after-word-p))))
+;; (add-hook 'minibuffer-exit-hook
+;;           (lambda () (sp-local-pair 'minibuffer-inactive-mode "'" "'"
+;;                                :unless '(sp-point-after-word-p))))
 
 
 ;; only using these keys for now since smartparens seems to override
@@ -1297,5 +1233,7 @@ re-downloaded in order to locate PACKAGE."
 (line-number-mode 1)
 (column-number-mode 1)
 (size-indication-mode 1)
+
+(xterm-mouse-mode 1)
 
 (message "Emacs is ready to do thy bidding, Master %s!" (getenv "USER"))
