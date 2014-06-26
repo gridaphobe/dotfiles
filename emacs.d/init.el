@@ -653,8 +653,8 @@ re-downloaded in order to locate PACKAGE."
         haskell-process-args-cabal-repl '("--ghc-option=-ferror-spans"
                                           ;;"--with-ghc=ghci-ng"
                                           )
-        haskell-process-type 'ghci
-        haskell-process-path-ghci "ghci"
+        ;; haskell-process-type 'ghci
+        ;; haskell-process-path-ghci "ghci"
         haskell-process-log t)
 
   ;; (defun my/haskell-sp-forward-slurp-sexp (&optional ARG)
@@ -747,8 +747,8 @@ See URL `https://github.com/bitc/hdevtools'."
 (add-hook 'haskell-mode-hook 'my/prog-mode-defaults)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-;; (add-hook 'haskell-mode-hook 'flycheck-haskell-setup)
-;; (add-hook 'haskell-mode-hook 'flycheck-mode)
+(add-hook 'haskell-mode-hook 'flycheck-haskell-setup)
+(add-hook 'haskell-mode-hook 'flycheck-mode)
 
 
 ;;;; helm
@@ -756,10 +756,10 @@ See URL `https://github.com/bitc/hdevtools'."
 ;; (helm-mode 1)
 (setq helm-buffers-fuzzy-matching t)
 ;; (bind-key "M-x" 'helm-M-x)
-(require-package 'popwin)
-(require 'popwin)
-(popwin-mode 1)
-(push '("^\*helm.+\*$" :regexp t) popwin:special-display-config)
+;; (require-package 'popwin)
+;; (require 'popwin)
+;; (popwin-mode 1)
+;; (push '("^\*helm.+\*$" :regexp t) popwin:special-display-config)
 ;; (push '("*helm M-x*" :height 20) popwin:special-display-config)
 ;; (require 'helm-rdio)
 
