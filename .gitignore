@@ -11,3 +11,5 @@ xmonad
 /emacs.d/elpa/
 /emacs.d/private.el
 /emacs.d/var/
+/emacs.d/history
+/emacs.d/projectile-bookmarks.eld
