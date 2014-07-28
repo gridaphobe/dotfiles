@@ -3,9 +3,7 @@
 ;;; Commentary:
 ;;; Emacs' configuration entry point.
 
-
 ;;; Code:
-;; -*-no-byte-compile: t; -*-
 
 (defconst on-mac (eq system-type 'darwin)
   "Are we on a Mac?")
@@ -176,29 +174,31 @@
 
 
 ;;;; auto complete
-;;(require-package 'company)
-;;(after "company-autoloads"
-;;  (global-company-mode 1)
-;;  (diminish 'company-mode))
+(req-package company
+  :diminish ""
+  :init (global-company-mode 1))
 
 
 ;;;; compile
-(setq compilation-scroll-output 'first-error
-      compilation-window-height 10)
-(defun bury-compile-buffer-if-successful (buffer string)
-  "Bury a compilation buffer if succeeded without warnings "
-  (if (and
-       (string-match "compilation" (buffer-name buffer))
-       (string-match "finished" string)
-       (not
-        (with-current-buffer buffer
-          (search-forward "warning" nil t))))
-      (run-with-timer 1 nil
-                      (lambda (buf)
-                        (bury-buffer buf)
-                        (delete-window (get-buffer-window buf)))
-                      buffer)))
-(add-hook 'compilation-finish-functions 'bury-compile-buffer-if-successful)
+(req-package compile
+  :init
+  (progn
+    (setq compilation-scroll-output 'first-error
+          compilation-window-height 10)
+    (defun bury-compile-buffer-if-successful (buffer string)
+      "Bury a compilation buffer if succeeded without warnings."
+      (if (and
+           (string-match "compilation" (buffer-name buffer))
+           (string-match "finished" string)
+           (not
+            (with-current-buffer buffer
+              (search-forward "warning" nil t))))
+          (run-with-timer 1 nil
+                          (lambda (buf)
+                            (bury-buffer buf)
+                            (delete-window (get-buffer-window buf)))
+                          buffer)))
+    (add-hook 'compilation-finish-functions 'bury-compile-buffer-if-successful)))
 
 
 ;;;; css-mode
@@ -280,10 +280,10 @@
         (erase-buffer)))))
 
 
-
 ;;;; expand-region
 (req-package expand-region
   :bind (("M-m" . er/expand-region)))
+
 
 ;;;; evil
 (req-package evil
@@ -291,6 +291,8 @@
   :init 
   (progn
     (evil-mode 1)
+    ;; prevent esc-key from translating to meta-key in terminal mode
+    (setq evil-esc-delay 0)
     (setq ;; evil-motion-state-modes (append evil-emacs-state-modes
           ;;                                 evil-motion-state-modes)
           ;; evil-emacs-state-modes '(magit-mode dired-mode)
@@ -308,10 +310,18 @@
 
     ;; Make movement keys work like they should
     
-    (define-key evil-normal-state-map (kbd "<remap> <evil-next-line>")     'evil-next-visual-line)
-    (define-key evil-normal-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
-    (define-key evil-motion-state-map (kbd "<remap> <evil-next-line>")     'evil-next-visual-line)
-    (define-key evil-motion-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
+    (bind-key "<remap> <evil-next-line>"     
+              'evil-next-visual-line     
+              evil-normal-state-map)
+    (bind-key "<remap> <evil-previous-line>" 
+              'evil-previous-visual-line 
+              evil-normal-state-map)
+    (bind-key "<remap> <evil-next-line>"     
+              'evil-next-visual-line     
+              evil-motion-state-map)
+    (bind-key "<remap> <evil-previous-line>" 
+              'evil-previous-visual-line 
+              evil-motion-state-map)
     
     (defun evil-undefine ()
       (interactive)
@@ -400,18 +410,23 @@
 
 ;;;; flyspell
 (eval-when-compile (require 'flyspell))
-(setq ispell-program-name "aspell" ; use aspell instead of ispell
-      ispell-extra-args '("--sug-mode=ultra")
-      flyspell-issue-message-flag nil ; issuing a message for each word is slow
-      )
-(add-hook 'message-mode-hook 'flyspell-mode)
-(add-hook 'text-mode-hook 'flyspell-mode)
+(req-package flyspell
+  :init
+  (progn
+    (setq ispell-program-name "aspell" ; use aspell instead of ispell
+          ispell-extra-args '("--sug-mode=ultra")
+          flyspell-issue-message-flag nil ; issuing a message for each word is slow
+          )
+    (add-hook 'message-mode-hook 'flyspell-mode)
+    (add-hook 'text-mode-hook 'flyspell-mode)
+    ))
 
 
 ;;;; god-mode
 (req-package god-mode)
 
 (req-package evil-god-state
+  :require (diminish evil god-mode)
   :init
   (progn
     (evil-define-key 'normal global-map "," 'evil-execute-in-god-state)
@@ -476,7 +491,14 @@ See URL `https://github.com/bitc/hdevtools'."
           haskell-font-lock-symbols 'unicode
           haskell-process-suggest-hoogle-imports t
           haskell-process-suggest-remove-import-lines t
-          haskell-process-use-presentation-mode t)))
+          haskell-process-use-presentation-mode t)
+
+    ;; haskell-mode doesn't derive from prog-mode
+    (add-hook 'haskell-mode-hook 'my/prog-mode-defaults)
+    (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+    (add-hook 'haskell-mode-hook 
+              '(lambda () (flycheck-select-checker 'haskell-hdevtools)))
+    ))
 
   ;; (defun my/haskell-sp-forward-slurp-sexp (&optional ARG)
   ;;   "For some reason `sp-forward-slurp-sexp' in `haskell-mode'
@@ -508,6 +530,7 @@ See URL `https://github.com/bitc/hdevtools'."
 ;;   (diminish 'hi2-mode))
 
 (req-package shm
+  :require (haskell-mode)
   :init
   (progn
     (add-hook 'haskell-mode-hook 'structured-haskell-mode)
@@ -523,21 +546,17 @@ See URL `https://github.com/bitc/hdevtools'."
 (add-to-list 'completion-ignored-extensions ".hi")
 (add-to-list 'completion-ignored-extensions ".hdevtools.sock")
 
-;; haskell-mode doesn't derive from prog-mode
-(add-hook 'haskell-mode-hook 'my/prog-mode-defaults)
-;; (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
-(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-(add-hook 'haskell-mode-hook '(lambda () (flycheck-select-checker 'haskell-hdevtools)))
-;;(add-hook 'haskell-mode-hook 'flycheck-mode)
 
 
 ;;;; helm
 (req-package helm-config
   :ensure helm
+  :diminish ((helm-mode . ""))
   :init
   (progn
     (helm-mode 1)
     (setq helm-buffers-fuzzy-matching t
+          ido-use-virtual-buffers t
           helm-split-window-default-side 'other ; open helm buffer in another window
           helm-split-window-in-side-p t ; open helm buffer inside current window,
                                         ; don't occupy whole other window
@@ -563,8 +582,6 @@ See URL `https://github.com/bitc/hdevtools'."
   :require (helm))
 
 
-
-
 ;;;; javascript
 (req-package js3-mode)
 ;; (after "js2-mode-autoloads"
@@ -577,20 +594,23 @@ See URL `https://github.com/bitc/hdevtools'."
 
 
 ;;;; latex
-;; (req-package auctex)
-;; (req-package auctex-latexmk)
-;; (eval-when-compile (require 'latex) (require 'reftex))
-;; (after "auctex-autoloads"
-;;   (setq-default TeX-PDF-mode t)
-;;   (add-hook 'LaTeX-mode-hook 'flyspell-mode)
-;;   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-;;   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-;;   (add-hook 'doc-view-mode-hook 'auto-revert-mode)
-;;   (setq reftex-plug-into-AUCTeX t
-;;         reftex-default-bibliography '("main.bib")
-;;         TeX-auto-save t
-;;         TeX-parse-self t
-;;         TeX-save-query nil))
+(req-package tex-site
+  :ensure auctex
+  :init
+  (progn
+    (setq-default TeX-PDF-mode t)
+    (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+    (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+    (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+    (add-hook 'doc-view-mode-hook 'auto-revert-mode)
+    (setq reftex-plug-into-AUCTeX t
+          reftex-default-bibliography '("main.bib")
+          TeX-auto-save t
+          TeX-parse-self t
+          TeX-save-query nil))
+  )
+(req-package auctex-latexmk
+  :require (tex-site))
 
 
 ;;;; magit
@@ -609,9 +629,12 @@ See URL `https://github.com/bitc/hdevtools'."
 
   
 ;;;; markdown
-(req-package markdown-mode)
-(add-to-list 'auto-mode-alist '("\\.markdown\\'" . gfm-mode))
-(add-to-list 'auto-mode-alist '("\\.md\\'" . gfm-mode))
+(req-package markdown-mode
+  :init
+  (progn
+    (add-to-list 'auto-mode-alist '("\\.markdown\\'" . gfm-mode))
+    (add-to-list 'auto-mode-alist '("\\.md\\'" . gfm-mode))
+    ))
 
 
 ;;;; org-mode
@@ -657,13 +680,13 @@ See URL `https://github.com/bitc/hdevtools'."
   :init
   (progn
     (projectile-global-mode)
-    (setq projectile-remember-window-configs t)))
+    (setq projectile-remember-window-configs t
+          projectile-completion-system 'helm)))
 
 
 ;;;; smart-mode-line
-;; (require-package 'smart-mode-line)
-;; (after "smart-mode-line-autoloads"
-;;   (sml/setup))
+(req-package smart-mode-line
+  :init (sml/setup))
 
 
 ;;;; smartparens
@@ -701,6 +724,15 @@ See URL `https://github.com/bitc/hdevtools'."
     (global-undo-tree-mode)))
 
 
+;;;; uniqify
+(req-package uniquify
+  :init
+  (progn
+    (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
+    (require 'uniquify)
+    ))
+
+
 ;;;; volatile-highlights
 (req-package volatile-highlights
   :diminish ""
@@ -736,23 +768,23 @@ See URL `https://github.com/bitc/hdevtools'."
           nxml-bind-meta-tab-to-complete-flag t
           nxml-slash-auto-complete-flag t)))
 
-;;;; theme
-(defadvice load-theme (around disable-other-themes activate)
-  (mapc #'disable-theme custom-enabled-themes)
-  ad-do-it
-  )
 
-(req-package leuven-theme
-  :init
-  (progn
-    (load-theme 'leuven)
-    (set-background-color "WhiteSmoke")))
+;; (req-package leuven-theme
+;;   :init
+;;   (progn
+;;     (load-theme 'leuven)
+;;     (set-background-color "WhiteSmoke")))
 
-(req-package powerline
-  :init
-  (progn
-    (setq powerline-default-separator nil)
-    (powerline-center-evil-theme)))
+;; (req-package color-theme-sanityinc-tomorrow)
+;; (req-package leuven-theme)
+;; (req-package zenburn-theme)
+(req-package solarized-theme)
+
+;; (req-package powerline
+;;   :init
+;;   (progn
+;;     (setq powerline-default-separator nil)
+;;     (powerline-center-evil-theme)))
 
 ;;;; generic keybindings
 (bind-key "C-x \\" 'align-regexp)
@@ -819,6 +851,13 @@ See URL `https://github.com/bitc/hdevtools'."
 (global-hl-line-mode 1)
 
 (xterm-mouse-mode 1)
+
+;;;; theme
+(defadvice load-theme (around disable-other-themes activate)
+  (mapc #'disable-theme custom-enabled-themes)
+  ad-do-it)
+(load-theme 'solarized-light)
+
 
 (message "Emacs is ready to do thy bidding, Master %s!" (getenv "USER"))
 
