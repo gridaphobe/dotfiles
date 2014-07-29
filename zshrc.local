@@ -1,0 +1,25 @@
+function nix_env_prompt () {
+  REPLY=${NIX_MYENV_NAME+${NIX_MYENV_NAME:t} }
+}
+grml_theme_add_token nix-myenv -f nix_env_prompt '%F{red}' '%f'
+
+function hsenv_prompt () {
+  REPLY=${HSENV_NAME+${HSENV_NAME:t} }
+}
+grml_theme_add_token hsenv -f hsenv_prompt '%F{red}' '%f'
+
+zstyle ':prompt:grml:right:setup' use-rprompt true
+zstyle ':prompt:grml:right:setup' items time
+zstyle ':prompt:grml:left:setup' items rc change-root user at host path vcs newline nix-myenv hsenv percent
+
+fpath=(/usr/local/share/zsh-completions $fpath)
+
+path=(/usr/local/bin /usr/local/sbin $path)
+
+[[ -r "$HOME/.nix-profile/etc/profile.d/nix.sh" ]] && . "$HOME/.nix-profile/etc/profile.d/nix.sh"
+
+eval "$(grep export ~/.nix-profile/bin/ghc)"
+
+# Local Variables:
+# mode: sh
+# End:
