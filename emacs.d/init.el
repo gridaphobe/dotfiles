@@ -46,7 +46,7 @@
 
 ;; nice scrolling
 (setq scroll-margin 0
-      scroll-conservatively 0 ;;10000
+      scroll-conservatively 10000
       scroll-preserve-screen-position 1)
 
 ;; enable y/n answers
@@ -174,9 +174,9 @@
 
 
 ;;;; auto complete
-(req-package company
-  :diminish ""
-  :init (global-company-mode 1))
+;; (req-package company
+;;   :diminish ""
+;;   )
 
 
 ;;;; compile
@@ -203,6 +203,11 @@
 
 ;;;; css-mode
 (add-hook 'css-mode-hook 'rainbow-mode)
+
+
+;;;; discover-my-major
+(req-package discover-my-major
+  :init (define-key 'help-command (kbd "C-m") 'discover-my-major))
 
 
 ;;;; edit-server
@@ -488,7 +493,7 @@ See URL `https://github.com/bitc/hdevtools'."
           haskell-process-args-ghci '("exec" "ghci" "--" "-ferror-spans")
           haskell-process-log t
           haskell-align-imports-pad-after-name t
-          haskell-font-lock-symbols 'unicode
+          ;; haskell-font-lock-symbols 'unicode
           haskell-process-suggest-hoogle-imports t
           haskell-process-suggest-remove-import-lines t
           haskell-process-use-presentation-mode t)
@@ -496,8 +501,10 @@ See URL `https://github.com/bitc/hdevtools'."
     ;; haskell-mode doesn't derive from prog-mode
     (add-hook 'haskell-mode-hook 'my/prog-mode-defaults)
     (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-    (add-hook 'haskell-mode-hook 
-              '(lambda () (flycheck-select-checker 'haskell-hdevtools)))
+    (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+    ;; (add-hook 'haskell-mode-hook 
+    ;;           '(lambda () (flycheck-select-checker 'haskell-hdevtools)))
+    (add-hook 'haskell-mode-hook '(lambda () (flycheck-mode -1)))
     ))
 
   ;; (defun my/haskell-sp-forward-slurp-sexp (&optional ARG)
@@ -529,19 +536,19 @@ See URL `https://github.com/bitc/hdevtools'."
 ;; (after 'hi2
 ;;   (diminish 'hi2-mode))
 
-(req-package shm
-  :require (haskell-mode)
-  :init
-  (progn
-    (add-hook 'haskell-mode-hook 'structured-haskell-mode)
-    ;; (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
-    (add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
-    ;; (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
-    (setq shm-colon-enabled t
-          shm-indent-point-after-adding-where-clause t
-          shm-lambda-indent-style 'leftmost-parent
-          shm-use-hdevtools t
-          shm-use-presentation-mode t)))
+;; (req-package shm
+;;   :require (haskell-mode)
+;;   :init
+;;   (progn
+;;     (add-hook 'haskell-mode-hook 'structured-haskell-mode)
+;;     ;; (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
+;;     (add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
+;;     ;; (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
+;;     (setq shm-colon-enabled t
+;;           shm-indent-point-after-adding-where-clause t
+;;           shm-lambda-indent-style 'leftmost-parent
+;;           shm-use-hdevtools t
+;;           shm-use-presentation-mode t)))
 
 (add-to-list 'completion-ignored-extensions ".hi")
 (add-to-list 'completion-ignored-extensions ".hdevtools.sock")
@@ -555,8 +562,13 @@ See URL `https://github.com/bitc/hdevtools'."
   :init
   (progn
     (helm-mode 1)
+    (helm-adaptive-mode 1)
     (setq helm-buffers-fuzzy-matching t
           ido-use-virtual-buffers t
+          helm-ff-auto-update-initial-value t
+          helm-ff-file-name-history-use-recentf t
+          helm-ff-skip-boring-files t
+          helm-quick-update t                   ; do not display invisible candidates
           helm-split-window-default-side 'other ; open helm buffer in another window
           helm-split-window-in-side-p t ; open helm buffer inside current window,
                                         ; don't occupy whole other window
@@ -567,6 +579,7 @@ See URL `https://github.com/bitc/hdevtools'."
                                                            ; in helm buffer
           )
 
+    (bind-key "C-x b" 'helm-mini)
     (bind-key "C-c i" 'helm-semantic-or-imenu))
   :config
   (progn
@@ -778,7 +791,11 @@ See URL `https://github.com/bitc/hdevtools'."
 ;; (req-package color-theme-sanityinc-tomorrow)
 ;; (req-package leuven-theme)
 ;; (req-package zenburn-theme)
-(req-package solarized-theme)
+(req-package solarized-theme
+  :init 
+  (setq solarized-distinct-fringe-background t ; make the fringe stand out from the background
+        solarized-high-contrast-mode-line t    ; make the modeline high contrast
+        ))
 
 ;; (req-package powerline
 ;;   :init
@@ -848,7 +865,9 @@ See URL `https://github.com/bitc/hdevtools'."
 (line-number-mode 1)
 (column-number-mode 1)
 (size-indication-mode 1)
-(global-hl-line-mode 1)
+(setq display-time-format "%a %m-%d %R")
+(display-time-mode 1)
+;; (global-hl-line-mode 1)
 
 (xterm-mouse-mode 1)
 
