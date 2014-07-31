@@ -1,16 +1,12 @@
-#!/usr/bin/env fish
+#!/bin/sh
 
-set SOURCE (pwd)
+source="$(dirname $(dirname $0))"
 cd $HOME
 
-for f in (ls $SOURCE | grep -v fish | grep -v bin)
+for f in $(ls "$source" | grep -v bin); do
     rm -rf "$HOME/.$f"
-    ln -s "$SOURCE/$f" "$HOME/.$f"
-end
+    ln -s "$source/$f" "$HOME/.$f"
+done
 
-rm -rf $HOME/bin
-ln -s "$SOURCE/bin" "$HOME/bin"
-
-rm -rf $HOME/.config/fish
-mkdir -p $HOME/.config
-ln -s "$SOURCE/fish" "$HOME/.config/fish"
+rm -rf "$HOME/bin"
+ln -s "$source/bin" "$HOME/bin"

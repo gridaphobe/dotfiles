@@ -20,6 +20,8 @@ path=(/usr/local/bin /usr/local/sbin $path)
 
 eval "$(grep export ~/.nix-profile/bin/ghc)"
 
+alias git=hub
+
 # Local Variables:
 # mode: sh
 # End:

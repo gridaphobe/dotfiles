@@ -242,49 +242,6 @@
 ;;;; email
 
 
-;;;; eshell
-(req-package eshell
-  :require (projectile)
-  :init
-  (progn
-    (require 'em-smart)
-    (setq eshell-where-to-jump 'begin
-          eshell-review-quick-commands nil
-          eshell-smart-space-goes-to-end t
-          eshell-cmpl-cycle-completions nil
-          eshell-cmpl-ignore-case t
-          eshell-output-filter-functions '(eshell-handle-ansi-color
-                                           eshell-handle-control-codes
-                                           eshell-watch-for-password-prompt
-                                           eshell-truncate-buffer))
-    ;; per-project Eshell
-    (defun projectile-eshell ()
-      (interactive)
-      (let ((eshell-buffer-name
-             (concat "*eshell"
-                     (if (projectile-project-name)
-                         (concat "-" (projectile-project-name))
-                       "")
-                     "*")))
-        (eshell)))
-
-    (bind-key "C-x m" 'projectile-eshell)
-
-    ;; Eshell Hooks
-    (defun eshell-settings ()
-      (setq show-trailing-whitespace nil)
-      (eshell-smart-initialize))
-    
-    (add-hook 'eshell-mode-hook 'eshell-settings)
-    (add-hook 'eshell-mode-hook 'exec-path-from-shell-initialize)
-    
-    ;; Eshell Commands
-    (defun eshell/clear ()
-      (interactive)
-      (let ((inhibit-read-only t))
-        (erase-buffer)))))
-
-
 ;;;; expand-region
 (req-package expand-region
   :bind (("M-m" . er/expand-region)))
@@ -650,14 +607,15 @@ See URL `https://github.com/bitc/hdevtools'."
     ))
 
 
+;;;; nix-mode
+(req-package nix-mode)
+
+
 ;;;; org-mode
 (req-package org
   :ensure org-plus-contrib
   :init (setq orc-src-fontify-natively t))
 
-(electric-indent-mode -1)
-(electric-layout-mode -1)
-(electric-pair-mode -1)
 
 ;;;; prog-mode
 (defun my/local-comment-auto-fill ()
@@ -668,6 +626,10 @@ See URL `https://github.com/bitc/hdevtools'."
   (font-lock-add-keywords
    nil '(("\\<\\(FIXME\\|TODO\\|FIX\\|HACK\\|REFACTOR\\)"
           1 font-lock-warning-face t))))
+
+(electric-indent-mode -1)
+(electric-layout-mode -1)
+(electric-pair-mode -1)
 
 ;; show the name of the current function definition in the modeline
 (require 'which-func)
@@ -695,6 +657,52 @@ See URL `https://github.com/bitc/hdevtools'."
     (projectile-global-mode)
     (setq projectile-remember-window-configs t
           projectile-completion-system 'helm)))
+
+
+;;;; shells
+(req-package eshell
+  :require (projectile)
+  :init
+  (progn
+    (require 'em-smart)
+    (setq eshell-where-to-jump 'begin
+          eshell-review-quick-commands nil
+          eshell-smart-space-goes-to-end t
+          eshell-cmpl-cycle-completions nil
+          eshell-cmpl-ignore-case t
+          eshell-output-filter-functions '(eshell-handle-ansi-color
+                                           eshell-handle-control-codes
+                                           eshell-watch-for-password-prompt
+                                           eshell-truncate-buffer))
+    ;; per-project Eshell
+    (defun projectile-eshell ()
+      (interactive)
+      (let ((eshell-buffer-name
+             (concat "*eshell"
+                     (if (projectile-project-name)
+                         (concat "-" (projectile-project-name))
+                       "")
+                     "*")))
+        (eshell)))
+
+    (bind-key "C-x m" 'projectile-eshell)
+
+    ;; Eshell Hooks
+    (defun eshell-settings ()
+      (setq show-trailing-whitespace nil)
+      (eshell-smart-initialize))
+    
+    (add-hook 'eshell-mode-hook 'eshell-settings)
+    (add-hook 'eshell-mode-hook 'exec-path-from-shell-initialize)
+    
+    ;; Eshell Commands
+    (defun eshell/clear ()
+      (interactive)
+      (let ((inhibit-read-only t))
+        (erase-buffer)))))
+
+(req-package shell
+  :init (setq shell-file-name "zsh"))
 
 
 ;;;; smart-mode-line
@@ -851,6 +859,7 @@ See URL `https://github.com/bitc/hdevtools'."
 
 ;;; IMPORTANT
 (req-package-finish)
+
 
 ;; finally, start the server for emacsclient
 (require 'server)

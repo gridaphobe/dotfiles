@@ -1,6 +1,0 @@
-#!/bin/sh
-
-# ssh goto "tail -n0 -f ~/.gitconfig" | \
-#     ruby -rshellwords -ne '`terminal-notifier -message #{$_.shellescape}`' &
-
-ssh -t goto tmux attach -t irc
