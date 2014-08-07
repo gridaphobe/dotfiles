@@ -239,9 +239,6 @@
 (bind-key "TAB" 'completion-at-point read-expression-map)
 
 
-;;;; email
-
-
 ;;;; expand-region
 (req-package expand-region
   :bind (("M-m" . er/expand-region)))
@@ -789,6 +786,7 @@ See URL `https://github.com/bitc/hdevtools'."
           nxml-bind-meta-tab-to-complete-flag t
           nxml-slash-auto-complete-flag t)))
 
+(req-package yaml-mode)
 
 ;; (req-package leuven-theme
 ;;   :init
@@ -831,10 +829,81 @@ See URL `https://github.com/bitc/hdevtools'."
   isearch-mode-map)
 
 
+;;;; email
+(setq user-full-name "Eric Seidel"
+      user-mail-address "gridaphobe@gmail.com")
+
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
+(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
+(require 'mu4e)
+(setq mu4e-maildir "~/Mail"
+      mu4e-drafts-folder "/Drafts"
+      mu4e-refile-folder "/All Mail"
+      mu4e-sent-folder "/Sent Mail"
+      mu4e-trash-folder "/Trash"
+      mu4e-attachment-dir "~/Downloads"
+      mu4e-user-mail-address-list '("gridaphobe@gmail.com"
+                                    "eric@eseidel.org"
+                                    "eric9@mac.com"
+                                    "eric9@me.com"
+                                    "eric9@icloud.com"
+                                    "eseidel@cs.ucsd.edu"
+                                    "eseidel@ucsd.edu"
+                                    "eseidel@eng.ucsd.edu"
+                                    "eseidel01@ccny.cuny.edu"
+                                    "eric@fluidinfo.com"
+                                    "seidel@apple.com")
+      mu4e-sent-messages-behavior 'delete
+      mu4e-auto-retrieve-keys t
+      mu4e-completing-read-function 'completing-read
+      mu4e-compose-dont-reply-to-self t
+      mu4e-compose-signature-auto-include nil
+      mu4e-headers-skip-duplicates t
+      mu4e-headers-include-related nil
+      mu4e-headers-results-limit 100
+      mu4e-hide-index-messages t
+      mu4e-use-fancy-chars t
+      mu4e-debug t
+      mu4e-get-mail-command "python ~/Source/offlineimap/offlineimap.py"
+      mu4e-update-interval (* 5 60))
+
+(defun my/terminal-notifier (title subtitle message)
+  (call-process "terminal-notifier" nil 0 nil
+                "-sender" "org.gnu.Emacs"
+                "-title" title
+                "-subtitle" subtitle
+                "-message" message))
+;;(my/terminal-notifier "Hello" "from Emacs" "Hello World")
+
+(defvar my/mu4e-tmp-erase-func nil)
+(defvar my/mu4e-tmp-found-func nil)
+(defvar my/mu4e-tmp-header-func nil)
+(defvar my/msgids-to-move nil)
+(add-hook 'mu4e-index-updated-hook
+          (defun my/notify-new-mail ()
+            (setq my/msgids-to-move nil
+                  my/mu4e-tmp-erase-func mu4e-erase-func
+                  my/mu4e-tmp-found-func mu4e-found-func
+                  my/mu4e-tmp-header-func mu4e-header-func
+                  mu4e-erase-func (lambda () nil)
+                  mu4e-found-func (lambda (n)
+                                    (setq mu4e-erase-func my/mu4e-tmp-erase-func
+                                          mu4e-found-func my/mu4e-tmp-found-func
+                                          mu4e-header-func my/mu4e-tmp-header-func)
+                                    (dolist (msgid my/msgids-to-move)
+                                      (mu4e~proc-move msgid nil "-N"))
+                                    (setq my/msgids-to-move nil))
+                  mu4e-header-func (lambda (msg) 
+                                     (my/terminal-notifier
+                                      "New Mail"
+                                      (caar (mu4e-message-field msg :from))
+                                      (mu4e-message-field msg :subject))
+                                     (add-to-list 'my/msgids-to-move (mu4e-message-field msg :message-id))))
+            (mu4e~proc-find "maildir:/INBOX and flag:new" nil :date 'descending nil t nil)))
 
 
 ;;;; mac stuff
-(when on-mac
+(when (and on-mac window-system)
   ;; Emacs users obviously have little need for Command and Option keys,
   ;; but they do need Meta and Super
   (setq mac-command-modifier 'super)
@@ -844,9 +913,9 @@ See URL `https://github.com/bitc/hdevtools'."
 
   (set-fontset-font "fontset-default"
                     'unicode
-                    '("Menlo" . "iso10646-1"))
+                    '("Source Code Pro" . "iso10646-1"))
   (set-face-attribute 'default nil
-                      :family "Menlo"
+                      :family "Source Code Pro"
                       :slant  'normal
                       :weight 'normal
                       :width  'normal
@@ -886,6 +955,8 @@ See URL `https://github.com/bitc/hdevtools'."
   ad-do-it)
 (load-theme 'solarized-light)
 
+;; FIXME: why is this being set to nil?!
+(setq mu4e-mu-binary (executable-find "mu"))
 
 (message "Emacs is ready to do thy bidding, Master %s!" (getenv "USER"))
 
