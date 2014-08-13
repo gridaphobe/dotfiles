@@ -527,10 +527,8 @@ See URL `https://github.com/bitc/hdevtools'."
           helm-split-window-in-side-p t ; open helm buffer inside current window,
                                         ; don't occupy whole other window
           
-          helm-boring-file-regexp-list '("\\.git$" "\\.hg$" "\\.svn$" "\\.CVS$"
-                                         "\\._darcs$" "\\.la$" "\\.o$" "\\.i$"
-                                         "\\.hi" "\\.p_o") ; do not show these files
-                                                           ; in helm buffer
+          helm-boring-file-regexp-list (append helm-boring-file-regexp-list
+                                               '("\\.$" "\\.\\.$"))
           )
 
     (bind-key "C-x b" 'helm-mini)
@@ -712,7 +710,10 @@ See URL `https://github.com/bitc/hdevtools'."
   :ensure smartparens
   :bind (("C-k"   . sp-kill-hybrid-sexp)
          ("C-M-f" . sp-forward-sexp)
-         ("C-M-b" . sp-backward-sexp))
+         ("C-M-b" . sp-backward-sexp)
+         ("C-M-k" . sp-kill-sexp)
+         ("C-M-p" . sp-forward-slurp-sexp)
+         ("C-M-o" . sp-forward-barf-sexp))
   :init
   (progn
     (setq-default sp-autoskip-closing-pair 'always)
@@ -853,22 +854,59 @@ See URL `https://github.com/bitc/hdevtools'."
                                     "eseidel01@ccny.cuny.edu"
                                     "eric@fluidinfo.com"
                                     "seidel@apple.com")
+      mu4e-bookmarks '(("tag:\\\\Inbox" "Inbox" ?i)
+                       ("flag:flagged AND NOT (maildir:/Spam OR maildir:/Trash)"
+                        "Starred Messages"
+                        ?s)
+                       ("flag:unread AND NOT (maildir:/Spam OR maildir:/Trash)"
+                        "Unread Messages"
+                        ?u)
+                       ("tag:UCSD AND NOT (maildir:/Spam OR maildir:/Trash)"
+                        "UCSD"
+                        ?w))
       mu4e-sent-messages-behavior 'delete
       mu4e-auto-retrieve-keys t
+      mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
+                             ("tag message" . mu4e-action-retag-message))
+      mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
+                          ("view as pdf" . mu4e-action-view-as-pdf)
+                          ("tag message" . mu4e-action-retag-message))
       mu4e-completing-read-function 'completing-read
       mu4e-compose-dont-reply-to-self t
       mu4e-compose-signature-auto-include nil
       mu4e-headers-skip-duplicates t
-      mu4e-headers-include-related nil
+      mu4e-headers-include-related t
       mu4e-headers-results-limit 100
-      mu4e-hide-index-messages t
+      mu4e-hide-index-messages nil
       mu4e-use-fancy-chars t
       mu4e-debug t
       mu4e-get-mail-command "python ~/Source/offlineimap/offlineimap.py"
       mu4e-update-interval (* 5 60))
 
+(setq mu4e-html2text-command
+      #'(lambda () 
+          (shr-render-region (point-min) (point-max))))
+
+(add-hook 'mu4e-compose-pre-hook
+  (defun my/set-from-address ()
+    (let ((msg mu4e-compose-parent-message))
+      (when msg
+        (setq user-mail-address
+              (cond
+               ((mu4e-message-contact-field-matches msg :to "ucsd.edu")
+                "eseidel@cs.ucsd.edu")
+               (t "gridaphobe@gmail.com")))))))
+
+(setq message-send-mail-function 'smtpmail-send-it
+      smtpmail-stream-type 'starttls
+      smtpmail-default-smtp-server "smtp.gmail.com"
+      smtpmail-smtp-server "smtp.gmail.com"
+      smtpmail-smtp-service 587)
+;; don't keep message buffers around
+(setq message-kill-buffer-on-exit t)
+
 (defun my/terminal-notifier (title subtitle message)
-  (call-process "terminal-notifier" nil 0 nil
+  (call-process "terminal-notifier" nil nil nil
                 "-sender" "org.gnu.Emacs"
                 "-title" title
                 "-subtitle" subtitle
@@ -899,8 +937,31 @@ See URL `https://github.com/bitc/hdevtools'."
                                       (caar (mu4e-message-field msg :from))
                                       (mu4e-message-field msg :subject))
                                      (add-to-list 'my/msgids-to-move (mu4e-message-field msg :message-id))))
-            (mu4e~proc-find "maildir:/INBOX and flag:new" nil :date 'descending nil t nil)))
+            (mu4e~proc-find "tag:\\\\Inbox and flag:new" nil :date 'descending nil t nil)))
 
+(req-package mu4e-maildirs-extension
+  :require (mu4e)
+  :init (mu4e-maildirs-extension))
+
+;;;; irc
+(req-package weechat
+  :init
+  (progn 
+    (setq weechat-color-list '(unspecified "black" "dim gray" "dark red" "red"
+                                           "dark green" "green" "brown"
+                                           "orange" "dark blue" "blue"
+                                           "dark magenta" "magenta" "dark cyan"
+                                           "royal blue" "dark gray" "gray")
+          weechat-host-default "seidel.io"
+          weechat-port-default 40900
+          weechat-mode-default nil
+          )
+    (add-to-list 'weechat-notification-handler-functions
+                 (defun my/weechat-notify (type sender text date buffer-ptr)
+                   (when (eq type :highlight)
+                     (my/terminal-notifier "IRC Mention"
+                                           sender
+                                           text))))))
 
 ;;;; mac stuff
 (when (and on-mac window-system)
