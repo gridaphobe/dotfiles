@@ -4,9 +4,9 @@ stdenv.mkDerivation rec {
   name = "z3-${version}";
   version = "4.3.2";
   src = fetchurl {
-    url    = "http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=z3&DownloadId=882592&FileTime=130507819772300000&Build=20919";
-    name   = "${name}.zip";
-    sha256 = "1y6fzc3hvqj9hbj5jm14zy84y3p2z1drv3fzppw1yixcqifg7w48";
+    url    = "http://s3.amazonaws.com/gridaphobe/z3-4.3.2.5a45711f22d9-x64-osx-10.9.2.xz";
+    name   = "${name}.tar.xz";
+    sha256 = "14q9qjh5iip3zk7v062wvhp93b57zrs5z63pk3wrka0b8dmc56g1";
   };
 
   buildInputs = [ python unzip ];

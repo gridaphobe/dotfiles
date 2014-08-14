@@ -368,7 +368,6 @@
   :init (flycheck-tip-use-timer 'verbose))
 
 ;;;; flyspell
-(eval-when-compile (require 'flyspell))
 (req-package flyspell
   :init
   (progn
@@ -443,14 +442,13 @@ See URL `https://github.com/bitc/hdevtools'."
     (bind-key "C-c C" 'killall-hdevtools haskell-mode-map)
 
     (setq haskell-process-type 'ghci
-          haskell-process-path-ghci "cabal"
-          haskell-process-args-ghci '("exec" "ghci" "--" "-ferror-spans")
           haskell-process-log t
           haskell-align-imports-pad-after-name t
           ;; haskell-font-lock-symbols 'unicode
+          haskell-stylish-on-save nil
           haskell-process-suggest-hoogle-imports t
           haskell-process-suggest-remove-import-lines t
-          haskell-process-use-presentation-mode t)
+          haskell-process-use-presentation-mode nil)
 
     ;; haskell-mode doesn't derive from prog-mode
     (add-hook 'haskell-mode-hook 'my/prog-mode-defaults)
@@ -975,12 +973,7 @@ See URL `https://github.com/bitc/hdevtools'."
   (set-fontset-font "fontset-default"
                     'unicode
                     '("Source Code Pro" . "iso10646-1"))
-  (set-face-attribute 'default nil
-                      :family "Source Code Pro"
-                      :slant  'normal
-                      :weight 'normal
-                      :width  'normal
-                      :height 140)
+  (set-default-font "Source Code Pro-14")
 
   (req-package exec-path-from-shell
     :init (exec-path-from-shell-initialize))

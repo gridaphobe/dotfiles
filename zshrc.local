@@ -8,15 +8,16 @@ function hsenv_prompt () {
 }
 grml_theme_add_token hsenv -f hsenv_prompt '%F{red}' '%f'
 
-zstyle ':prompt:grml:right:setup' use-rprompt true
-zstyle ':prompt:grml:right:setup' items time
-zstyle ':prompt:grml:left:setup' items rc change-root user at host path vcs newline nix-myenv hsenv percent
+zstyle ':prompt:grml:right:setup' use-rprompt false
+# zstyle ':prompt:grml:right:setup' items time
+zstyle ':prompt:grml:left:setup' items rc change-root time user at host path vcs newline nix-myenv hsenv percent
 
 fpath=(/usr/local/share/zsh-completions $fpath)
 
 path=(/usr/local/bin /usr/local/sbin $path)
 
 [[ -r "$HOME/.nix-profile/etc/profile.d/nix.sh" ]] && . "$HOME/.nix-profile/etc/profile.d/nix.sh"
+export NIX_PATH=nixpkgs=/Users/gridaphobe/Source/nixpkgs
 
 eval "$(grep export ~/.nix-profile/bin/ghc)"
 

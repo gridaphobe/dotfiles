@@ -1,25 +1,31 @@
-{ pkgs }: {
+{
   allowUnfree = true;
 
-  packageOverrides = self: with pkgs; rec {
+  packageOverrides = pkgs: with pkgs; rec {
 
     devToolsEnv = pkgs.buildEnv {
       name = "dev-tools";
       paths = [
         aspell
         aspellDicts.en
+        coreutils
         curl
         emacs
+        emacs24Packages.structuredHaskellMode
+        fish
         gitAndTools.gitFull
         gitAndTools.hub
         globalHsEnv
+        gnused
         graphviz
         guile
         htop
         imagemagick
+        isync
         # macvim
+        mu
         nodejs
-        # ocaml
+        ocaml
         ocamlPackages.opam
         p7zip
         parallel
@@ -30,35 +36,33 @@
         rlwrap
         ruby
         rubyLibs.terminal_notifier
-        rust
-        scala
-        simpleBuildTool
+        # rust
         silver-searcher
         sloccount
         sqlite
         tmux
         tree
         # vimNox
-        weechat
+        # weechat
         wget
-        # z3
+        z3
         zsh
       ];
     };
 
     z3 = callPackage ./z3.nix {};
 
-    globalHsEnv = haskellPackages_ghc783.ghcWithPackages (self: [
+    globalHsEnv = haskellPackages_ghc783_profiling.ghcWithPackages (self: [
       self.cabal2nix
       self.cabalInstall
       self.ghcCore
       self.ghcMod
+      self.haskellDocs
       self.hasktags
       self.hdevtools
       self.hlint
       self.hscolour
       self.myHoogleLocal
-      pkgs.emacs24Packages.structuredHaskellMode
       self.stylishHaskell
       self.pandoc
       self.pandocCiteproc
@@ -84,9 +88,15 @@
       liquidhaskell  = callPackage /Users/gridaphobe/Source/liquid/haskell/cabal.nix {};
       LiquidCheck    = callPackage /Users/gridaphobe/Source/liquid/check/cabal.nix {};
       hdevtools      = callPackage /Users/gridaphobe/Source/hdevtools {};
+      haskellDocs    = self.disableTest (callPackage ./haskellDocs.nix {});
       systemFileio   = self.disableTest  super.systemFileio;
       shake          = self.disableTest  super.shake;
       intern         = callPackage ./intern.nix {};
+      dataTextual    = callPackage ./dataTextual.nix {};
+      dataTimeout    = callPackage ./dataTimeout.nix {};
+      textLatin1     = callPackage ./textLatin1.nix {};
+      textPrinter    = callPackage ./textPrinter.nix {};
+      typeHint       = callPackage ./typeHint.nix {};
 
       myHoogleLocal  = self.hoogleLocal.override {
         packages = with self; ([
@@ -94,27 +104,42 @@
           liquidFixpoint
           liquidhaskell
           LiquidCheck
-        ] ++ (builtins.filter (p: !(p == pkgs.ocaml || p == pkgs.z3))
-                              liquidFixpoint.propagatedNativeBuildInputs)
+        ] ++ liquidFixpoint.propagatedNativeBuildInputs
           ++ liquidhaskell.propagatedNativeBuildInputs
           ++ LiquidCheck.propagatedNativeBuildInputs
         );
       };
     };
 
+    myemacs = callPackage ./emacs.nix {};
+    emacs   = myemacs;
+    emacs24Packages = recurseIntoAttrs (emacsPackages myemacs pkgs.emacs24Packages);
+    # emacs = lib.overrideDerivation pkgs.emacs (oldAttrs: rec {
+    #   name = "emacs-24.3.92";
+    #   src = fetchurl {
+    #     url    = "http://alpha.gnu.org/gnu/emacs/pretest/${name}.tar.xz";
+    #     sha256 = "1dxy6hxpj40ahpq3qrndpfra8d0q2wn05qb50dah08g2rfbm1bp5";
+    #   };
+    #   configureFlags = [ "--with-gnutls" "--with-imagemagick" "--with-rsvg" "--with-ns" ];
+    #   buildInputs = oldAttrs.buildInputs ++ [ autoconf automake ];
+    #   builder = stdenv.builder;
+    #   preConfigure = ''
+    #     ./autogen.sh
+    #   '';
+    # });
+    # emacs = pkgs.emacs24Macport;
+    # emacs24Packages = recurseIntoAttrs (emacsPackages emacs24Macport pkgs.emacs24Packages);
 
-    emacs = pkgs.emacs24Macport;
-    emacs24Packages = recurseIntoAttrs (emacsPackages emacs24Macport pkgs.emacs24Packages);
-    haskellPackages_wrapper = hp: self.recurseIntoAttrs (hp.override {
+    haskellPackages_wrapper = hp: recurseIntoAttrs (hp.override {
         extension = this: super: haskellProjects {
           self = this;
           super = super;
-          callPackage = self.lib.callPackageWith this;
+          callPackage = lib.callPackageWith this;
         };
       });
 
-    haskellPackages_ghc783 = haskellPackages_wrapper self.haskellPackages_ghc783;
-    haskellPackages_ghc783_profiling = haskellPackages_wrapper self.haskellPackages_ghc783_profiling;
+    haskellPackages_ghc783 = haskellPackages_wrapper pkgs.haskellPackages_ghc783;
+    haskellPackages_ghc783_profiling = haskellPackages_wrapper pkgs.haskellPackages_ghc783_profiling;
 
     hsEnv = { name, ghc, deps }:
       let hsPkgs = ghc.ghcWithPackages (self : ([
