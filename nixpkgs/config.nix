@@ -67,6 +67,8 @@
       self.pandoc
       self.pandocCiteproc
       self.pandocTypes
+      
+      self.text
 
       self.QuickCheck
       self.smallcheck

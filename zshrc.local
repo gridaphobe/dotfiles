@@ -19,7 +19,9 @@ path=(/usr/local/bin /usr/local/sbin $path)
 [[ -r "$HOME/.nix-profile/etc/profile.d/nix.sh" ]] && . "$HOME/.nix-profile/etc/profile.d/nix.sh"
 export NIX_PATH=nixpkgs=/Users/gridaphobe/Source/nixpkgs
 
-eval "$(grep export ~/.nix-profile/bin/ghc)"
+if [[ -r "$HOME/.nix-profile/bin/ghc" ]]; then
+  eval "$(grep export ~/.nix-profile/bin/ghc)"
+fi
 
 alias git=hub
 

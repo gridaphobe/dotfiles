@@ -432,7 +432,7 @@ See URL `https://github.com/bitc/hdevtools'."
        (-> errors
          flycheck-dedent-error-messages
          flycheck-sanitize-errors))
-     :modes haskell-mode
+     :modes (haskell-mode literate-haskell-mode)
      :next-checkers ((warnings-only . haskell-hlint)))
     
     (defun killall-hdevtools ()
@@ -832,14 +832,14 @@ See URL `https://github.com/bitc/hdevtools'."
 (setq user-full-name "Eric Seidel"
       user-mail-address "gridaphobe@gmail.com")
 
-(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
+;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
 (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
 (require 'mu4e)
-(setq mu4e-maildir "~/Mail"
-      mu4e-drafts-folder "/Drafts"
-      mu4e-refile-folder "/All Mail"
-      mu4e-sent-folder "/Sent Mail"
-      mu4e-trash-folder "/Trash"
+(setq mu4e-maildir "~/.mail/gmail"
+      mu4e-drafts-folder "/drafts"
+      mu4e-refile-folder "/archive"
+      mu4e-sent-folder "/sent"
+      mu4e-trash-folder "/trash"
       mu4e-attachment-dir "~/Downloads"
       mu4e-user-mail-address-list '("gridaphobe@gmail.com"
                                     "eric@eseidel.org"
@@ -852,14 +852,13 @@ See URL `https://github.com/bitc/hdevtools'."
                                     "eseidel01@ccny.cuny.edu"
                                     "eric@fluidinfo.com"
                                     "seidel@apple.com")
-      mu4e-bookmarks '(("tag:\\\\Inbox" "Inbox" ?i)
-                       ("flag:flagged AND NOT (maildir:/Spam OR maildir:/Trash)"
+      mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/spam OR maildir:/trash)"
                         "Starred Messages"
                         ?s)
-                       ("flag:unread AND NOT (maildir:/Spam OR maildir:/Trash)"
+                       ("flag:unread AND NOT (maildir:/spam OR maildir:/trash)"
                         "Unread Messages"
                         ?u)
-                       ("tag:UCSD AND NOT (maildir:/Spam OR maildir:/Trash)"
+                       ("to:*.ucsd.edu AND NOT (maildir:/spam OR maildir:/trash)"
                         "UCSD"
                         ?w))
       mu4e-sent-messages-behavior 'delete
@@ -870,16 +869,18 @@ See URL `https://github.com/bitc/hdevtools'."
                           ("view as pdf" . mu4e-action-view-as-pdf)
                           ("tag message" . mu4e-action-retag-message))
       mu4e-completing-read-function 'completing-read
+      mu4e-change-filenames-when-moving t
       mu4e-compose-dont-reply-to-self t
       mu4e-compose-signature-auto-include nil
       mu4e-headers-skip-duplicates t
-      mu4e-headers-include-related t
+      mu4e-headers-include-related nil
       mu4e-headers-results-limit 100
       mu4e-hide-index-messages nil
       mu4e-use-fancy-chars t
-      mu4e-debug t
-      mu4e-get-mail-command "python ~/Source/offlineimap/offlineimap.py"
-      mu4e-update-interval (* 5 60))
+      mu4e-debug nil
+      mu4e-get-mail-command "mbsync gmail"
+      mu4e-update-interval nil ;(* 5 60)
+      )
 
 (setq mu4e-html2text-command
       #'(lambda () 
@@ -973,10 +974,17 @@ See URL `https://github.com/bitc/hdevtools'."
   (set-fontset-font "fontset-default"
                     'unicode
                     '("Source Code Pro" . "iso10646-1"))
-  (set-default-font "Source Code Pro-14")
+  (set-face-attribute 'default nil
+                      :family "Source Code Pro"
+                      :height 140)
 
   (req-package exec-path-from-shell
-    :init (exec-path-from-shell-initialize))
+    :init 
+    (progn
+      (setq exec-path-from-shell-variables
+            (append '("NIX_GHC" "NIX_GHCPKG" "NIX_GHC_DOCDIR" "NIX_GHC_LIBDIR")
+                    exec-path-from-shell-variables))
+      (exec-path-from-shell-initialize)))
 
   (setq browse-url-browser-function 'browse-url-default-macosx-browser))
 

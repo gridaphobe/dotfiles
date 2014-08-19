@@ -1,0 +1,48 @@
+CopyArrivalDate yes
+Create Both
+Expunge Both
+SyncState *
+
+IMAPStore gmail
+Host imap.gmail.com
+User gridaphobe@gmail.com
+PassCmd "/usr/bin/security find-internet-password -s imap.gmail.com -w"
+UseIMAPS yes
+RequireSSL yes
+CertificateFile ~/gmail.cert
+
+MaildirStore local
+Path ~/.mail/gmail/
+Inbox ~/.mail/gmail/inbox
+
+Group gmail
+Channel gmail-inbox
+Channel gmail-drafts
+Channel gmail-archive
+Channel gmail-sent
+Channel gmail-spam
+Channel gmail-trash
+
+Channel gmail-inbox
+Master :gmail:INBOX
+Slave  :local:inbox
+
+Channel gmail-drafts
+Master :gmail:"[Gmail]/Drafts"
+Slave  :local:drafts
+
+Channel gmail-archive
+Master :gmail:"[Gmail]/All Mail"
+Slave  :local:archive
+
+Channel gmail-sent
+Master :gmail:"[Gmail]/Sent Mail"
+Slave  :local:sent
+
+Channel gmail-spam
+Master :gmail:"[Gmail]/Spam"
+Slave  :local:spam
+
+Channel gmail-trash
+Master :gmail:"[Gmail]/Trash"
+Slave  :local:trash
