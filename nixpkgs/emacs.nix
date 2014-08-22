@@ -1,13 +1,13 @@
 { stdenv, fetchurl, gnutls, pkgconfig, ncurses
-, texinfo, libxml2, imagemagick
+, texinfo, libxml2
 }:
 
 stdenv.mkDerivation rec {
-  name = "emacs-24.3.92";
+  name = "emacs-24.3.93";
 
   src = fetchurl {
-    url    = "http://alpha.gnu.org/gnu/emacs/pretest/${name}.tar.xz";
-    sha256 = "1dxy6hxpj40ahpq3qrndpfra8d0q2wn05qb50dah08g2rfbm1bp5";
+    url    = "ftp://alpha.gnu.org/gnu/emacs/pretest/${name}.tar.xz";
+    sha256 = "0ym6gk653hs9jzwkjp477sxcqvfqcwisc6lznrg1lvbws6xk8m46";
   };
 
   preConfigure = ''
@@ -25,19 +25,18 @@ stdenv.mkDerivation rec {
     configureFlagsArray=(
       --with-xml2=yes
       --with-gnutls=yes
-      --with-imagemagick=no
       --with-ns
       --disable-ns-self-contained
     )
     makeFlagsArray=(
-      CC=/usr/bin/gcc
+      # CC=/usr/bin/gcc
       CFLAGS=-O3
       LDFLAGS=-O3
     );
   '';
 
   buildInputs =
-    [ pkgconfig gnutls ncurses libxml2 texinfo imagemagick ];
+    [ pkgconfig gnutls ncurses libxml2 texinfo ];
 
   postInstall = ''
     mkdir -p $out/Applications

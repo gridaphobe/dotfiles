@@ -1,4 +1,5 @@
 {
+  allowBroken = true;
   allowUnfree = true;
 
   packageOverrides = pkgs: with pkgs; rec {
@@ -18,12 +19,12 @@
         globalHsEnv
         gnused
         graphviz
-        guile
+        # guile
         htop
-        imagemagick
+        # imagemagick
         isync
         # macvim
-        mu
+        (mu.override { emacs = myemacs; })
         nodejs
         ocaml
         ocamlPackages.opam
@@ -40,6 +41,7 @@
         silver-searcher
         sloccount
         sqlite
+        # texLive
         tmux
         tree
         # vimNox
@@ -84,8 +86,8 @@
 
     haskellProjects = { self, super, callPackage }: {
       liquidFixpoint = callPackage /Users/gridaphobe/Source/liquid/fixpoint/cabal.nix {
-        ocaml  = pkgs.ocaml;
-        z3     = pkgs.z3;
+        ocaml  = ocaml;
+        z3     = z3;
       };
       liquidhaskell  = callPackage /Users/gridaphobe/Source/liquid/haskell/cabal.nix {};
       LiquidCheck    = callPackage /Users/gridaphobe/Source/liquid/check/cabal.nix {};
@@ -143,30 +145,30 @@
     haskellPackages_ghc783 = haskellPackages_wrapper pkgs.haskellPackages_ghc783;
     haskellPackages_ghc783_profiling = haskellPackages_wrapper pkgs.haskellPackages_ghc783_profiling;
 
-    hsEnv = { name, ghc, deps }:
-      let hsPkgs = ghc.ghcWithPackages (self : ([
-          # self.cabal2nix
-          self.cabalInstall
-          #self.ghcCore
-          #self.ghcMod
-          #self.hasktags
-          #self.HaRe
-          #self.hdevtools
-          self.hlint
-        ] ++ (deps self)));
-      in
-        pkgs.myEnvFun {
-          name = name;
-          buildInputs = [
-            pkgs.binutils
-            pkgs.coreutils
-            pkgs.zsh
-            hsPkgs
-          ];
-          shell = "${pkgs.zsh.outPath}/bin/zsh";
-          extraCmds = ''
-            $(grep export ${hsPkgs.outPath}/bin/ghc)
-          '';
-        };
+    # hsEnv = { name, ghc, deps }:
+    #   let hsPkgs = ghc.ghcWithPackages (self : ([
+    #       # self.cabal2nix
+    #       self.cabalInstall
+    #       #self.ghcCore
+    #       #self.ghcMod
+    #       #self.hasktags
+    #       #self.HaRe
+    #       #self.hdevtools
+    #       self.hlint
+    #     ] ++ (deps self)));
+    #   in
+    #     pkgs.myEnvFun {
+    #       name = name;
+    #       buildInputs = [
+    #         pkgs.binutils
+    #         pkgs.coreutils
+    #         pkgs.zsh
+    #         hsPkgs
+    #       ];
+    #       shell = "${pkgs.zsh.outPath}/bin/zsh";
+    #       extraCmds = ''
+    #         $(grep export ${hsPkgs.outPath}/bin/ghc)
+    #       '';
+    #     };
   };
 }

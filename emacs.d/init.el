@@ -363,9 +363,9 @@
 (req-package flycheck
   :init (global-flycheck-mode 1)
   :config (setq flycheck-check-syntax-automatically '(mode-enabled save)))
-(req-package flycheck-tip
+(req-package flycheck-pos-tip
   :require (flycheck)
-  :init (flycheck-tip-use-timer 'verbose))
+  :init (setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
 
 ;;;; flyspell
 (req-package flyspell
@@ -992,12 +992,13 @@ See URL `https://github.com/bitc/hdevtools'."
 (req-package-finish)
 
 
-;; finally, start the server for emacsclient
-(require 'server)
-(when is-netmacs
-  (setq server-name "netmacs"))
-(unless (server-running-p)
-  (server-start))
+;;;; pretty symbols
+(when (fboundp 'global-prettify-symbols-mode)
+  (setq-default prettify-symbols-alist
+                '(("<-" . ?\u2190)
+                  ("->" . ?\u2192)))
+  (global-prettify-symbols-mode +1))
+
 
 ;;;; mode line settings
 ;; FIXME: something in this file is toggling `line-number-mode' so I have to put
