@@ -24,7 +24,8 @@
         # imagemagick
         isync
         # macvim
-        (mu.override { emacs = myemacs; })
+        mu
+        #(mu.override { emacs = myemacs; })
         nodejs
         ocaml
         ocamlPackages.opam
@@ -59,9 +60,9 @@
       self.cabalInstall
       self.ghcCore
       self.ghcMod
-      self.haskellDocs
+      #self.haskellDocs
       self.hasktags
-      self.hdevtools
+      #self.hdevtools
       self.hlint
       self.hscolour
       # self.myHoogleLocal
@@ -79,19 +80,19 @@
       self.tastyHunit
       self.tastyRerun      
 
-      self.liquidFixpoint
-      self.liquidhaskell
-      self.LiquidCheck
+      #self.liquidFixpoint
+      #self.liquidhaskell
+      #self.LiquidCheck
     ]);
 
     haskellProjects = { self, super, callPackage }: {
-      liquidFixpoint = callPackage /Users/gridaphobe/Source/liquid/fixpoint/cabal.nix {
-        ocaml  = ocaml;
-        z3     = z3;
-      };
-      liquidhaskell  = callPackage /Users/gridaphobe/Source/liquid/haskell/cabal.nix {};
-      LiquidCheck    = callPackage /Users/gridaphobe/Source/liquid/check/cabal.nix {};
-      hdevtools      = callPackage /Users/gridaphobe/Source/hdevtools {};
+      #liquidFixpoint = callPackage /Users/gridaphobe/Source/liquid/fixpoint/cabal.nix {
+      #  ocaml  = ocaml;
+      #  z3     = z3;
+      #};
+      #liquidhaskell  = callPackage /Users/gridaphobe/Source/liquid/haskell/cabal.nix {};
+      #LiquidCheck    = callPackage /Users/gridaphobe/Source/liquid/check/cabal.nix {};
+      #hdevtools      = callPackage /Users/gridaphobe/Source/hdevtools {};
       haskellDocs    = self.disableTest (callPackage ./haskellDocs.nix {});
       systemFileio   = self.disableTest  super.systemFileio;
       shake          = self.disableTest  super.shake;
@@ -102,17 +103,17 @@
       textPrinter    = callPackage ./textPrinter.nix {};
       typeHint       = callPackage ./typeHint.nix {};
 
-      myHoogleLocal  = self.hoogleLocal.override {
-        packages = with self; ([
-          ghc
-          liquidFixpoint
-          liquidhaskell
-          LiquidCheck
-        ] ++ liquidFixpoint.propagatedNativeBuildInputs
-          ++ liquidhaskell.propagatedNativeBuildInputs
-          ++ LiquidCheck.propagatedNativeBuildInputs
-        );
-      };
+      #myHoogleLocal  = self.hoogleLocal.override {
+      #  packages = with self; ([
+      #    ghc
+      #    liquidFixpoint
+      #    liquidhaskell
+      #    LiquidCheck
+      #  ] ++ liquidFixpoint.propagatedNativeBuildInputs
+      #    ++ liquidhaskell.propagatedNativeBuildInputs
+      #    ++ LiquidCheck.propagatedNativeBuildInputs
+      #  );
+      #};
     };
 
     myemacs = callPackage ./emacs.nix {};
@@ -131,8 +132,8 @@
     #     ./autogen.sh
     #   '';
     # });
-    # emacs = pkgs.emacs24Macport;
-    # emacs24Packages = recurseIntoAttrs (emacsPackages emacs24Macport pkgs.emacs24Packages);
+    #emacs = pkgs.emacs24Macport;
+    #emacs24Packages = recurseIntoAttrs (emacsPackages emacs24Macport pkgs.emacs24Packages);
 
     haskellPackages_wrapper = hp: recurseIntoAttrs (hp.override {
         extension = this: super: haskellProjects {

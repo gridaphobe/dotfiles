@@ -989,9 +989,9 @@ See URL `https://github.com/bitc/hdevtools'."
 
   (set-fontset-font "fontset-default"
                     'unicode
-                    '("Source Code Pro" . "iso10646-1"))
+                    '("Menlo" . "iso10646-1"))
   (set-face-attribute 'default nil
-                      :family "Source Code Pro"
+                      :family "Menlo"
                       :height 140)
 
   (req-package exec-path-from-shell
