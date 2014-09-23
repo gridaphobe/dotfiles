@@ -394,9 +394,15 @@
 
 ;;;; haskell
 (req-package haskell-mode
-  :require (flycheck)
+  :require (flycheck smartparens-config)
   :init
   (progn
+    (sp-local-pair '(haskell-mode literate-haskell-mode) 
+                   "{- " " -}" 
+                   :trigger "-{")
+    (sp-local-pair '(haskell-mode literate-haskell-mode) 
+                   "{-@ " " @-}" 
+                   :trigger "@{")
     (bind-key "C-c C-l" 'haskell-process-load-file haskell-mode-map)
     (bind-key "C-c C-t" 'haskell-process-do-type   haskell-mode-map)
     (bind-key "C-c C-i" 'haskell-process-do-info   haskell-mode-map)
@@ -450,6 +456,13 @@ See URL `https://github.com/bitc/hdevtools'."
           haskell-process-suggest-remove-import-lines t
           haskell-process-use-presentation-mode nil)
 
+    (add-to-list 'load-path "~/Source/liquid/haskell/syntax")
+    (require 'flycheck-liquid nil t)
+    (require 'liquid-tip nil t)
+    (bind-key "C-c M-l" '(lambda () (interactive) (liquid-tip-update 'flycheck)) haskell-mode-map)
+    (bind-key "C-c M-s" 'liquid-tip-show haskell-mode-map)
+    ;; (remove-hook 'haskell-mode-hook #'(lambda () (liquid-tip-init 'ascii)))
+
     ;; haskell-mode doesn't derive from prog-mode
     (add-hook 'haskell-mode-hook 'my/prog-mode-defaults)
     (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
@@ -488,19 +501,22 @@ See URL `https://github.com/bitc/hdevtools'."
 ;; (after 'hi2
 ;;   (diminish 'hi2-mode))
 
-;; (req-package shm
-;;   :require (haskell-mode)
-;;   :init
-;;   (progn
-;;     (add-hook 'haskell-mode-hook 'structured-haskell-mode)
-;;     ;; (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
-;;     (add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
-;;     ;; (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
-;;     (setq shm-colon-enabled t
-;;           shm-indent-point-after-adding-where-clause t
-;;           shm-lambda-indent-style 'leftmost-parent
-;;           shm-use-hdevtools t
-;;           shm-use-presentation-mode t)))
+(req-package shm
+  :require (haskell-mode)
+  :init
+  (progn
+    (add-hook 'haskell-mode-hook 'structured-haskell-mode)
+    (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
+    (add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
+    (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
+    (remove-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+    (setq shm-colon-enabled t
+          shm-indent-point-after-adding-where-clause t
+          shm-lambda-indent-style 'leftmost-parent
+          shm-use-hdevtools t
+          shm-use-presentation-mode t)
+    (set-face-background 'shm-current-face "#eee8d5")
+    (set-face-background 'shm-quarantine-face "lemonchiffon")))
 
 (add-to-list 'completion-ignored-extensions ".hi")
 (add-to-list 'completion-ignored-extensions ".hdevtools.sock")
@@ -546,7 +562,7 @@ See URL `https://github.com/bitc/hdevtools'."
 
 
 ;;;; javascript
-(req-package js3-mode)
+;; (req-package js3-mode)
 ;; (after "js2-mode-autoloads"
 ;;   (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 ;;   (setq js2-auto-indent-p t
@@ -718,9 +734,9 @@ See URL `https://github.com/bitc/hdevtools'."
     (setq sp-hybrid-kill-entire-symbol nil)
     (show-smartparens-global-mode 1)
     (smartparens-global-strict-mode 1))
-  
   :config
-  (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil))
+  (progn
+    ))
 
 ;;;; switch-window
 (req-package switch-window
@@ -796,11 +812,11 @@ See URL `https://github.com/bitc/hdevtools'."
 ;; (req-package color-theme-sanityinc-tomorrow)
 ;; (req-package leuven-theme)
 ;; (req-package zenburn-theme)
-(req-package solarized-theme
-  :init 
-  (setq solarized-distinct-fringe-background t ; make the fringe stand out from the background
-        solarized-high-contrast-mode-line t    ; make the modeline high contrast
-        ))
+;; (req-package solarized-theme
+;;   :init 
+;;   (setq solarized-distinct-fringe-background t ; make the fringe stand out from the background
+;;         solarized-high-contrast-mode-line t    ; make the modeline high contrast
+;;         ))
 
 ;; (req-package powerline
 ;;   :init
@@ -879,7 +895,7 @@ See URL `https://github.com/bitc/hdevtools'."
       mu4e-use-fancy-chars t
       mu4e-debug nil
       mu4e-get-mail-command "mbsync gmail"
-      mu4e-update-interval nil ;(* 5 60)
+      mu4e-update-interval (* 5 60)
       )
 
 (setq mu4e-html2text-command
@@ -1016,7 +1032,7 @@ See URL `https://github.com/bitc/hdevtools'."
 (defadvice load-theme (around disable-other-themes activate)
   (mapc #'disable-theme custom-enabled-themes)
   ad-do-it)
-(load-theme 'solarized-light)
+;; (load-theme 'solarized-light)
 
 ;; FIXME: why is this being set to nil?!
 (setq mu4e-mu-binary (executable-find "mu"))

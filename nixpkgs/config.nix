@@ -31,7 +31,7 @@
         p7zip
         parallel
         # plantuml
-        perl
+        # perl
         postgresql
         python
         rlwrap
@@ -41,7 +41,7 @@
         silver-searcher
         sloccount
         sqlite
-        # texLive
+        # texLiveFull
         tmux
         tree
         # vimNox
@@ -52,7 +52,7 @@
       ];
     };
 
-    z3 = callPackage ./z3.nix {};
+    # z3 = callPackage ./z3.nix {};
 
     globalHsEnv = haskellPackages_ghc783_profiling.ghcWithPackages (self: [
       self.cabal2nix
@@ -64,7 +64,7 @@
       self.hdevtools
       self.hlint
       self.hscolour
-      self.myHoogleLocal
+      # self.myHoogleLocal
       self.stylishHaskell
       self.pandoc
       self.pandocCiteproc
@@ -144,6 +144,7 @@
 
     haskellPackages_ghc783 = haskellPackages_wrapper pkgs.haskellPackages_ghc783;
     haskellPackages_ghc783_profiling = haskellPackages_wrapper pkgs.haskellPackages_ghc783_profiling;
+
 
     # hsEnv = { name, ghc, deps }:
     #   let hsPkgs = ghc.ghcWithPackages (self : ([
