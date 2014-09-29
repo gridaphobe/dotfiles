@@ -53,13 +53,11 @@
 
   (setq browse-url-browser-function 'browse-url-default-macosx-browser))
 
-
 ;;;; smart-mode-line
 (require 'rich-minority)
 (rich-minority-mode 1)
 (require 'smart-mode-line)
 (sml/setup)
-(sml/apply-theme 'respectful)
 
 
 ;;;; misc
@@ -673,9 +671,6 @@
            (line-beginning-position 2)))))
 
 
-(load-theme 'leuven)
-(set-background-color "WhiteSmoke")
-
 ;; (use-package color-theme-sanityinc-tomorrow)
 ;; (use-package leuven-theme)
 ;; (use-package zenburn-theme)
@@ -871,6 +866,12 @@
   (mapc #'disable-theme custom-enabled-themes)
   ad-do-it)
 ;; (load-theme 'solarized-light)
+
+;; (set-background-color "WhiteSmoke")
+;; (add-to-list 'default-frame-alist '(background-color . "WhiteSmoke"))
+(load-theme 'leuven)
+;; (sml/apply-theme 'light)
+
 
 ;; FIXME: why is this being set to nil?!
 (setq mu4e-mu-binary (executable-find "mu"))
