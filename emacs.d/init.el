@@ -24,20 +24,43 @@
 ;; No splash screen please... jeez
 (setq inhibit-startup-screen t)
 
-;;;; package.el
-(require 'package)
-(setq package-user-dir (concat user-emacs-directory "elpa/"))
-(add-to-list 'package-archives
-             '("org" . "http://orgmode.org/elpa/") t)
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.milkbox.net/packages/") t)
-(package-initialize)
+(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp")
+(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/magit")
+(require 'use-package)
+(require 'bind-key)
 
-;; make sure we have req-package installed
-(when (not (package-installed-p 'req-package))
-  (package-refresh-contents)
-  (package-install 'req-package))
-(require 'req-package)
+;;;; mac stuff
+(when (and on-mac window-system)
+  ;; Emacs users obviously have little need for Command and Option keys,
+  ;; but they do need Meta and Super
+  (setq mac-command-modifier 'super)
+  (setq mac-option-modifier 'meta)
+
+  (bind-key "<s-return>" 'toggle-frame-fullscreen)
+
+  (set-fontset-font "fontset-default"
+                    'unicode
+                    '("Source Code Pro" . "iso10646-1"))
+  (set-face-attribute 'default nil
+                      :family "Source Code Pro"
+                      :height 140)
+
+  (require 'exec-path-from-shell)
+  (setq exec-path-from-shell-variables
+        (append '("NIX_GHC" "NIX_GHCPKG" "NIX_GHC_DOCDIR" "NIX_GHC_LIBDIR")
+                exec-path-from-shell-variables))
+  (exec-path-from-shell-initialize)
+
+  (setq browse-url-browser-function 'browse-url-default-macosx-browser))
+
+
+;;;; smart-mode-line
+(require 'rich-minority)
+(rich-minority-mode 1)
+(require 'smart-mode-line)
+(sml/setup)
+(sml/apply-theme 'respectful)
+
 
 ;;;; misc
 (blink-cursor-mode -1)
@@ -164,41 +187,89 @@
 ;; (global-subword-mode 1)
 ;; (diminish 'subword-mode)
 
+;;;; smartparens
+(require 'smartparens-config)
+(bind-key "C-k"   'sp-kill-hybrid-sexp)
+(bind-key "C-M-f" 'sp-forward-sexp)
+(bind-key "C-M-b" 'sp-backward-sexp)
+(bind-key "C-M-k" 'sp-kill-sexp)
+(bind-key "C-M-p" 'sp-forward-slurp-sexp)
+(bind-key "C-M-o" 'sp-forward-barf-sexp)
+(setq-default sp-autoskip-closing-pair 'always)
+(setq sp-hybrid-kill-entire-symbol nil)
+(show-smartparens-global-mode 1)
+(smartparens-global-strict-mode 1)
+(add-to-list 'rm-blacklist " SP/s")
 
 ;;;; rainbow-mode
-(req-package rainbow-mode
+(use-package rainbow-mode
              :diminish "")
 
 ;;;; ace-jump-mode
-(req-package ace-jump-mode)
+(use-package ace-jump-mode)
+
+;;;; helm
+(require 'helm-config)
+(helm-mode 1)
+(add-to-list 'rm-blacklist " Helm")
+(helm-adaptive-mode 1)
+(setq helm-buffers-fuzzy-matching t
+      ido-use-virtual-buffers t
+      helm-ff-auto-update-initial-value t
+      helm-ff-file-name-history-use-recentf t
+      helm-ff-skip-boring-files t
+      helm-quick-update t                   ; do not display invisible candidates
+      helm-split-window-default-side 'other ; open helm buffer in another window
+      helm-split-window-in-side-p t         ; open helm buffer inside current window,
+                                            ; don't occupy whole other window
+      
+      ;; helm-boring-file-regexp-list (append helm-boring-file-regexp-list
+      ;;                                      '("\\.$" "\\.\\.$"))
+      )
+
+(bind-key "C-x b" 'helm-mini)
+(bind-key "C-c i" 'helm-semantic-or-imenu)
+(bind-key "<tab>" 'helm-execute-persistent-action helm-map) ; rebind tab to do persistent action
+(bind-key "C-i"   'helm-execute-persistent-action helm-map) ; make TAB work in terminal
+(bind-key "C-z"   'helm-select-action             helm-map) ; list actions using C-z
+
+(bind-key "<return>" 'helm-grep-mode-jump-other-window          helm-grep-mode-map)
+(bind-key "n"        'helm-grep-mode-jump-other-window-forward  helm-grep-mode-map)
+(bind-key "p"        'helm-grep-mode-jump-other-window-backward helm-grep-mode-map)
+
+
+;;;; projectile
+(require 'projectile)
+(projectile-global-mode)
+;; (add-to-list 'rm-blacklist " Projectile\\*")
+(setq projectile-remember-window-configs t
+      projectile-completion-system 'helm)
 
 
 ;;;; auto complete
-;; (req-package company
-;;   :diminish ""
-;;   )
-
+(require 'company)
+(global-company-mode)
+(add-to-list 'rm-blacklist " company")
 
 ;;;; compile
-(req-package compile
-  :init
-  (progn
-    (setq compilation-scroll-output 'first-error
-          compilation-window-height 10)
-    (defun bury-compile-buffer-if-successful (buffer string)
-      "Bury a compilation buffer if succeeded without warnings."
-      (if (and
-           (string-match "compilation" (buffer-name buffer))
-           (string-match "finished" string)
-           (not
-            (with-current-buffer buffer
-              (search-forward "warning" nil t))))
-          (run-with-timer 1 nil
-                          (lambda (buf)
-                            (bury-buffer buf)
-                            (delete-window (get-buffer-window buf)))
-                          buffer)))
-    (add-hook 'compilation-finish-functions 'bury-compile-buffer-if-successful)))
+(require 'compile)
+(setq compilation-scroll-output 'first-error
+      compilation-window-height 10)
+
+(defun bury-compile-buffer-if-successful (buffer string)
+  "Bury a compilation buffer if succeeded without warnings."
+  (if (and
+       (string-match "compilation" (buffer-name buffer))
+       (string-match "finished" string)
+       (not
+        (with-current-buffer buffer
+          (search-forward "warning" nil t))))
+      (run-with-timer 1 nil
+                      (lambda (buf)
+                        (bury-buffer buf)
+                        (delete-window (get-buffer-window buf)))
+                      buffer)))
+(add-hook 'compilation-finish-functions 'bury-compile-buffer-if-successful)
 
 
 ;;;; css-mode
@@ -206,7 +277,7 @@
 
 
 ;;;; discover-my-major
-(req-package discover-my-major
+(use-package discover-my-major
   :init (define-key 'help-command (kbd "C-m") 'discover-my-major))
 
 
@@ -232,100 +303,95 @@
 ;;(add-hook 'emacs-lisp-mode-hook 'rainbow-mode)
 (add-hook 'emacs-lisp-mode-hook 'my/remove-elc-on-save)
 
-(req-package eldoc
-  :diminish "")
+(add-to-list 'rm-blacklist " ElDoc")
 
 (bind-key "M-." 'find-function-at-point emacs-lisp-mode-map)
 (bind-key "TAB" 'completion-at-point read-expression-map)
 
 
 ;;;; expand-region
-(req-package expand-region
+(use-package expand-region
   :bind (("M-m" . er/expand-region)))
+
+;;;; undo-tree
+(require 'undo-tree)
+(setq undo-tree-visualizer-relative-timestamps t
+      undo-tree-visualizer-timestamps t)
+(global-undo-tree-mode)
+(add-to-list 'rm-blacklist " Undo-Tree")
 
 
 ;;;; evil
-(req-package evil
-  :require (ace-jump-mode helm-config undo-tree)
-  :init 
-  (progn
-    (evil-mode 1)
-    ;; prevent esc-key from translating to meta-key in terminal mode
-    (setq evil-esc-delay 0)
-    (setq ;; evil-motion-state-modes (append evil-emacs-state-modes
-          ;;                                 evil-motion-state-modes)
-          ;; evil-emacs-state-modes '(magit-mode dired-mode)
-          evil-search-module 'evil-search
-          evil-cross-lines t
-          evil-move-cursor-back nil))
-  :config
-  (progn
-    (evil-ex-define-cmd "e[dit]" 'helm-find-files)
-    (evil-ex-define-cmd "b[uffer]" 'helm-buffers-list)
-    (bind-key "[escape]" 'keyboard-escape-quit evil-normal-state-map)
-    (bind-key "[escape]" 'keyboard-escape-quit evil-visual-state-map)
-    (bind-key "<escape>" 'keyboard-escape-quit)
-    (bind-key "\"" 'ace-jump-mode evil-normal-state-map)
+(require 'evil)
+(evil-mode 1)
+;; prevent esc-key from translating to meta-key in terminal mode
+(setq evil-esc-delay 0)
+(setq evil-search-module 'evil-search
+      evil-cross-lines t
+      evil-move-cursor-back nil)
+(evil-ex-define-cmd "e[dit]" 'helm-find-files)
+(evil-ex-define-cmd "b[uffer]" 'helm-buffers-list)
+(bind-key "[escape]" 'keyboard-escape-quit evil-normal-state-map)
+(bind-key "[escape]" 'keyboard-escape-quit evil-visual-state-map)
+(bind-key "<escape>" 'keyboard-escape-quit)
+(bind-key "\"" 'ace-jump-mode evil-normal-state-map)
 
-    ;; Make movement keys work like they should
-    
-    (bind-key "<remap> <evil-next-line>"     
-              'evil-next-visual-line     
-              evil-normal-state-map)
-    (bind-key "<remap> <evil-previous-line>" 
-              'evil-previous-visual-line 
-              evil-normal-state-map)
-    (bind-key "<remap> <evil-next-line>"     
-              'evil-next-visual-line     
-              evil-motion-state-map)
-    (bind-key "<remap> <evil-previous-line>" 
-              'evil-previous-visual-line 
-              evil-motion-state-map)
-    
-    (defun evil-undefine ()
-      (interactive)
-      (let (evil-mode-map-alist)
-        (call-interactively (key-binding (this-command-keys)))))
-    
-    (bind-key "C-e" 'evil-end-of-line    evil-normal-state-map)
-    (bind-key "C-e" 'end-of-line         evil-insert-state-map)
-    (bind-key "C-e" 'evil-end-of-line    evil-visual-state-map)
-    (bind-key "C-e" 'evil-end-of-line    evil-motion-state-map)
-    (bind-key "C-f" 'evil-forward-char   evil-normal-state-map)
-    (bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
-    (bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
-    (bind-key "C-b" 'evil-backward-char  evil-normal-state-map)
-    (bind-key "C-b" 'evil-backward-char  evil-insert-state-map)
-    (bind-key "C-b" 'evil-backward-char  evil-visual-state-map)
-    (bind-key "C-d" 'evil-delete-char    evil-normal-state-map)
-    (bind-key "C-d" 'evil-delete-char    evil-insert-state-map)
-    (bind-key "C-d" 'evil-delete-char    evil-visual-state-map)
-    (bind-key "C-n" 'evil-next-line      evil-normal-state-map)
-    (bind-key "C-n" 'evil-next-line      evil-insert-state-map)
-    (bind-key "C-n" 'evil-next-line      evil-visual-state-map)
-    (bind-key "C-p" 'evil-previous-line  evil-normal-state-map)
-    (bind-key "C-p" 'evil-previous-line  evil-insert-state-map)
-    (bind-key "C-p" 'evil-previous-line  evil-visual-state-map)
-    (bind-key "C-w" 'evil-delete         evil-normal-state-map)
-    (bind-key "C-w" 'evil-delete         evil-insert-state-map)
-    (bind-key "C-w" 'evil-delete         evil-visual-state-map)
-    (bind-key "C-y" 'yank                evil-normal-state-map)
-    (bind-key "C-y" 'yank                evil-insert-state-map)
-    (bind-key "C-y" 'yank                evil-visual-state-map)
-    (bind-key "C-k" 'kill-line           evil-normal-state-map)
-    (bind-key "C-k" 'kill-line           evil-insert-state-map)
-    (bind-key "C-k" 'kill-line           evil-visual-state-map)
-    (bind-key "C-r" 'isearch-backward    evil-normal-state-map)
-    (bind-key "C-r" 'isearch-backward    evil-insert-state-map)
-    (bind-key "C-r" 'isearch-backward    evil-visual-state-map)
-    (bind-key "Q"   'call-last-kbd-macro evil-normal-state-map)
-    (bind-key "Q"   'call-last-kbd-macro evil-visual-state-map)
-    (bind-key "TAB" 'evil-undefine       evil-normal-state-map)
-    (bind-key "RET" 'evil-undefine       evil-insert-state-map)
-    ))
+;; Make movement keys work like they should
+(bind-key "<remap> <evil-next-line>"     
+          'evil-next-visual-line     
+          evil-normal-state-map)
+(bind-key "<remap> <evil-previous-line>" 
+          'evil-previous-visual-line 
+          evil-normal-state-map)
+(bind-key "<remap> <evil-next-line>"     
+          'evil-next-visual-line     
+          evil-motion-state-map)
+(bind-key "<remap> <evil-previous-line>" 
+          'evil-previous-visual-line 
+          evil-motion-state-map)
 
-(req-package evil-surround
-  :require (evil)
+(defun evil-undefine ()
+  (interactive)
+  (let (evil-mode-map-alist)
+    (call-interactively (key-binding (this-command-keys)))))
+
+(bind-key "C-e" 'evil-end-of-line    evil-normal-state-map)
+(bind-key "C-e" 'end-of-line         evil-insert-state-map)
+(bind-key "C-e" 'evil-end-of-line    evil-visual-state-map)
+(bind-key "C-e" 'evil-end-of-line    evil-motion-state-map)
+(bind-key "C-f" 'evil-forward-char   evil-normal-state-map)
+(bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
+(bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
+(bind-key "C-b" 'evil-backward-char  evil-normal-state-map)
+(bind-key "C-b" 'evil-backward-char  evil-insert-state-map)
+(bind-key "C-b" 'evil-backward-char  evil-visual-state-map)
+(bind-key "C-d" 'evil-delete-char    evil-normal-state-map)
+(bind-key "C-d" 'evil-delete-char    evil-insert-state-map)
+(bind-key "C-d" 'evil-delete-char    evil-visual-state-map)
+(bind-key "C-n" 'evil-next-line      evil-normal-state-map)
+(bind-key "C-n" 'evil-next-line      evil-insert-state-map)
+(bind-key "C-n" 'evil-next-line      evil-visual-state-map)
+(bind-key "C-p" 'evil-previous-line  evil-normal-state-map)
+(bind-key "C-p" 'evil-previous-line  evil-insert-state-map)
+(bind-key "C-p" 'evil-previous-line  evil-visual-state-map)
+(bind-key "C-w" 'evil-delete         evil-normal-state-map)
+(bind-key "C-w" 'evil-delete         evil-insert-state-map)
+(bind-key "C-w" 'evil-delete         evil-visual-state-map)
+(bind-key "C-y" 'yank                evil-normal-state-map)
+(bind-key "C-y" 'yank                evil-insert-state-map)
+(bind-key "C-y" 'yank                evil-visual-state-map)
+(bind-key "C-k" 'kill-line           evil-normal-state-map)
+(bind-key "C-k" 'kill-line           evil-insert-state-map)
+(bind-key "C-k" 'kill-line           evil-visual-state-map)
+(bind-key "C-r" 'isearch-backward    evil-normal-state-map)
+(bind-key "C-r" 'isearch-backward    evil-insert-state-map)
+(bind-key "C-r" 'isearch-backward    evil-visual-state-map)
+(bind-key "Q"   'call-last-kbd-macro evil-normal-state-map)
+(bind-key "Q"   'call-last-kbd-macro evil-visual-state-map)
+(bind-key "TAB" 'evil-undefine       evil-normal-state-map)
+(bind-key "RET" 'evil-undefine       evil-insert-state-map)
+
+(use-package evil-surround
   :init (global-evil-surround-mode 1))
 
 ;; (defadvice switch-to-buffer (before evil-back-to-initial-state activate)
@@ -360,31 +426,27 @@
 
 
 ;;;; flycheck
-(req-package flycheck
+(use-package flycheck
   :init (global-flycheck-mode 1)
   :config (setq flycheck-check-syntax-automatically '(mode-enabled save)))
-(req-package flycheck-pos-tip
-  :require (flycheck)
+(use-package flycheck-pos-tip
   :init (setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
 
+
 ;;;; flyspell
-(req-package flyspell
-  :init
-  (progn
-    (setq ispell-program-name "aspell" ; use aspell instead of ispell
-          ispell-extra-args '("--sug-mode=ultra")
-          flyspell-issue-message-flag nil ; issuing a message for each word is slow
-          )
-    (add-hook 'message-mode-hook 'flyspell-mode)
-    (add-hook 'text-mode-hook 'flyspell-mode)
-    ))
+(require 'flyspell)
+(setq ispell-program-name "aspell" ; use aspell instead of ispell
+      ispell-extra-args '("--sug-mode=ultra")
+      flyspell-issue-message-flag nil ; issuing a message for each word is slow
+      )
+(add-hook 'message-mode-hook 'flyspell-mode)
+(add-hook 'text-mode-hook 'flyspell-mode)
 
 
 ;;;; god-mode
-(req-package god-mode)
+(use-package god-mode)
 
-(req-package evil-god-state
-  :require (diminish evil god-mode)
+(use-package evil-god-state
   :init
   (progn
     (evil-define-key 'normal global-map "," 'evil-execute-in-god-state)
@@ -393,176 +455,54 @@
 
 
 ;;;; haskell
-(req-package haskell-mode
-  :require (flycheck smartparens-config)
-  :init
-  (progn
-    (sp-local-pair '(haskell-mode literate-haskell-mode) 
-                   "{- " " -}" 
-                   :trigger "-{")
-    (sp-local-pair '(haskell-mode literate-haskell-mode) 
-                   "{-@ " " @-}" 
-                   :trigger "@{")
-    (bind-key "C-c C-l" 'haskell-process-load-file haskell-mode-map)
-    (bind-key "C-c C-t" 'haskell-process-do-type   haskell-mode-map)
-    (bind-key "C-c C-i" 'haskell-process-do-info   haskell-mode-map)
-    (bind-key "SPC" 'haskell-mode-contextual-space haskell-mode-map)
-    (flycheck-define-checker
-     haskell-hdevtools
-     "A Haskell syntax and type checker using hdevtools.
+(require 'haskell-mode-autoloads)
+(require 'haskell-mode)
+(sp-local-pair '(haskell-mode literate-haskell-mode) 
+               "{- " " -}" 
+               :trigger "-{")
+(sp-local-pair '(haskell-mode literate-haskell-mode) 
+               "{-@ " " @-}" 
+               :trigger "@{")
+(bind-key "C-c C-l" 'haskell-process-load-file haskell-mode-map)
+(bind-key "C-c C-t" 'haskell-process-do-type   haskell-mode-map)
+(bind-key "C-c C-i" 'haskell-process-do-info   haskell-mode-map)
+(bind-key "SPC" 'haskell-mode-contextual-space haskell-mode-map)
 
-See URL `https://github.com/bitc/hdevtools'."
-     :command
-     ("hdevtools" "check" "-g" "-Wall"
-      source-inplace)
-     :error-patterns
-     ((warning line-start (file-name) ":" line ":" column ":"
-               (or " " "\n    ") "Warning:" (optional "\n")
-               (message
-                (one-or-more " ") (one-or-more not-newline)
-                (zero-or-more "\n"
-                              (one-or-more " ")
-                              (one-or-more not-newline)))
-               line-end)
-      (error line-start (file-name) ":" line ":" column ":"
-             (or (message (one-or-more not-newline))
-                 (and "\n"
-                      (message
-                       (one-or-more " ") (one-or-more not-newline)
-                       (zero-or-more "\n"
-                                     (one-or-more " ")
-                                     (one-or-more not-newline)))))
-             line-end))
-     :error-filter
-     (lambda (errors)
-       (-> errors
-         flycheck-dedent-error-messages
-         flycheck-sanitize-errors))
-     :modes (haskell-mode literate-haskell-mode)
-     :next-checkers ((warnings-only . haskell-hlint)))
-    
-    (defun killall-hdevtools ()
-      (interactive)
-      (shell-command "killall hdevtools")
-      (flycheck-buffer))
-    (bind-key "C-c C" 'killall-hdevtools haskell-mode-map)
+(setq haskell-process-type 'ghci
+      haskell-process-log t
+      haskell-align-imports-pad-after-name t
+      ;; haskell-font-lock-symbols 'unicode
+      haskell-stylish-on-save nil
+      haskell-process-suggest-hoogle-imports t
+      haskell-process-suggest-remove-import-lines t
+      haskell-process-use-presentation-mode nil)
 
-    (setq haskell-process-type 'ghci
-          haskell-process-log t
-          haskell-align-imports-pad-after-name t
-          ;; haskell-font-lock-symbols 'unicode
-          haskell-stylish-on-save nil
-          haskell-process-suggest-hoogle-imports t
-          haskell-process-suggest-remove-import-lines t
-          haskell-process-use-presentation-mode nil)
+(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 
-    (add-to-list 'load-path "~/Source/liquid/haskell/syntax")
-    (require 'flycheck-liquid nil t)
-    (require 'liquid-tip nil t)
-    (bind-key "C-c M-l" '(lambda () (interactive) (liquid-tip-update 'flycheck)) haskell-mode-map)
-    (bind-key "C-c M-s" 'liquid-tip-show haskell-mode-map)
-    ;; (remove-hook 'haskell-mode-hook #'(lambda () (liquid-tip-init 'ascii)))
+;; (require 'ghc)
+;; (add-hook 'haskell-mode-hook (lambda () (ghc-init)))
 
-    ;; haskell-mode doesn't derive from prog-mode
-    (add-hook 'haskell-mode-hook 'my/prog-mode-defaults)
-    (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-    (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-    ;; (add-hook 'haskell-mode-hook 
-    ;;           '(lambda () (flycheck-select-checker 'haskell-hdevtools)))
-    (add-hook 'haskell-mode-hook '(lambda () (flycheck-mode -1)))
-    ))
-
-  ;; (defun my/haskell-sp-forward-slurp-sexp (&optional ARG)
-  ;;   "For some reason `sp-forward-slurp-sexp' in `haskell-mode'
-  ;; inserts an extra space at the beginning of the line..."
-  ;;   (interactive)
-  ;;   (sp-forward-slurp-sexp ARG)
-  ;;   ;; (save-excursion
-  ;;   ;;   (beginning-of-line)
-  ;;   ;;   (delete-forward-char 1))
-  ;;   )
-  ;; (bind-key "C-)" 'my/haskell-sp-forward-slurp-sexp haskell-mode-map)
-
-  ;; (defun my/haskell-sp-forward-barf-sexp (&optional ARG)
-  ;;   "For some reason `sp-forward-barf-sexp' in `haskell-mode'
-  ;; inserts an extra space at the beginning of the line..."
-  ;;   (interactive)
-  ;;   (sp-forward-barf-sexp ARG)
-  ;;   ;; (save-excursion
-  ;;   ;;   (beginning-of-line)
-  ;;   ;;   (delete-forward-char 1))
-  ;;   )
-  ;; (bind-key "C-}" 'my/haskell-sp-forward-barf-sexp haskell-mode-map)
-
-;; (require-package 'hi2)
-;; (after "hi2-autoloads"
-;;   (add-hook 'haskell-mode-hook 'turn-on-hi2)
-;;   (setq hi2-show-indentations nil))
-;; (after 'hi2
-;;   (diminish 'hi2-mode))
-
-(req-package shm
-  :require (haskell-mode)
-  :init
-  (progn
-    (add-hook 'haskell-mode-hook 'structured-haskell-mode)
-    (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
-    (add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
-    (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
-    (remove-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-    (setq shm-colon-enabled t
-          shm-indent-point-after-adding-where-clause t
-          shm-lambda-indent-style 'leftmost-parent
-          shm-use-hdevtools t
-          shm-use-presentation-mode t)
-    (set-face-background 'shm-current-face "#eee8d5")
-    (set-face-background 'shm-quarantine-face "lemonchiffon")))
+;; (require 'shm)
+;; (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
+;; (add-hook 'haskell-mode-hook 'structured-haskell-mode)
+;; (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
+;; (add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
+;; (remove-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+;; (setq shm-colon-enabled t
+;;       shm-indent-point-after-adding-where-clause t
+;;       shm-lambda-indent-style 'leftmost-parent
+;;       shm-use-hdevtools t
+;;       shm-use-presentation-mode t)
+;; (set-face-background 'shm-current-face "#eee8d5")
+;; (set-face-background 'shm-quarantine-face "lemonchiffon")
 
 (add-to-list 'completion-ignored-extensions ".hi")
 (add-to-list 'completion-ignored-extensions ".hdevtools.sock")
 
 
-
-;;;; helm
-(req-package helm-config
-  :ensure helm
-  :diminish ((helm-mode . ""))
-  :init
-  (progn
-    (helm-mode 1)
-    (helm-adaptive-mode 1)
-    (setq helm-buffers-fuzzy-matching t
-          ido-use-virtual-buffers t
-          helm-ff-auto-update-initial-value t
-          helm-ff-file-name-history-use-recentf t
-          helm-ff-skip-boring-files t
-          helm-quick-update t                   ; do not display invisible candidates
-          helm-split-window-default-side 'other ; open helm buffer in another window
-          helm-split-window-in-side-p t ; open helm buffer inside current window,
-                                        ; don't occupy whole other window
-          
-          helm-boring-file-regexp-list (append helm-boring-file-regexp-list
-                                               '("\\.$" "\\.\\.$"))
-          )
-
-    (bind-key "C-x b" 'helm-mini)
-    (bind-key "C-c i" 'helm-semantic-or-imenu))
-  :config
-  (progn
-    (bind-key "<tab>" 'helm-execute-persistent-action helm-map) ; rebind tab to do persistent action
-    (bind-key "C-i"   'helm-execute-persistent-action helm-map) ; make TAB work in terminal
-    (bind-key "C-z"   'helm-select-action             helm-map) ; list actions using C-z
-    
-    (bind-key "<return>" 'helm-grep-mode-jump-other-window          helm-grep-mode-map)
-    (bind-key "n"        'helm-grep-mode-jump-other-window-forward  helm-grep-mode-map)
-    (bind-key "p"        'helm-grep-mode-jump-other-window-backward helm-grep-mode-map)))
-    
-(req-package helm-spotify
-  :require (helm))
-
-
 ;;;; javascript
-;; (req-package js3-mode)
+;; (use-package js3-mode)
 ;; (after "js2-mode-autoloads"
 ;;   (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 ;;   (setq js2-auto-indent-p t
@@ -573,8 +513,7 @@ See URL `https://github.com/bitc/hdevtools'."
 
 
 ;;;; latex
-(req-package tex-site
-  :ensure auctex
+(use-package tex-site
   :init
   (progn
     (setq-default TeX-PDF-mode t)
@@ -588,27 +527,21 @@ See URL `https://github.com/bitc/hdevtools'."
           TeX-parse-self t
           TeX-save-query nil))
   )
-(req-package auctex-latexmk
-  :require (tex-site))
 
 
 ;;;; magit
-(req-package magit
-  :bind (("C-x g" . magit-status)
-         ("C-x C-g" . magit-status))
-  :init
-  (progn
-    (defadvice magit-status (around magit-fullscreen activate)
-      (window-configuration-to-register :magit-fullscreen)
-      ad-do-it
-      (delete-other-windows))
-    
-    (defadvice magit-mode-quit-window (after magit-restore-screen activate)
-      (jump-to-register :magit-fullscreen))))
+(require 'magit)
+(add-to-list 'rm-blacklist " MRev")
+(defadvice magit-status (around magit-fullscreen activate)
+  (window-configuration-to-register :magit-fullscreen)
+  ad-do-it
+  (delete-other-windows))
+(defadvice magit-mode-quit-window (after magit-restore-screen activate)
+  (jump-to-register :magit-fullscreen))
 
   
 ;;;; markdown
-(req-package markdown-mode
+(use-package markdown-mode
   :init
   (progn
     (add-to-list 'auto-mode-alist '("\\.markdown\\'" . gfm-mode))
@@ -617,19 +550,18 @@ See URL `https://github.com/bitc/hdevtools'."
 
 
 ;;;; nix-mode
-(req-package nix-mode)
+(require 'nix-mode)
 
 
 ;;;; org-mode
-(req-package org
-  :ensure org-plus-contrib
+(use-package org
   :init (setq orc-src-fontify-natively t))
 
 
 ;;;; prog-mode
-(defun my/local-comment-auto-fill ()
-  (auto-fill-mode 1)
-  (set (make-local-variable 'comment-auto-fill-only-comments) t))
+;; (defun my/local-comment-auto-fill ()
+;;   (auto-fill-mode 1)
+;;   (set (make-local-variable 'comment-auto-fill-only-comments) t))
 
 (defun my/add-watchwords ()
   (font-lock-add-keywords
@@ -651,95 +583,59 @@ See URL `https://github.com/bitc/hdevtools'."
 
 (defun my/prog-mode-defaults ()
   "Default coding hook, useful with any programming language."
-  (my/local-comment-auto-fill)
+  ;; (my/local-comment-auto-fill)
   ;; (whitespace-mode 1)
   (my/add-watchwords))
 
-(add-hook 'prog-mode-hook 'my/prog-mode-defaults)
+;; (add-hook 'prog-mode-hook 'my/prog-mode-defaults)
 
-
-;;;; projectile
-(req-package projectile
-  :diminish ""
-  :init
-  (progn
-    (projectile-global-mode)
-    (setq projectile-remember-window-configs t
-          projectile-completion-system 'helm)))
 
 
 ;;;; shells
-(req-package eshell
-  :require (projectile)
-  :init
-  (progn
-    (require 'em-smart)
-    (setq eshell-where-to-jump 'begin
-          eshell-review-quick-commands nil
-          eshell-smart-space-goes-to-end t
-          eshell-cmpl-cycle-completions nil
-          eshell-cmpl-ignore-case t
-          eshell-output-filter-functions '(eshell-handle-ansi-color
-                                           eshell-handle-control-codes
-                                           eshell-watch-for-password-prompt
-                                           eshell-truncate-buffer))
-    ;; per-project Eshell
-    (defun projectile-eshell ()
-      (interactive)
-      (let ((eshell-buffer-name
-             (concat "*eshell"
-                     (if (projectile-project-name)
-                         (concat "-" (projectile-project-name))
-                       "")
-                     "*")))
-        (eshell)))
+(require 'eshell)
+(require 'em-smart)
+(setq eshell-where-to-jump 'begin
+      eshell-review-quick-commands nil
+      eshell-smart-space-goes-to-end t
+      eshell-cmpl-cycle-completions nil
+      eshell-cmpl-ignore-case t
+      eshell-output-filter-functions '(eshell-handle-ansi-color
+                                       eshell-handle-control-codes
+                                       eshell-watch-for-password-prompt
+                                       eshell-truncate-buffer))
+;; per-project Eshell
+(defun projectile-eshell ()
+  (interactive)
+  (let ((eshell-buffer-name
+         (concat "*eshell"
+                 (if (projectile-project-name)
+                     (concat "-" (projectile-project-name))
+                   "")
+                 "*")))
+    (eshell)))
 
-    (bind-key "C-x m" 'projectile-eshell)
+(bind-key "C-x m" 'projectile-eshell)
 
-    ;; Eshell Hooks
-    (defun eshell-settings ()
-      (setq show-trailing-whitespace nil)
-      (eshell-smart-initialize))
-    
-    (add-hook 'eshell-mode-hook 'eshell-settings)
-    (add-hook 'eshell-mode-hook 'exec-path-from-shell-initialize)
-    
-    ;; Eshell Commands
-    (defun eshell/clear ()
-      (interactive)
-      (let ((inhibit-read-only t))
-        (erase-buffer)))))
+;; Eshell Hooks
+(defun eshell-settings ()
+  (setq show-trailing-whitespace nil)
+  (eshell-smart-initialize))
 
-(req-package shell
-  :init (setq shell-file-name "zsh"))
+(add-hook 'eshell-mode-hook 'eshell-settings)
+(add-hook 'eshell-mode-hook 'exec-path-from-shell-initialize)
 
+;; Eshell Commands
+(defun eshell/clear ()
+  (interactive)
+  (let ((inhibit-read-only t))
+    (erase-buffer)))
 
-;;;; smart-mode-line
-(req-package smart-mode-line
-  :init (sml/setup))
+(require 'shell)
+(setq shell-file-name "zsh")
 
-
-;;;; smartparens
-(req-package smartparens-config
-  :ensure smartparens
-  :bind (("C-k"   . sp-kill-hybrid-sexp)
-         ("C-M-f" . sp-forward-sexp)
-         ("C-M-b" . sp-backward-sexp)
-         ("C-M-k" . sp-kill-sexp)
-         ("C-M-p" . sp-forward-slurp-sexp)
-         ("C-M-o" . sp-forward-barf-sexp))
-  :init
-  (progn
-    (setq-default sp-autoskip-closing-pair 'always)
-    (setq sp-hybrid-kill-entire-symbol nil)
-    (show-smartparens-global-mode 1)
-    (smartparens-global-strict-mode 1))
-  :config
-  (progn
-    ))
 
 ;;;; switch-window
-(req-package switch-window
+(use-package switch-window
   :bind (("C-x o"   . switch-window)
          ("C-x C-o" . switch-window)))
 
@@ -747,27 +643,14 @@ See URL `https://github.com/bitc/hdevtools'."
 (require 'tramp)
 (setq tramp-default-method "ssh")
 
-;;;; undo-tree
-(req-package undo-tree
-  :diminish ""
-  :init
-  (progn
-    (setq undo-tree-visualizer-relative-timestamps t
-          undo-tree-visualizer-timestamps t)
-    (global-undo-tree-mode)))
-
 
 ;;;; uniqify
-(req-package uniquify
-  :init
-  (progn
-    (setq uniquify-buffer-name-style 'post-forward-angle-brackets)
-    (require 'uniquify)
-    ))
+(setq uniquify-buffer-name-style 'post-forward-angle-brackets)
+(require 'uniquify)
 
 
 ;;;; volatile-highlights
-(req-package volatile-highlights
+(use-package volatile-highlights
   :diminish ""
   :init (volatile-highlights-mode 1))
 
@@ -790,35 +673,19 @@ See URL `https://github.com/bitc/hdevtools'."
            (line-beginning-position 2)))))
 
 
-;;;; xml
-(req-package nxml-mode
-  :init
-  (progn
-    (push '("<\\?xml" . nxml-mode) magic-mode-alist)
-    (setq nxml-child-indent 4
-          nxml-attribute-indent 4
-          nxml-auto-insert-xml-declaration-flag nil
-          nxml-bind-meta-tab-to-complete-flag t
-          nxml-slash-auto-complete-flag t)))
+(load-theme 'leuven)
+(set-background-color "WhiteSmoke")
 
-(req-package yaml-mode)
-
-;; (req-package leuven-theme
-;;   :init
-;;   (progn
-;;     (load-theme 'leuven)
-;;     (set-background-color "WhiteSmoke")))
-
-;; (req-package color-theme-sanityinc-tomorrow)
-;; (req-package leuven-theme)
-;; (req-package zenburn-theme)
-;; (req-package solarized-theme
+;; (use-package color-theme-sanityinc-tomorrow)
+;; (use-package leuven-theme)
+;; (use-package zenburn-theme)
+;; (use-package solarized-theme
 ;;   :init 
 ;;   (setq solarized-distinct-fringe-background t ; make the fringe stand out from the background
 ;;         solarized-high-contrast-mode-line t    ; make the modeline high contrast
 ;;         ))
 
-;; (req-package powerline
+;; (use-package powerline
 ;;   :init
 ;;   (progn
 ;;     (setq powerline-default-separator nil)
@@ -849,117 +716,117 @@ See URL `https://github.com/bitc/hdevtools'."
       user-mail-address "gridaphobe@gmail.com")
 
 ;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
-(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
-(require 'mu4e)
-(setq mu4e-maildir "~/.mail/gmail"
-      mu4e-drafts-folder "/drafts"
-      mu4e-refile-folder "/archive"
-      mu4e-sent-folder "/sent"
-      mu4e-trash-folder "/trash"
-      mu4e-attachment-dir "~/Downloads"
-      mu4e-user-mail-address-list '("gridaphobe@gmail.com"
-                                    "eric@eseidel.org"
-                                    "eric9@mac.com"
-                                    "eric9@me.com"
-                                    "eric9@icloud.com"
-                                    "eseidel@cs.ucsd.edu"
-                                    "eseidel@ucsd.edu"
-                                    "eseidel@eng.ucsd.edu"
-                                    "eseidel01@ccny.cuny.edu"
-                                    "eric@fluidinfo.com"
-                                    "seidel@apple.com")
-      mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/spam OR maildir:/trash)"
-                        "Starred Messages"
-                        ?s)
-                       ("flag:unread AND NOT (maildir:/spam OR maildir:/trash)"
-                        "Unread Messages"
-                        ?u)
-                       ("to:*.ucsd.edu AND NOT (maildir:/spam OR maildir:/trash)"
-                        "UCSD"
-                        ?w))
-      mu4e-sent-messages-behavior 'delete
-      mu4e-auto-retrieve-keys t
-      mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
-                             ("tag message" . mu4e-action-retag-message))
-      mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
-                          ("view as pdf" . mu4e-action-view-as-pdf)
-                          ("tag message" . mu4e-action-retag-message))
-      mu4e-completing-read-function 'completing-read
-      mu4e-change-filenames-when-moving t
-      mu4e-compose-dont-reply-to-self t
-      mu4e-compose-signature-auto-include nil
-      mu4e-headers-skip-duplicates t
-      mu4e-headers-include-related nil
-      mu4e-headers-results-limit 100
-      mu4e-hide-index-messages nil
-      mu4e-use-fancy-chars t
-      mu4e-debug nil
-      mu4e-get-mail-command "mbsync gmail"
-      mu4e-update-interval (* 5 60)
-      )
-
-(setq mu4e-html2text-command
-      #'(lambda () 
-          (shr-render-region (point-min) (point-max))))
-
-(add-hook 'mu4e-compose-pre-hook
-  (defun my/set-from-address ()
-    (let ((msg mu4e-compose-parent-message))
-      (when msg
-        (setq user-mail-address
-              (cond
-               ((mu4e-message-contact-field-matches msg :to "ucsd.edu")
-                "eseidel@cs.ucsd.edu")
-               (t "gridaphobe@gmail.com")))))))
-
-(setq message-send-mail-function 'smtpmail-send-it
-      smtpmail-stream-type 'starttls
-      smtpmail-default-smtp-server "smtp.gmail.com"
-      smtpmail-smtp-server "smtp.gmail.com"
-      smtpmail-smtp-service 587)
-;; don't keep message buffers around
-(setq message-kill-buffer-on-exit t)
-
-(defun my/terminal-notifier (title subtitle message)
-  (call-process "terminal-notifier" nil nil nil
-                "-sender" "org.gnu.Emacs"
-                "-title" title
-                "-subtitle" subtitle
-                "-message" message))
-;;(my/terminal-notifier "Hello" "from Emacs" "Hello World")
-
-(defvar my/mu4e-tmp-erase-func nil)
-(defvar my/mu4e-tmp-found-func nil)
-(defvar my/mu4e-tmp-header-func nil)
-(defvar my/msgids-to-move nil)
-(add-hook 'mu4e-index-updated-hook
-          (defun my/notify-new-mail ()
-            (setq my/msgids-to-move nil
-                  my/mu4e-tmp-erase-func mu4e-erase-func
-                  my/mu4e-tmp-found-func mu4e-found-func
-                  my/mu4e-tmp-header-func mu4e-header-func
-                  mu4e-erase-func (lambda () nil)
-                  mu4e-found-func (lambda (n)
-                                    (setq mu4e-erase-func my/mu4e-tmp-erase-func
-                                          mu4e-found-func my/mu4e-tmp-found-func
-                                          mu4e-header-func my/mu4e-tmp-header-func)
-                                    (dolist (msgid my/msgids-to-move)
-                                      (mu4e~proc-move msgid nil "-N"))
-                                    (setq my/msgids-to-move nil))
-                  mu4e-header-func (lambda (msg) 
-                                     (my/terminal-notifier
-                                      "New Mail"
-                                      (caar (mu4e-message-field msg :from))
-                                      (mu4e-message-field msg :subject))
-                                     (add-to-list 'my/msgids-to-move (mu4e-message-field msg :message-id))))
-            (mu4e~proc-find "tag:\\\\Inbox and flag:new" nil :date 'descending nil t nil)))
-
-(req-package mu4e-maildirs-extension
-  :require (mu4e)
-  :init (mu4e-maildirs-extension))
+;;(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
+;;(require 'mu4e)
+;;(setq mu4e-maildir "~/.mail/gmail"
+;;      mu4e-drafts-folder "/drafts"
+;;      mu4e-refile-folder "/archive"
+;;      mu4e-sent-folder "/sent"
+;;      mu4e-trash-folder "/trash"
+;;      mu4e-attachment-dir "~/Downloads"
+;;      mu4e-user-mail-address-list '("gridaphobe@gmail.com"
+;;                                    "eric@eseidel.org"
+;;                                    "eric9@mac.com"
+;;                                    "eric9@me.com"
+;;                                    "eric9@icloud.com"
+;;                                    "eseidel@cs.ucsd.edu"
+;;                                    "eseidel@ucsd.edu"
+;;                                    "eseidel@eng.ucsd.edu"
+;;                                    "eseidel01@ccny.cuny.edu"
+;;                                    "eric@fluidinfo.com"
+;;                                    "seidel@apple.com")
+;;      mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/spam OR maildir:/trash)"
+;;                        "Starred Messages"
+;;                        ?s)
+;;                       ("flag:unread AND NOT (maildir:/spam OR maildir:/trash)"
+;;                        "Unread Messages"
+;;                        ?u)
+;;                       ("to:*.ucsd.edu AND NOT (maildir:/spam OR maildir:/trash)"
+;;                        "UCSD"
+;;                        ?w))
+;;      mu4e-sent-messages-behavior 'delete
+;;      mu4e-auto-retrieve-keys t
+;;      mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
+;;                             ("tag message" . mu4e-action-retag-message))
+;;      mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
+;;                          ("view as pdf" . mu4e-action-view-as-pdf)
+;;                          ("tag message" . mu4e-action-retag-message))
+;;      mu4e-completing-read-function 'completing-read
+;;      mu4e-change-filenames-when-moving t
+;;      mu4e-compose-dont-reply-to-self t
+;;      mu4e-compose-signature-auto-include nil
+;;      mu4e-headers-skip-duplicates t
+;;      mu4e-headers-include-related nil
+;;      mu4e-headers-results-limit 100
+;;      mu4e-hide-index-messages nil
+;;      mu4e-use-fancy-chars t
+;;      mu4e-debug nil
+;;      mu4e-get-mail-command "mbsync gmail"
+;;      mu4e-update-interval (* 5 60)
+;;      )
+;;
+;;(setq mu4e-html2text-command
+;;      #'(lambda () 
+;;          (shr-render-region (point-min) (point-max))))
+;;
+;;(add-hook 'mu4e-compose-pre-hook
+;;  (defun my/set-from-address ()
+;;    (let ((msg mu4e-compose-parent-message))
+;;      (when msg
+;;        (setq user-mail-address
+;;              (cond
+;;               ((mu4e-message-contact-field-matches msg :to "ucsd.edu")
+;;                "eseidel@cs.ucsd.edu")
+;;               (t "gridaphobe@gmail.com")))))))
+;;
+;;(setq message-send-mail-function 'smtpmail-send-it
+;;      smtpmail-stream-type 'starttls
+;;      smtpmail-default-smtp-server "smtp.gmail.com"
+;;      smtpmail-smtp-server "smtp.gmail.com"
+;;      smtpmail-smtp-service 587)
+;;;; don't keep message buffers around
+;;(setq message-kill-buffer-on-exit t)
+;;
+;;(defun my/terminal-notifier (title subtitle message)
+;;  (call-process "terminal-notifier" nil nil nil
+;;                "-sender" "org.gnu.Emacs"
+;;                "-title" title
+;;                "-subtitle" subtitle
+;;                "-message" message))
+;;;;(my/terminal-notifier "Hello" "from Emacs" "Hello World")
+;;
+;;(defvar my/mu4e-tmp-erase-func nil)
+;;(defvar my/mu4e-tmp-found-func nil)
+;;(defvar my/mu4e-tmp-header-func nil)
+;;(defvar my/msgids-to-move nil)
+;;(add-hook 'mu4e-index-updated-hook
+;;          (defun my/notify-new-mail ()
+;;            (setq my/msgids-to-move nil
+;;                  my/mu4e-tmp-erase-func mu4e-erase-func
+;;                  my/mu4e-tmp-found-func mu4e-found-func
+;;                  my/mu4e-tmp-header-func mu4e-header-func
+;;                  mu4e-erase-func (lambda () nil)
+;;                  mu4e-found-func (lambda (n)
+;;                                    (setq mu4e-erase-func my/mu4e-tmp-erase-func
+;;                                          mu4e-found-func my/mu4e-tmp-found-func
+;;                                          mu4e-header-func my/mu4e-tmp-header-func)
+;;                                    (dolist (msgid my/msgids-to-move)
+;;                                      (mu4e~proc-move msgid nil "-N"))
+;;                                    (setq my/msgids-to-move nil))
+;;                  mu4e-header-func (lambda (msg) 
+;;                                     (my/terminal-notifier
+;;                                      "New Mail"
+;;                                      (caar (mu4e-message-field msg :from))
+;;                                      (mu4e-message-field msg :subject))
+;;                                     (add-to-list 'my/msgids-to-move (mu4e-message-field msg :message-id))))
+;;            (mu4e~proc-find "tag:\\\\Inbox and flag:new" nil :date 'descending nil t nil)))
+;;
+;;(req-package mu4e-maildirs-extension
+;;  :require (mu4e)
+;;  :init (mu4e-maildirs-extension))
 
 ;;;; irc
-(req-package weechat
+(use-package weechat
   :init
   (progn 
     (setq weechat-color-list '(unspecified "black" "dim gray" "dark red" "red"
@@ -977,35 +844,6 @@ See URL `https://github.com/bitc/hdevtools'."
                      (my/terminal-notifier "IRC Mention"
                                            sender
                                            text))))))
-
-;;;; mac stuff
-(when (and on-mac window-system)
-  ;; Emacs users obviously have little need for Command and Option keys,
-  ;; but they do need Meta and Super
-  (setq mac-command-modifier 'super)
-  (setq mac-option-modifier 'meta)
-
-  (bind-key "<s-return>" 'toggle-frame-fullscreen)
-
-  (set-fontset-font "fontset-default"
-                    'unicode
-                    '("Source Code Pro" . "iso10646-1"))
-  (set-face-attribute 'default nil
-                      :family "Source Code Pro"
-                      :height 140)
-
-  (req-package exec-path-from-shell
-    :init 
-    (progn
-      (setq exec-path-from-shell-variables
-            (append '("NIX_GHC" "NIX_GHCPKG" "NIX_GHC_DOCDIR" "NIX_GHC_LIBDIR")
-                    exec-path-from-shell-variables))
-      (exec-path-from-shell-initialize)))
-
-  (setq browse-url-browser-function 'browse-url-default-macosx-browser))
-
-;;; IMPORTANT
-(req-package-finish)
 
 
 ;;;; pretty symbols
