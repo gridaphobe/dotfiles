@@ -24,11 +24,13 @@
 ;; No splash screen please... jeez
 (setq inhibit-startup-screen t)
 
+(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/")
+
 (require 'package)
 (setq package-archives nil)
 (package-initialize)
 
-(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/magit")
+(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/magit/")
 (require 'use-package)
 (require 'bind-key)
 

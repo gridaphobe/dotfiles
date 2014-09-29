@@ -45,10 +45,9 @@ stdenv.mkDerivation rec {
     ;; nixos specific load-path
     (when (getenv "NIX_PROFILES") 
       (setq load-path
-            (cons "~/.nix-profile/share/emacs/site-lisp/"
-             (append (reverse (mapcar (lambda (x) (concat x "/share/emacs/site-lisp/"))
-                                      (split-string (getenv "NIX_PROFILES"))))
-                     load-path))))
+            (append (reverse (mapcar (lambda (x) (concat x "/share/emacs/site-lisp/"))
+                                     (split-string (getenv "NIX_PROFILES"))))
+                     load-path)))
         
     ;; make tramp work for NixOS machines
     (eval-after-load 'tramp '(add-to-list 'tramp-remote-path "/run/current-system/sw/bin"))
