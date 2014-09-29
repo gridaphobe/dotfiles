@@ -26,7 +26,7 @@ if [[ -r "$HOME/.nix-profile/bin/ghc" ]]; then
   eval "$(grep export ~/.nix-profile/bin/ghc)"
 fi
 
-alias git=hub
+#alias git=hub
 
 # Local Variables:
 # mode: sh
