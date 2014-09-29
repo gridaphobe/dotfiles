@@ -17,7 +17,10 @@ fpath=(/usr/local/share/zsh-completions $fpath)
 path=(/usr/local/bin /usr/local/sbin $path)
 
 [[ -r "$HOME/.nix-profile/etc/profile.d/nix.sh" ]] && . "$HOME/.nix-profile/etc/profile.d/nix.sh"
-export NIX_PATH=nixpkgs=/Users/gridaphobe/Source/nixpkgs
+export NIX_PATH=nixpkgs="$HOME/Source/nixpkgs"
+export CFLAGS="$CFLAGS -I$HOME/.nix-profile/include"
+export CXXFLAGS="$CXXFLAGS -I$HOME/.nix-profile/include"
+export LDFLAGS="$LDFLAGS -L$HOME/.nix-profile/lib"
 
 if [[ -r "$HOME/.nix-profile/bin/ghc" ]]; then
   eval "$(grep export ~/.nix-profile/bin/ghc)"

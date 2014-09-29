@@ -9,37 +9,37 @@
       paths = [
         aspell
         aspellDicts.en
-        coreutils
+        #coreutils
         curl
         emacs
         emacs24Packages.structuredHaskellMode
-        fish
-        gitAndTools.gitFull
-        gitAndTools.hub
+        #fish
+        # gitAndTools.gitFull
+        # gitAndTools.hub
         globalHsEnv
         gnused
-        graphviz
+        #graphviz
         # guile
-        htop
+        #htop
         # imagemagick
         isync
         # macvim
         mu
         #(mu.override { emacs = myemacs; })
-        nodejs
+        #nodejs
         ocaml
-        ocamlPackages.opam
-        p7zip
-        parallel
+        #ocamlPackages.opam
+        #p7zip
+        #parallel
         # plantuml
         # perl
-        postgresql
-        python
+        #postgresql
+        #python
         rlwrap
         ruby
         rubyLibs.terminal_notifier
         # rust
-        silver-searcher
+        # silver-searcher
         sloccount
         sqlite
         # texLiveFull
@@ -53,7 +53,7 @@
       ];
     };
 
-    # z3 = callPackage ./z3.nix {};
+    z3 = callPackage ./z3.nix {};
 
     globalHsEnv = haskellPackages_ghc783_profiling.ghcWithPackages (self: [
       self.cabal2nix
@@ -80,18 +80,29 @@
       self.tastyHunit
       self.tastyRerun      
 
-      #self.liquidFixpoint
-      #self.liquidhaskell
+      self.liquidFixpoint
+      self.liquidhaskell
       #self.LiquidCheck
+      self.ivory
+      self.ivoryBackendC
+      self.ivoryModelCheck
+      self.ivoryOpts
+      self.languageCQuote
     ]);
 
     haskellProjects = { self, super, callPackage }: {
-      #liquidFixpoint = callPackage /Users/gridaphobe/Source/liquid/fixpoint/cabal.nix {
-      #  ocaml  = ocaml;
-      #  z3     = z3;
-      #};
-      #liquidhaskell  = callPackage /Users/gridaphobe/Source/liquid/haskell/cabal.nix {};
+      liquidFixpoint = callPackage ../Source/liquid/fixpoint/default.nix {
+       ocaml  = ocaml;
+      };
+      liquidhaskell  = callPackage ../Source/liquid/haskell/default.nix {};
       #LiquidCheck    = callPackage /Users/gridaphobe/Source/liquid/check/cabal.nix {};
+      
+      ivory = callPackage ../Source/ivory/ivory/default.nix {};
+      ivoryBackendC = callPackage ../Source/ivory/ivory-backend-c/default.nix {};
+      ivoryModelCheck = callPackage ../Source/ivory/ivory-model-check/default.nix {};
+      ivoryOpts = callPackage ../Source/ivory/ivory-opts/default.nix {};
+      languageCQuote = callPackage ./languageCQuote.nix { fetchgit = fetchgit; };
+
       #hdevtools      = callPackage /Users/gridaphobe/Source/hdevtools {};
       haskellDocs    = self.disableTest (callPackage ./haskellDocs.nix {});
       systemFileio   = self.disableTest  super.systemFileio;
@@ -116,6 +127,7 @@
       #};
     };
 
+    cvc4 = callPackage ./cvc4.nix {};
     myemacs = callPackage ./emacs.nix {};
     emacs   = myemacs;
     emacs24Packages = recurseIntoAttrs (emacsPackages myemacs pkgs.emacs24Packages);
