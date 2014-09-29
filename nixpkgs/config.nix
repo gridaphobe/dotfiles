@@ -4,68 +4,85 @@
 
   packageOverrides = pkgs: with pkgs; rec {
 
-    devToolsEnv = pkgs.buildEnv {
-      name = "dev-tools";
+    # devToolsEnv = pkgs.buildEnv {
+    #   name = "dev-tools";
+    #   paths = [
+    #     aspell
+    #     aspellDicts.en
+    #     # coreutils
+    #     curl
+    #     # fish
+    #     gitAndTools.gitFull
+    #     gitAndTools.hub
+    #     globalHsEnv
+    #     # gnused
+    #     # graphviz
+    #     # guile
+    #     # htop
+    #     # imagemagick
+    #     # isync
+    #     # macvim
+    #     # (mu.override { emacs = myemacs; })
+    #     # nodejs
+    #     ocaml
+    #     ocamlPackages.opam
+    #     # p7zip
+    #     # parallel
+    #     # plantuml
+    #     # perl
+    #     # postgresql
+    #     # python
+    #     rlwrap
+    #     # ruby
+    #     rubyLibs.terminal_notifier
+    #     # rust
+    #     # silver-searcher
+    #     sloccount
+    #     sqlite
+    #     # texLiveFull
+    #     tmux
+    #     tree
+    #     # vimNox
+    #     # weechat
+    #     wget
+    #     z3
+    #     zsh
+    #   ];
+    # };
+    
+    shellEnv = pkgs.buildEnv {
+      name = "shell-env";
       paths = [
-        aspell
-        aspellDicts.en
-        #coreutils
+        bash
         curl
-        emacs
-        emacs24Packages.structuredHaskellMode
-        #fish
-        # gitAndTools.gitFull
-        # gitAndTools.hub
-        globalHsEnv
-        gnused
-        #graphviz
-        # guile
-        #htop
-        # imagemagick
-        isync
-        # macvim
-        mu
-        #(mu.override { emacs = myemacs; })
-        #nodejs
-        ocaml
-        #ocamlPackages.opam
-        #p7zip
-        #parallel
-        # plantuml
-        # perl
-        #postgresql
-        #python
+        cvc4
+        fish
+        gitAndTools.gitFull
+        nix-prefetch-scripts
         rlwrap
-        ruby
         rubyLibs.terminal_notifier
-        # rust
-        # silver-searcher
         sloccount
-        sqlite
-        # texLiveFull
         tmux
-        tree
-        # vimNox
-        # weechat
         wget
-        z3
         zsh
+        z3
       ];
     };
-
+    
+    cvc4 = callPackage ./cvc4.nix {};
     z3 = callPackage ./z3.nix {};
 
-    globalHsEnv = haskellPackages_ghc783_profiling.ghcWithPackages (self: [
+    haskellEnv = haskellPackages_ghc783_profiling.ghcWithPackages (self: [
       self.cabal2nix
       self.cabalInstall
       self.ghcCore
       self.ghcMod
-      #self.haskellDocs
+      # self.haskellDocs
       self.hasktags
-      #self.hdevtools
+      # self.hdevtools
       self.hlint
       self.hscolour
-      # self.myHoogleLocal
+      self.hoogleLocal
       self.stylishHaskell
       self.pandoc
       self.pandocCiteproc
@@ -82,7 +99,7 @@
 
       self.liquidFixpoint
       self.liquidhaskell
-      #self.LiquidCheck
+      self.LiquidCheck
       self.ivory
       self.ivoryBackendC
       self.ivoryModelCheck
@@ -95,7 +112,7 @@
        ocaml  = ocaml;
       };
       liquidhaskell  = callPackage ../Source/liquid/haskell/default.nix {};
-      #LiquidCheck    = callPackage /Users/gridaphobe/Source/liquid/check/cabal.nix {};
+      LiquidCheck    = callPackage ../Source/liquid/check/default.nix {};
       
       ivory = callPackage ../Source/ivory/ivory/default.nix {};
       ivoryBackendC = callPackage ../Source/ivory/ivory-backend-c/default.nix {};
@@ -113,39 +130,22 @@
       textLatin1     = callPackage ./textLatin1.nix {};
       textPrinter    = callPackage ./textPrinter.nix {};
       typeHint       = callPackage ./typeHint.nix {};
+      
+      monadJournal   = callPackage ./monad-journal.nix {};
+      ghcMod         = self.disableTest (callPackage ./ghc-mod.nix { emacs = emacs; });
 
-      #myHoogleLocal  = self.hoogleLocal.override {
-      #  packages = with self; ([
-      #    ghc
-      #    liquidFixpoint
-      #    liquidhaskell
-      #    LiquidCheck
-      #  ] ++ liquidFixpoint.propagatedNativeBuildInputs
-      #    ++ liquidhaskell.propagatedNativeBuildInputs
-      #    ++ LiquidCheck.propagatedNativeBuildInputs
-      #  );
-      #};
+      hoogleLocal    = super.hoogleLocal.override {
+        packages = with self; ([
+          ghc
+          liquidFixpoint
+          liquidhaskell
+          LiquidCheck
+        ] ++ liquidFixpoint.propagatedNativeBuildInputs
+          ++ liquidhaskell.propagatedNativeBuildInputs
+          ++ LiquidCheck.propagatedNativeBuildInputs
+        );
+      };
     };
-
-    cvc4 = callPackage ./cvc4.nix {};
-    myemacs = callPackage ./emacs.nix {};
-    emacs   = myemacs;
-    emacs24Packages = recurseIntoAttrs (emacsPackages myemacs pkgs.emacs24Packages);
-    # emacs = lib.overrideDerivation pkgs.emacs (oldAttrs: rec {
-    #   name = "emacs-24.3.92";
-    #   src = fetchurl {
-    #     url    = "http://alpha.gnu.org/gnu/emacs/pretest/${name}.tar.xz";
-    #     sha256 = "1dxy6hxpj40ahpq3qrndpfra8d0q2wn05qb50dah08g2rfbm1bp5";
-    #   };
-    #   configureFlags = [ "--with-gnutls" "--with-imagemagick" "--with-rsvg" "--with-ns" ];
-    #   buildInputs = oldAttrs.buildInputs ++ [ autoconf automake ];
-    #   builder = stdenv.builder;
-    #   preConfigure = ''
-    #     ./autogen.sh
-    #   '';
-    # });
-    #emacs = pkgs.emacs24Macport;
-    #emacs24Packages = recurseIntoAttrs (emacsPackages emacs24Macport pkgs.emacs24Packages);
 
     haskellPackages_wrapper = hp: recurseIntoAttrs (hp.override {
         extension = this: super: haskellProjects {
@@ -158,31 +158,68 @@
     haskellPackages_ghc783 = haskellPackages_wrapper pkgs.haskellPackages_ghc783;
     haskellPackages_ghc783_profiling = haskellPackages_wrapper pkgs.haskellPackages_ghc783_profiling;
 
+    emacsEnv = pkgs.buildEnv {
+      name = "emacs-env";
+      paths = [
+        emacs
+        
+        aspell
+        aspellDicts.en
 
-    # hsEnv = { name, ghc, deps }:
-    #   let hsPkgs = ghc.ghcWithPackages (self : ([
-    #       # self.cabal2nix
-    #       self.cabalInstall
-    #       #self.ghcCore
-    #       #self.ghcMod
-    #       #self.hasktags
-    #       #self.HaRe
-    #       #self.hdevtools
-    #       self.hlint
-    #     ] ++ (deps self)));
-    #   in
-    #     pkgs.myEnvFun {
-    #       name = name;
-    #       buildInputs = [
-    #         pkgs.binutils
-    #         pkgs.coreutils
-    #         pkgs.zsh
-    #         hsPkgs
-    #       ];
-    #       shell = "${pkgs.zsh.outPath}/bin/zsh";
-    #       extraCmds = ''
-    #         $(grep export ${hsPkgs.outPath}/bin/ghc)
-    #       '';
-    #     };
+        companyMode
+        dash
+        epl
+        evil
+        exec-path-from-shell
+        gitModes
+        haskellPackages_ghc783_profiling.ghcMod
+        haskellMode
+        helm
+        magit
+        pkg-info
+        projectile
+        richMinority
+        s-el
+        smartModeLine
+        smartparens
+        structuredHaskellMode
+        undoTree
+        usePackage
+        # emacs24Packages.org
+      ];
+    };
+
+    myemacs = callPackage ./emacs.nix {};
+    emacs   = myemacs;
+    emacs24Packages = recurseIntoAttrs (emacsPackages myemacs pkgs.emacs24Packages);
+    
+    companyMode = callPackage ./emacs/company-mode.nix {};
+    dash = callPackage ./emacs/dash.nix {};
+    evil = callPackage ./emacs/evil.nix {};
+    epl = callPackage ./emacs/epl.nix {};
+    exec-path-from-shell = callPackage ./emacs/exec-path-from-shell.nix {};
+    gitModes = callPackage ./emacs/git-modes.nix {};
+    helm = callPackage ./emacs/helm.nix {};
+    magit = callPackage ./emacs/magit.nix {};
+    richMinority = callPackage ./emacs/rich-minority.nix {};
+    projectile = callPackage ./emacs/projectile.nix {};
+    pkg-info = callPackage ./emacs/pkg-info.nix {};
+    s-el = callPackage ./emacs/s-el.nix {};
+    smartModeLine = callPackage ./emacs/smart-mode-line.nix {};
+    smartparens = callPackage ./emacs/smartparens.nix {};
+    undoTree = callPackage ./emacs/undo-tree.nix {};
+    usePackage = callPackage ./emacs/use-package.nix {};
+
+    haskellMode = callPackage ./emacs/haskellMode.nix {};
+    structuredHaskellMode = lib.overrideDerivation 
+                            emacs24Packages.structuredHaskellMode (attrs: {
+      name = "structured-haskell-mode-d025da6";
+      src = fetchgit {
+        url = "git://github.com/chrisdone/structured-haskell-mode.git";
+        rev = "d025da601c80669b8618d09836dd2a54f5fb9c1a";
+        sha256 = "f1b26d89d953019d269ba1badeed6ded08d786abb623bf5f3fb1d281b7b655bc";
+      };
+    });
+    # ghcMod-el = callPackage ./emacs/ghc-mod.nix { ghcMod = haskellPackages_ghc783_profiling.ghcMod; };
   };
 }
