@@ -45,9 +45,9 @@
 
   (set-fontset-font "fontset-default"
                     'unicode
-                    '("Source Code Pro" . "iso10646-1"))
+                    '("Menlo" . "iso10646-1"))
   (set-face-attribute 'default nil
-                      :family "Source Code Pro"
+                      :family "Menlo"
                       :height 140)
 
   (require 'exec-path-from-shell)
@@ -557,8 +557,24 @@
 
 
 ;;;; org-mode
-(use-package org
-  :init (setq orc-src-fontify-natively t))
+(require 'org)
+(setq orc-src-fontify-natively t)
+;; Resume clocking task when emacs is restarted
+(org-clock-persistence-insinuate)
+;; Show lot of clocking history so it's easy to pick items off the C-F11 list
+(setq org-clock-history-length 23)
+;; Resume clocking task on clock-in if the clock is open
+(setq org-clock-in-resume t)
+;; Save the running clock and all clock history when exiting Emacs, load it on startup
+(setq org-clock-persist t)
+;; Do not prompt to resume an active clock
+(setq org-clock-persist-query-resume nil)
+;; Enable auto clock resolution for finding open clocks
+(setq org-clock-auto-clock-resolution (quote when-no-clock-is-running))
+;; Include current clocking task in clock reports
+(setq org-clock-report-include-clocking-task t)
+;; Sometimes I change tasks I'm clocking quickly - this removes clocked tasks with 0:00 duration
+(setq org-clock-out-remove-zero-time-clocks t)
 
 
 ;;;; prog-mode
@@ -568,7 +584,7 @@
 
 (defun my/add-watchwords ()
   (font-lock-add-keywords
-   nil '(("\\<\\(FIXME\\|TODO\\|FIX\\|HACK\\|REFACTOR\\)"
+   nil '(("\\<\\(FIXME\\|TODO\\|NOTE\\|FIX\\|HACK\\|REFACTOR\\)"
           1 font-lock-warning-face t))))
 
 (electric-indent-mode -1)
@@ -590,7 +606,7 @@
   ;; (whitespace-mode 1)
   (my/add-watchwords))
 
-;; (add-hook 'prog-mode-hook 'my/prog-mode-defaults)
+(add-hook 'prog-mode-hook 'my/prog-mode-defaults)
 
 
 
@@ -826,24 +842,22 @@
 ;;  :init (mu4e-maildirs-extension))
 
 ;;;; irc
-(use-package weechat
-  :init
-  (progn 
-    (setq weechat-color-list '(unspecified "black" "dim gray" "dark red" "red"
-                                           "dark green" "green" "brown"
-                                           "orange" "dark blue" "blue"
-                                           "dark magenta" "magenta" "dark cyan"
-                                           "royal blue" "dark gray" "gray")
-          weechat-host-default "seidel.io"
-          weechat-port-default 40900
-          weechat-mode-default nil
-          )
-    (add-to-list 'weechat-notification-handler-functions
-                 (defun my/weechat-notify (type sender text date buffer-ptr)
-                   (when (eq type :highlight)
-                     (my/terminal-notifier "IRC Mention"
-                                           sender
-                                           text))))))
+(require 'weechat)
+(setq weechat-color-list '(unspecified "black" "dim gray" "dark red" "red"
+                                       "dark green" "green" "brown"
+                                       "orange" "dark blue" "blue"
+                                       "dark magenta" "magenta" "dark cyan"
+                                       "royal blue" "dark gray" "gray")
+      weechat-host-default "seidel.io"
+      weechat-port-default 40900
+      weechat-mode-default nil
+      )
+(add-to-list 'weechat-notification-handler-functions
+             (defun my/weechat-notify (type sender text date buffer-ptr)
+               (when (eq type :highlight)
+                 (my/terminal-notifier "IRC Mention"
+                                       sender
+                                       text))))
 
 
 ;;;; pretty symbols
@@ -862,7 +876,7 @@
 (size-indication-mode 1)
 (setq display-time-format "%a %m-%d %R")
 (display-time-mode 1)
-;; (global-hl-line-mode 1)
+(global-hl-line-mode 1)
 
 (xterm-mouse-mode 1)
 
@@ -879,7 +893,7 @@
 
 
 ;; FIXME: why is this being set to nil?!
-(setq mu4e-mu-binary (executable-find "mu"))
+;; (setq mu4e-mu-binary (executable-find "mu"))
 
 (message "Emacs is ready to do thy bidding, Master %s!" (getenv "USER"))
 

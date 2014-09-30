@@ -24,7 +24,7 @@
         gnused
         gnutar
         isync
-        # (mu.override { libsoup = (libsoup.override { gnomeSupport = false; }); })
+        (mu.override { libsoup = (libsoup.override { gnomeSupport = false; }); })
         nix-prefetch-scripts
         # notmuch
         rlwrap
@@ -60,6 +60,8 @@
           self.pandocCiteproc
           self.pandocTypes
           
+          self.Chart
+          self.ChartDiagrams
           self.text
 
           self.QuickCheck
@@ -105,6 +107,9 @@
       textLatin1     = callPackage ./textLatin1.nix {};
       textPrinter    = callPackage ./textPrinter.nix {};
       typeHint       = callPackage ./typeHint.nix {};
+
+      Chart          = callPackage ./Chart.nix {};
+      ChartDiagrams  = callPackage ./ChartDiagrams.nix {};
       
       monadJournal   = callPackage ./monad-journal.nix {};
       ghcMod         = self.disableTest (callPackage ./ghc-mod.nix { emacs = emacs; });
@@ -118,10 +123,14 @@
           liquidFixpoint
           liquidhaskell
           LiquidCheck
+          Chart
+          ChartDiagrams
         ] ++ liquidFixpoint.propagatedNativeBuildInputs
           ++ liquidhaskell.propagatedNativeBuildInputs
           ++ LiquidCheck.propagatedNativeBuildInputs
           ++ ivory.propagatedNativeBuildInputs
+          ++ Chart.propagatedNativeBuildInputs
+          ++ ChartDiagrams.propagatedNativeBuildInputs
         );
       };
     };
