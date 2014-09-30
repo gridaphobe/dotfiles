@@ -72,40 +72,45 @@
     cvc4 = callPackage ./cvc4.nix {};
     z3 = callPackage ./z3.nix {};
 
-    haskellEnv = haskellPackages_ghc783_profiling.ghcWithPackages (self: [
-      self.cabal2nix
-      self.cabalInstall
-      self.ghcCore
-      self.ghcMod
-      # self.haskellDocs
-      self.hasktags
-      # self.hdevtools
-      self.hlint
-      self.hscolour
-      self.hoogleLocal
-      self.stylishHaskell
-      self.pandoc
-      self.pandocCiteproc
-      self.pandocTypes
-      
-      self.text
+    haskellEnv = pkgs.buildEnv {
+      name = "haskell-env";
+      paths = [
+        (haskellPackages_ghc783_profiling.ghcWithPackages (self: [
+          self.cabal2nix
+          self.cabalInstall
+          self.ghcCore
+          self.ghcMod
+          # self.haskellDocs
+          self.hasktags
+          # self.hdevtools
+          self.hlint
+          self.hscolour
+          self.stylishHaskell
+          self.pandoc
+          self.pandocCiteproc
+          self.pandocTypes
+          
+          self.text
 
-      self.QuickCheck
-      self.smallcheck
-      self.criterion
-      self.tasty
-      self.tastyHunit
-      self.tastyRerun      
+          self.QuickCheck
+          self.smallcheck
+          self.criterion
+          self.tasty
+          self.tastyHunit
+          self.tastyRerun      
 
-      self.liquidFixpoint
-      self.liquidhaskell
-      self.LiquidCheck
-      self.ivory
-      self.ivoryBackendC
-      self.ivoryModelCheck
-      self.ivoryOpts
-      self.languageCQuote
-    ]);
+          self.liquidFixpoint
+          self.liquidhaskell
+          self.LiquidCheck
+          self.ivory
+          self.ivoryBackendC
+          self.ivoryModelCheck
+          self.ivoryOpts
+          self.languageCQuote
+        ]))
+        haskellPackages_ghc783_profiling.hoogleLocal
+      ];
+    };
 
     haskellProjects = { self, super, callPackage }: {
       liquidFixpoint = callPackage ../Source/liquid/fixpoint/default.nix {
@@ -137,12 +142,16 @@
       hoogleLocal    = super.hoogleLocal.override {
         packages = with self; ([
           ghc
+          ivory
+          ivoryModelCheck
+          ivoryOpts
           liquidFixpoint
           liquidhaskell
           LiquidCheck
         ] ++ liquidFixpoint.propagatedNativeBuildInputs
           ++ liquidhaskell.propagatedNativeBuildInputs
           ++ LiquidCheck.propagatedNativeBuildInputs
+          ++ ivory.propagatedNativeBuildInputs
         );
       };
     };
@@ -172,7 +181,6 @@
         evil
         exec-path-from-shell
         gitModes
-        haskellPackages_ghc783_profiling.ghcMod
         haskellMode
         helm
         magit
@@ -183,9 +191,12 @@
         smartModeLine
         smartparens
         structuredHaskellMode
+        switch-window
         undoTree
         usePackage
-        # emacs24Packages.org
+        weechat-el
+
+        emacs24Packages.org
       ];
     };
 
@@ -207,8 +218,10 @@
     s-el = callPackage ./emacs/s-el.nix {};
     smartModeLine = callPackage ./emacs/smart-mode-line.nix {};
     smartparens = callPackage ./emacs/smartparens.nix {};
+    switch-window = callPackage ./emacs/switch-window.nix {};
     undoTree = callPackage ./emacs/undo-tree.nix {};
     usePackage = callPackage ./emacs/use-package.nix {};
+    weechat-el = callPackage ./emacs/weechat-el.nix {};
 
     haskellMode = callPackage ./emacs/haskellMode.nix {};
     structuredHaskellMode = lib.overrideDerivation 
