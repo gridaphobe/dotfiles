@@ -7,7 +7,7 @@ set -x
 notmuch search --output=files folder:inbox and not tag:inbox \
   | grep inbox/cur | xargs --no-run-if-empty -l rm
 
-# mbsync gmail
+mbsync gmail
 
 notmuch new
 
