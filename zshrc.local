@@ -14,7 +14,7 @@ zstyle ':prompt:grml:left:setup' items rc change-root time user at host path vcs
 
 fpath=(/usr/local/share/zsh-completions $fpath)
 
-path=(/usr/local/bin /usr/local/sbin $path)
+path=($HOME/bin /usr/local/bin /usr/local/sbin $path)
 
 [[ -r "$HOME/.nix-profile/etc/profile.d/nix.sh" ]] && . "$HOME/.nix-profile/etc/profile.d/nix.sh"
 export NIX_PATH=nixpkgs="$HOME/Source/nixpkgs"

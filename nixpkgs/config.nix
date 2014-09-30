@@ -4,65 +4,30 @@
 
   packageOverrides = pkgs: with pkgs; rec {
 
-    # devToolsEnv = pkgs.buildEnv {
-    #   name = "dev-tools";
-    #   paths = [
-    #     aspell
-    #     aspellDicts.en
-    #     # coreutils
-    #     curl
-    #     # fish
-    #     gitAndTools.gitFull
-    #     gitAndTools.hub
-    #     globalHsEnv
-    #     # gnused
-    #     # graphviz
-    #     # guile
-    #     # htop
-    #     # imagemagick
-    #     # isync
-    #     # macvim
-    #     # (mu.override { emacs = myemacs; })
-    #     # nodejs
-    #     ocaml
-    #     ocamlPackages.opam
-    #     # p7zip
-    #     # parallel
-    #     # plantuml
-    #     # perl
-    #     # postgresql
-    #     # python
-    #     rlwrap
-    #     # ruby
-    #     rubyLibs.terminal_notifier
-    #     # rust
-    #     # silver-searcher
-    #     sloccount
-    #     sqlite
-    #     # texLiveFull
-    #     tmux
-    #     tree
-    #     # vimNox
-    #     # weechat
-    #     wget
-    #     z3
-    #     zsh
-    #   ];
-    # };
-    
     shellEnv = pkgs.buildEnv {
       name = "shell-env";
       paths = [
+        autoconf
+        automake
         bash
+        cacert
+        coreutils
         curl
         cvc4
         fish
         gitAndTools.gitFull
+        gnugrep
+        gnumake
+        gnupatch
+        gnupg
+        gnused
+        gnutar
         nix-prefetch-scripts
         rlwrap
         rubyLibs.terminal_notifier
         sloccount
         tmux
+        tree
         wget
         zsh
         z3

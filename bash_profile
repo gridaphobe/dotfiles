@@ -4,8 +4,12 @@
 [[ -r ~/.bashrc ]] && . ~/.bashrc
 
 if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then . "$HOME/.nix-profile/etc/profile.d/nix.sh"; fi # added by Nix installer
-NIX_PATH=nixpkgs=/Users/gridaphobe/Source/nixpkgs
+
+export NIX_PATH=nixpkgs="$HOME/Source/nixpkgs"
+export CFLAGS="$CFLAGS -I$HOME/.nix-profile/include"
+export CXXFLAGS="$CXXFLAGS -I$HOME/.nix-profile/include"
+export LDFLAGS="$LDFLAGS -L$HOME/.nix-profile/lib"
+
 if [[ -r "$HOME/.nix-profile/bin/ghc" ]]; then
   eval "$(grep export ~/.nix-profile/bin/ghc)"
 fi
-if [ -e /Users/eseidel/.nix-profile/etc/profile.d/nix.sh ]; then . /Users/eseidel/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer

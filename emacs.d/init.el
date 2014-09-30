@@ -52,7 +52,7 @@
 
   (require 'exec-path-from-shell)
   (setq exec-path-from-shell-variables
-        (append '("NIX_GHC" "NIX_GHCPKG" "NIX_GHC_DOCDIR" "NIX_GHC_LIBDIR")
+        (append '("NIX_PATH" "NIX_GHC" "NIX_GHCPKG" "NIX_GHC_DOCDIR" "NIX_GHC_LIBDIR")
                 exec-path-from-shell-variables))
   (exec-path-from-shell-initialize)
 
