@@ -14,6 +14,7 @@
         coreutils
         curl
         cvc4
+        findutils
         fish
         gitAndTools.gitFull
         gnugrep
@@ -22,7 +23,10 @@
         gnupg
         gnused
         gnutar
+        isync
+        # (mu.override { libsoup = (libsoup.override { gnomeSupport = false; }); })
         nix-prefetch-scripts
+        # notmuch
         rlwrap
         rubyLibs.terminal_notifier
         sloccount
@@ -35,6 +39,7 @@
     };
     
     cvc4 = callPackage ./cvc4.nix {};
+    xapian = callPackage ./xapian.nix {};
     z3 = callPackage ./z3.nix {};
 
     haskellEnv = pkgs.buildEnv {
@@ -79,7 +84,7 @@
 
     haskellProjects = { self, super, callPackage }: {
       liquidFixpoint = callPackage ../Source/liquid/fixpoint/default.nix {
-       ocaml  = ocaml;
+        ocaml  = ocaml;
       };
       liquidhaskell  = callPackage ../Source/liquid/haskell/default.nix {};
       LiquidCheck    = callPackage ../Source/liquid/check/default.nix {};
@@ -198,6 +203,5 @@
         sha256 = "f1b26d89d953019d269ba1badeed6ded08d786abb623bf5f3fb1d281b7b655bc";
       };
     });
-    # ghcMod-el = callPackage ./emacs/ghc-mod.nix { ghcMod = haskellPackages_ghc783_profiling.ghcMod; };
   };
 }

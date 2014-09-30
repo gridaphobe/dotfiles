@@ -9,7 +9,6 @@ User gridaphobe@gmail.com
 PassCmd "/usr/bin/security find-internet-password -s imap.gmail.com -w"
 UseIMAPS yes
 RequireSSL yes
-#CertificateFile ~/gmail.cert
 CertificateFile ~/.nix-profile/etc/ca-bundle.crt
 
 MaildirStore local
