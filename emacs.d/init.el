@@ -45,10 +45,10 @@
 
   (set-fontset-font "fontset-default"
                     'unicode
-                    '("Menlo" . "iso10646-1"))
+                    '("Ubuntu Mono" . "iso10646-1"))
   (set-face-attribute 'default nil
-                      :family "Menlo"
-                      :height 140)
+                      :family "Ubuntu Mono"
+                      :height 160)
 
   (require 'exec-path-from-shell)
   (setq exec-path-from-shell-variables
@@ -447,15 +447,12 @@
 
 
 ;;;; god-mode
-(use-package god-mode)
+(require 'god-mode)
 
-(use-package evil-god-state
-  :init
-  (progn
-    (evil-define-key 'normal global-map "," 'evil-execute-in-god-state)
-    (add-hook 'evil-god-start-hook (lambda () (diminish 'god-local-mode)))
-    (add-hook 'evil-god-stop-hook (lambda () (diminish-undo 'god-local-mode)))))
-
+(require 'evil-god-state)
+(evil-define-key 'normal global-map "," 'evil-execute-in-god-state)
+(add-hook 'evil-god-start-hook (lambda () (diminish 'god-local-mode)))
+(add-hook 'evil-god-stop-hook (lambda () (diminish-undo 'god-local-mode)))
 
 ;;;; haskell
 (require 'haskell-mode-autoloads)
@@ -535,6 +532,7 @@
 ;;;; magit
 (require 'magit)
 (add-to-list 'rm-blacklist " MRev")
+(defalias 'magit 'magit-status)
 (defadvice magit-status (around magit-fullscreen activate)
   (window-configuration-to-register :magit-fullscreen)
   ad-do-it
@@ -558,6 +556,8 @@
 
 ;;;; org-mode
 (require 'org)
+(setq org-agenda-files '("~/Dropbox/org/todo.org"
+                         "~/Dropbox/org/galois.org"))
 (setq orc-src-fontify-natively t)
 ;; Resume clocking task when emacs is restarted
 (org-clock-persistence-insinuate)

@@ -78,7 +78,10 @@
           self.ivoryBackendC
           self.ivoryModelCheck
           self.ivoryOpts
+          self.ivoryQuickcheck
+          self.ivoryStdlib
           self.languageCQuote
+          self.wlPprint
         ]))
         haskellPackages_ghc783_profiling.hoogleLocal
       ];
@@ -95,6 +98,8 @@
       ivoryBackendC = callPackage ../Source/ivory/ivory-backend-c/default.nix {};
       ivoryModelCheck = callPackage ../Source/ivory/ivory-model-check/default.nix {};
       ivoryOpts = callPackage ../Source/ivory/ivory-opts/default.nix {};
+      ivoryQuickcheck = callPackage ../Source/ivory/ivory-quickcheck/default.nix {};
+      ivoryStdlib = callPackage ../Source/ivory/ivory-stdlib/default.nix {};
       languageCQuote = callPackage ./languageCQuote.nix { fetchgit = fetchgit; };
 
       #hdevtools      = callPackage /Users/gridaphobe/Source/hdevtools {};
@@ -158,8 +163,10 @@
         dash
         epl
         evil
+        evilGodState
         exec-path-from-shell
         gitModes
+        godMode
         haskellMode
         helm
         magit
@@ -186,9 +193,11 @@
     companyMode = callPackage ./emacs/company-mode.nix {};
     dash = callPackage ./emacs/dash.nix {};
     evil = callPackage ./emacs/evil.nix {};
+    evilGodState = callPackage ./emacs/evil-god-state.nix {};
     epl = callPackage ./emacs/epl.nix {};
     exec-path-from-shell = callPackage ./emacs/exec-path-from-shell.nix {};
     gitModes = callPackage ./emacs/git-modes.nix {};
+    godMode = callPackage ./emacs/god-mode.nix {};
     helm = callPackage ./emacs/helm.nix {};
     magit = callPackage ./emacs/magit.nix {};
     richMinority = callPackage ./emacs/rich-minority.nix {};
