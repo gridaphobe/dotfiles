@@ -63,6 +63,7 @@
           self.Chart
           self.ChartDiagrams
           self.text
+          self.prettyShow
 
           self.QuickCheck
           self.smallcheck
@@ -76,9 +77,12 @@
           self.LiquidCheck
           self.ivory
           self.ivoryBackendC
+          self.ivoryExamples
+          self.ivoryHw
           self.ivoryModelCheck
           self.ivoryOpts
           self.ivoryQuickcheck
+          self.ivorySerialize
           self.ivoryStdlib
           self.languageCQuote
           self.wlPprint
@@ -94,13 +98,17 @@
       liquidhaskell  = callPackage ../Source/liquid/haskell/default.nix {};
       LiquidCheck    = callPackage ../Source/liquid/check/default.nix {};
       
-      ivory = callPackage ../Source/ivory/ivory/default.nix {};
-      ivoryBackendC = callPackage ../Source/ivory/ivory-backend-c/default.nix {};
+      ivory           = callPackage ../Source/ivory/ivory/default.nix {};
+      ivoryBackendC   = callPackage ../Source/ivory/ivory-backend-c/default.nix {};
+      ivoryExamples   = callPackage ../Source/ivory/ivory-examples/default.nix {};
+      ivoryHw         = callPackage ../Source/ivory/ivory-hw/default.nix {};
       ivoryModelCheck = callPackage ../Source/ivory/ivory-model-check/default.nix {};
-      ivoryOpts = callPackage ../Source/ivory/ivory-opts/default.nix {};
+      ivoryOpts       = callPackage ../Source/ivory/ivory-opts/default.nix {};
       ivoryQuickcheck = callPackage ../Source/ivory/ivory-quickcheck/default.nix {};
-      ivoryStdlib = callPackage ../Source/ivory/ivory-stdlib/default.nix {};
-      languageCQuote = callPackage ./languageCQuote.nix { fetchgit = fetchgit; };
+      ivorySerialize  = callPackage ../Source/ivory/ivory-serialize/default.nix {};
+      ivoryStdlib     = callPackage ../Source/ivory/ivory-stdlib/default.nix {};
+
+      languageCQuote = callPackage ./languageCQuote.nix {};
 
       #hdevtools      = callPackage /Users/gridaphobe/Source/hdevtools {};
       haskellDocs    = self.disableTest (callPackage ./haskellDocs.nix {});

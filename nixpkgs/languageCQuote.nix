@@ -7,12 +7,9 @@
 
 cabal.mkDerivation (self: {
   pname = "language-c-quote";
-  version = "0.8.1";
-  src = fetchgit {
-    url = "git://github.com/pchickey/language-c-quote.git";
-    sha256 = "320c8cfb82b9547cb0dd37f3ed0cd9b5db4bd3d734ace7be844138ef78a383f6";
-    rev = "20b2032c0765f9c4bad08af6fd388d45b65c2537";
-  };
+  version = "0.10.1.1";
+  sha256 = "1aklnd85dxskbbv8kwjfr2izsm11x633rg2wpkq3a7cx93w3zpls";
+  doCheck = false;
   buildDepends = [
     exceptionMtl exceptionTransformers filepath haskellSrcMeta
     mainlandPretty mtl srcloc syb symbol
