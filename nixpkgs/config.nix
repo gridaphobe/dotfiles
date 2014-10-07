@@ -24,9 +24,10 @@
         gnused
         gnutar
         isync
-        (mu.override { libsoup = (libsoup.override { gnomeSupport = false; }); })
+        mu
         nix-prefetch-scripts
         # notmuch
+        pkgconfig
         rlwrap
         rubyLibs.terminal_notifier
         sloccount
@@ -45,7 +46,7 @@
     haskellEnv = pkgs.buildEnv {
       name = "haskell-env";
       paths = [
-        (haskellPackages_ghc783_profiling.ghcWithPackages (self: [
+        (haskellPackages_ghc783.ghcWithPackages (self: [
           self.cabal2nix
           self.cabalInstall
           self.ghcCore
@@ -87,7 +88,7 @@
           self.languageCQuote
           self.wlPprint
         ]))
-        haskellPackages_ghc783_profiling.hoogleLocal
+        haskellPackages_ghc783.hoogleLocal
       ];
     };
 
@@ -159,6 +160,18 @@
     haskellPackages_ghc783 = haskellPackages_wrapper pkgs.haskellPackages_ghc783;
     haskellPackages_ghc783_profiling = haskellPackages_wrapper pkgs.haskellPackages_ghc783_profiling;
 
+    # Define own GHC HEAD package pointing to local checkout.
+    packages_ghcHEAD = pkgs.haskell.packages {
+      ghcPath = ../Source/ghc;
+      ghcBinary = pkgs.haskellPackages.ghcPlain;
+      prefFun = pkgs.haskell.ghcHEADPrefs;
+    };
+
+    haskellPackages_ghcHEAD = haskellPackages_wrapper packages_ghcHEAD;
+    haskellPackages_ghcHEAD_profiling = haskellPackages_wrapper packages_ghcHEAD.profiling;
+
+
+
     emacsEnv = pkgs.buildEnv {
       name = "emacs-env";
       paths = [
@@ -178,6 +191,7 @@
         haskellMode
         helm
         magit
+        mu4eMaildirsExtension
         pkg-info
         projectile
         richMinority
@@ -193,6 +207,8 @@
         emacs24Packages.org
       ];
     };
+    
+    mu = pkgs.mu.override { libsoup = (libsoup.override { gnomeSupport = false; }); };
 
     myemacs = callPackage ./emacs.nix {};
     emacs   = myemacs;
@@ -208,6 +224,7 @@
     godMode = callPackage ./emacs/god-mode.nix {};
     helm = callPackage ./emacs/helm.nix {};
     magit = callPackage ./emacs/magit.nix {};
+    mu4eMaildirsExtension = callPackage ./emacs/mu4e-maildirs-extension.nix { mu = mu; };
     richMinority = callPackage ./emacs/rich-minority.nix {};
     projectile = callPackage ./emacs/projectile.nix {};
     pkg-info = callPackage ./emacs/pkg-info.nix {};
