@@ -10,7 +10,7 @@ stdenv.mkDerivation {
   buildInputs = [ emacs texinfo s-el ];
 
   buildPhase = ''
-    rm weechat-secrets.el weechat-tracking.el
+    rm weechat-sauron.el weechat-secrets.el weechat-smiley.el weechat-tracking.el
     emacs --batch -Q -L . -L ${s-el}/share/emacs/site-lisp -f batch-byte-compile *.el
   '';
 

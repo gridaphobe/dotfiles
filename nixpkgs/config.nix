@@ -7,9 +7,10 @@
     shellEnv = pkgs.buildEnv {
       name = "shell-env";
       paths = [
+        # arcanist
         autoconf
         automake
-        bash
+        bashInteractive
         cacert
         coreutils
         curl
@@ -17,6 +18,7 @@
         findutils
         fish
         gitAndTools.gitFull
+        gitAndTools.hub
         gnugrep
         gnumake
         gnupatch
@@ -24,7 +26,7 @@
         gnused
         gnutar
         isync
-        mu
+        # mu
         nix-prefetch-scripts
         # notmuch
         pkgconfig
@@ -38,7 +40,9 @@
         z3
       ];
     };
-    
+
+    # bash = pkgs.bashInteractive;
+
     cvc4 = callPackage ./cvc4.nix {};
     xapian = callPackage ./xapian.nix {};
     z3 = callPackage ./z3.nix {};
@@ -60,6 +64,8 @@
           self.pandoc
           self.pandocCiteproc
           self.pandocTypes
+          self.shake
+          self.SafeSemaphore
           
           self.Chart
           self.ChartDiagrams
@@ -72,7 +78,7 @@
           self.tasty
           self.tastyHunit
           self.tastyRerun      
-
+          
           self.liquidFixpoint
           self.liquidhaskell
           self.LiquidCheck
@@ -88,7 +94,7 @@
           self.languageCQuote
           self.wlPprint
         ]))
-        haskellPackages_ghc783.hoogleLocal
+        # haskellPackages_ghc783.hoogleLocal
       ];
     };
 
@@ -111,6 +117,7 @@
 
       languageCQuote = callPackage ./languageCQuote.nix {};
 
+      attoparsec     = self.disableTest  super.attoparsec;
       #hdevtools      = callPackage /Users/gridaphobe/Source/hdevtools {};
       haskellDocs    = self.disableTest (callPackage ./haskellDocs.nix {});
       systemFileio   = self.disableTest  super.systemFileio;
@@ -148,6 +155,12 @@
         );
       };
     };
+    
+    haskellFilterSource = paths: src: builtins.filterSource (path: type:
+        let baseName = baseNameOf path; in
+        !(builtins.elem baseName ([".git" ".cabal-sandbox" "dist"] ++ paths)))
+      src;
+
 
     haskellPackages_wrapper = hp: recurseIntoAttrs (hp.override {
         extension = this: super: haskellProjects {
@@ -171,6 +184,32 @@
     haskellPackages_ghcHEAD_profiling = haskellPackages_wrapper packages_ghcHEAD.profiling;
 
 
+    vimEnv = pkgs.buildEnv {
+      name = "vim-env";
+      paths = [
+        macvim
+        #(vimNox.override {
+        #  luaSupport    = true;
+        #  pythonSupport = true;
+        #  rubySupport   = true;
+        #  tclSupport    = true;
+
+        #  ftNixSupport  = true;
+
+        #  multibyteSupport = true;
+        #})
+
+        vimPlugins.align
+        vimPlugins.commentary
+        vimPlugins.fugitive
+        vimPlugins.ghcmod
+        vimPlugins.hasksyn
+        vimPlugins.hoogle
+        vimPlugins.stylishHaskell
+        vimPlugins.syntastic
+        vimPlugins.tmuxNavigator
+      ];
+    };
 
     emacsEnv = pkgs.buildEnv {
       name = "emacs-env";
@@ -191,7 +230,7 @@
         haskellMode
         helm
         magit
-        mu4eMaildirsExtension
+        # mu4eMaildirsExtension
         pkg-info
         projectile
         richMinority
@@ -204,16 +243,17 @@
         usePackage
         weechat-el
 
-        emacs24Packages.org
+        #emacs24Packages.org
       ];
     };
-    
+
     mu = pkgs.mu.override { libsoup = (libsoup.override { gnomeSupport = false; }); };
 
     myemacs = callPackage ./emacs.nix {};
+    # myemacs = pkgs.emacs24Macport;
     emacs   = myemacs;
     emacs24Packages = recurseIntoAttrs (emacsPackages myemacs pkgs.emacs24Packages);
-    
+
     companyMode = callPackage ./emacs/company-mode.nix {};
     dash = callPackage ./emacs/dash.nix {};
     evil = callPackage ./emacs/evil.nix {};

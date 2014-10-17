@@ -52,8 +52,9 @@
 
   (require 'exec-path-from-shell)
   (setq exec-path-from-shell-variables
-        (append '("DYLD_LIBRARY_PATH" "NIX_PATH" "NIX_GHC" "NIX_GHCPKG" "NIX_GHC_DOCDIR" "NIX_GHC_LIBDIR")
-                exec-path-from-shell-variables))
+        '("PATH" "MANPATH" "DYLD_LIBRARY_PATH" "NIX_PATH" 
+          "NIX_GHC" "NIX_GHCPKG" "NIX_GHC_DOCDIR" "NIX_GHC_LIBDIR")
+        )
   (exec-path-from-shell-initialize)
 
   (setq browse-url-browser-function 'browse-url-default-macosx-browser))
@@ -223,11 +224,12 @@
       helm-ff-skip-boring-files t
       helm-quick-update t                   ; do not display invisible candidates
       helm-split-window-default-side 'other ; open helm buffer in another window
-      helm-split-window-in-side-p t         ; open helm buffer inside current window,
+      helm-split-window-in-side-p nil         ; open helm buffer inside current window,
                                             ; don't occupy whole other window
+      helm-always-two-windows t
       
-      ;; helm-boring-file-regexp-list (append helm-boring-file-regexp-list
-      ;;                                      '("\\.$" "\\.\\.$"))
+      helm-boring-file-regexp-list (append helm-boring-file-regexp-list
+                                           '("\\.hi$" "\\.tags$"))
       )
 
 (bind-key "C-x b" 'helm-mini)
@@ -332,6 +334,7 @@
 (setq evil-search-module 'evil-search
       evil-cross-lines t
       evil-move-cursor-back nil)
+(add-to-list 'evil-emacs-state-modes 'special-mode)
 (evil-ex-define-cmd "e[dit]" 'helm-find-files)
 (evil-ex-define-cmd "b[uffer]" 'helm-buffers-list)
 (bind-key "[escape]" 'keyboard-escape-quit evil-normal-state-map)
@@ -732,72 +735,75 @@
       user-mail-address "gridaphobe@gmail.com")
 
 ;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
-(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
-(require 'mu4e)
-(setq mu4e-maildir "~/.mail"
-     mu4e-drafts-folder "/gmail/drafts"
-     mu4e-refile-folder "/gmail/archive"
-     mu4e-sent-folder "/gmail/sent"
-     mu4e-trash-folder "/gmail/trash"
-     mu4e-attachment-dir "~/Downloads"
-     mu4e-user-mail-address-list '("gridaphobe@gmail.com"
-                                   "eseidel@galois.com"
-                                   "eric@eseidel.org"
-                                   "eric@seidel.io"
-                                   "eric9@mac.com"
-                                   "eric9@me.com"
-                                   "eric9@icloud.com"
-                                   "eseidel@cs.ucsd.edu"
-                                   "eseidel@ucsd.edu"
-                                   "eseidel@eng.ucsd.edu"
-                                   "eseidel01@ccny.cuny.edu"
-                                   "eric@fluidinfo.com"
-                                   "seidel@apple.com")
-     mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-                       "Starred Messages"
-                       ?s)
-                      ("flag:unread AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-                       "Unread Messages"
-                       ?u)
-                      ("to:*.ucsd.edu AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-                       "UCSD"
-                       ?w))
-     mu4e-sent-messages-behavior 'delete
-     mu4e-auto-retrieve-keys t
-     mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
-                            ("tag message" . mu4e-action-retag-message))
-     mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
-                         ("view as pdf" . mu4e-action-view-as-pdf)
-                         ("tag message" . mu4e-action-retag-message))
-     mu4e-completing-read-function 'completing-read
-     mu4e-change-filenames-when-moving t
-     mu4e-compose-dont-reply-to-self t
-     mu4e-compose-signature-auto-include nil
-     mu4e-headers-skip-duplicates t
-     mu4e-headers-include-related nil
-     mu4e-headers-results-limit 100
-     mu4e-hide-index-messages nil
-     mu4e-use-fancy-chars t
-     mu4e-debug nil
-     mu4e-get-mail-command "true" ;"mbsync -a"
-     mu4e-update-interval nil ; (* 5 60)
-     )
+;; (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
+;; (require 'mu4e)
+;; (setq mu4e-maildir "~/.mail"
+;;      mu4e-drafts-folder "/gmail/drafts"
+;;      mu4e-refile-folder "/gmail/archive"
+;;      mu4e-sent-folder "/gmail/sent"
+;;      mu4e-trash-folder "/gmail/trash"
+;;      mu4e-attachment-dir "~/Downloads"
+;;      mu4e-user-mail-address-list '("gridaphobe@gmail.com"
+;;                                    "eseidel@galois.com"
+;;                                    "eric@eseidel.org"
+;;                                    "eric@seidel.io"
+;;                                    "eric9@mac.com"
+;;                                    "eric9@me.com"
+;;                                    "eric9@icloud.com"
+;;                                    "eseidel@cs.ucsd.edu"
+;;                                    "eseidel@ucsd.edu"
+;;                                    "eseidel@eng.ucsd.edu"
+;;                                    "eseidel01@ccny.cuny.edu"
+;;                                    "eric@fluidinfo.com"
+;;                                    "seidel@apple.com")
+;;      mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+;;                        "Starred Messages"
+;;                        ?s)
+;;                       ("flag:unread AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+;;                        "Unread Messages"
+;;                        ?u)
+;;                       ("to:*.ucsd.edu AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+;;                        "UCSD"
+;;                        ?w))
+;;      mu4e-sent-messages-behavior 'delete
+;;      mu4e-auto-retrieve-keys t
+;;      mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
+;;                             ("tag message" . mu4e-action-retag-message))
+;;      mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
+;;                          ("view as pdf" . mu4e-action-view-as-pdf)
+;;                          ("tag message" . mu4e-action-retag-message))
+;;      mu4e-completing-read-function 'completing-read
+;;      mu4e-change-filenames-when-moving t
+;;      mu4e-compose-dont-reply-to-self t
+;;      mu4e-compose-signature-auto-include nil
+;;      mu4e-headers-skip-duplicates t
+;;      mu4e-headers-include-related nil
+;;      mu4e-headers-results-limit 100
+;;      mu4e-hide-index-messages nil
+;;      mu4e-use-fancy-chars nil
+;;      mu4e-debug nil
+;;      mu4e-get-mail-command "true" ;"mbsync -a"
+;;      mu4e-update-interval nil ; (* 5 60)
+;;      )
 
-(setq mu4e-html2text-command
-     #'(lambda () 
-         (shr-render-region (point-min) (point-max))))
+;; (setq mu4e-html2text-command
+;;      #'(lambda () 
+;;          (shr-render-region (point-min) (point-max))))
 
-(add-hook 'mu4e-compose-pre-hook
- (defun my/set-from-address ()
-   (let ((msg mu4e-compose-parent-message))
-     (when msg
-       (setq user-mail-address
-             (cond
-              ((mu4e-message-contact-field-matches msg :to "ucsd.edu")
-               "eseidel@cs.ucsd.edu")
-              ((mu4e-message-contact-field-matches msg :to "galois.com")
-               "eseidel@galois.com")
-              (t "gridaphobe@gmail.com")))))))
+;; (load "~/.emacs.d/vendor/window-margin.el")
+;; (add-hook 'mu4e-view-mode-hook 'turn-on-window-margin-mode)
+
+;; (add-hook 'mu4e-compose-pre-hook
+;;  (defun my/set-from-address ()
+;;    (let ((msg mu4e-compose-parent-message))
+;;      (when msg
+;;        (setq user-mail-address
+;;              (cond
+;;               ((mu4e-message-contact-field-matches msg :to "ucsd.edu")
+;;                "eseidel@cs.ucsd.edu")
+;;               ((mu4e-message-contact-field-matches msg :to "galois.com")
+;;                "eseidel@galois.com")
+;;               (t "gridaphobe@gmail.com")))))))
 
 (setq message-send-mail-function 'smtpmail-send-it
      smtpmail-stream-type 'starttls
@@ -815,35 +821,125 @@
                "-message" message))
 ;; (my/terminal-notifier "Hello" "from Emacs" "Hello World")
 
-(defvar my/mu4e-tmp-erase-func nil)
-(defvar my/mu4e-tmp-found-func nil)
-(defvar my/mu4e-tmp-header-func nil)
-(defvar my/msgids-to-move nil)
-(add-hook 'mu4e-index-updated-hook
-         (defun my/notify-new-mail ()
-           (setq my/msgids-to-move nil
-                 my/mu4e-tmp-erase-func mu4e-erase-func
-                 my/mu4e-tmp-found-func mu4e-found-func
-                 my/mu4e-tmp-header-func mu4e-header-func
-                 mu4e-erase-func (lambda () nil)
-                 mu4e-found-func (lambda (n)
-                                   (setq mu4e-erase-func my/mu4e-tmp-erase-func
-                                         mu4e-found-func my/mu4e-tmp-found-func
-                                         mu4e-header-func my/mu4e-tmp-header-func)
-                                   (dolist (msgid my/msgids-to-move)
-                                     (mu4e~proc-move msgid nil "-N"))
-                                   (setq my/msgids-to-move nil))
-                 mu4e-header-func (lambda (msg) 
-                                    (my/terminal-notifier
-                                     "New Mail"
-                                     (caar (mu4e-message-field msg :from))
-                                     (mu4e-message-field msg :subject))
-                                    (add-to-list 'my/msgids-to-move (mu4e-message-field msg :message-id))))
-           (mu4e~proc-find "(maildir:/gmail/inbox or maildir:/galois/inbox) and flag:new" nil :date 'descending nil t nil)))
+;; (defvar my/mu4e-tmp-erase-func nil)
+;; (defvar my/mu4e-tmp-found-func nil)
+;; (defvar my/mu4e-tmp-header-func nil)
+;; (defvar my/msgids-to-move nil)
+;; (add-hook 'mu4e-index-updated-hook
+;;          (defun my/notify-new-mail ()
+;;            (setq my/msgids-to-move nil
+;;                  my/mu4e-tmp-erase-func mu4e-erase-func
+;;                  my/mu4e-tmp-found-func mu4e-found-func
+;;                  my/mu4e-tmp-header-func mu4e-header-func
+;;                  mu4e-erase-func (lambda () nil)
+;;                  mu4e-found-func (lambda (n)
+;;                                    (setq mu4e-erase-func my/mu4e-tmp-erase-func
+;;                                          mu4e-found-func my/mu4e-tmp-found-func
+;;                                          mu4e-header-func my/mu4e-tmp-header-func)
+;;                                    (dolist (msgid my/msgids-to-move)
+;;                                      (mu4e~proc-move msgid nil "-N"))
+;;                                    (setq my/msgids-to-move nil))
+;;                  mu4e-header-func (lambda (msg) 
+;;                                     (my/terminal-notifier
+;;                                      "New Mail"
+;;                                      (caar (mu4e-message-field msg :from))
+;;                                      (mu4e-message-field msg :subject))
+;;                                     (add-to-list 'my/msgids-to-move (mu4e-message-field msg :message-id))))
+;;            (mu4e~proc-find "(maildir:/gmail/inbox or maildir:/galois/inbox) and flag:new" nil :date 'descending nil t nil)))
 
-(require 'mu4e-maildirs-extension)
-(mu4e-maildirs-extension)
+;; (require 'mu4e-maildirs-extension)
+;; (mu4e-maildirs-extension)
 
+
+(require 'gnus)
+(setq gnus-select-method '(nnimap "seidel" 
+                                  (nnimap-address "mail.messagingengine.com")
+                                  (nnimap-stream ssl))
+      gnus-secondary-select-methods '((nnimap "galois"
+                                              (nnimap-address "mail.galois.com")
+                                              (nnimap-stream ssl)))
+      gnus-asynchronous t
+
+      ;; gnus-sum-thread-tree-false-root      ""
+      ;; gnus-sum-thread-tree-single-indent   ""
+      ;; gnus-sum-thread-tree-root            ""
+      ;; gnus-sum-thread-tree-vertical        "|"
+      ;; gnus-sum-thread-tree-leaf-with-other "+-> "
+      ;; gnus-sum-thread-tree-single-leaf     "\\-> "
+      ;; gnus-sum-thread-tree-indent          " "
+
+      gnus-use-cache t
+      gnus-cache-directory "~/.cache/gnus/"
+      gnus-cache-enter-articles '(read unread ticked dormant)
+      gnus-cache-remove-articles nil
+
+      gnus-read-newsrc-file nil
+      gnus-save-newsrc-file nil
+      
+      gnus-read-active-file 'some
+)
+;; http://groups.google.com/group/gnu.emacs.gnus/browse_thread/thread/a673a74356e7141f
+(when window-system
+  (setq gnus-sum-thread-tree-indent "  ")
+  (setq gnus-sum-thread-tree-root "")
+  (setq gnus-sum-thread-tree-false-root "")
+  (setq gnus-sum-thread-tree-single-indent "")
+  (setq gnus-sum-thread-tree-vertical        "│")
+  (setq gnus-sum-thread-tree-leaf-with-other "├─> ")
+  (setq gnus-sum-thread-tree-single-leaf     "└─> "))
+(setq gnus-summary-line-format
+      (concat
+       "%0{%U%R%z%}"
+       "%3{│%}" "%1{%d%}" "%3{│%}" ;; date
+       "  "
+       "%4{%-20,20f%}"               ;; name
+       "  "
+       "%3{│%}"
+       " "
+       "%1{%B%}"
+       "%s\n"))
+(setq gnus-summary-display-arrow t)
+(gnus-demon-add-handler 'gnus-demon-scan-news 5 nil) ; this does a call to gnus-group-get-new-news
+(require 'gnus-notifications)
+(defun gnus-notifications-notify (from subject photo-file)
+  "Send a notification about a new mail.
+Return a notification id if any, or t on success."
+  (my/terminal-notifier "Gnus - New Message" from subject)
+  t
+  )
+(remove-hook 'gnus-after-getting-new-news-hook 'gnus-notifications)
+;; (require 'gnus-alias)
+(setq gnus-posting-styles
+      '(;
+        (".*"
+         (address "eric@seidel.io")
+         ("X-Message-SMTP-Method" "smtp mail.messagingengine.com 587")
+         )
+        ((header "to" "gridaphobe@gmail\\.com")
+         (address "gridaphobe@gmail.com")
+         ("X-Message-SMTP-Method" "smtp smtp.gmail.com 587"))
+        ((header "to" "eseidel@.*\\.ucsd\\.edu")
+         (address "eseidel@cs.ucsd.edu")
+         ("X-Message-SMTP-Method" "smtp smtp.gmail.com 587"))
+        ((header "to" "eseidel@galois\\.com")
+         (address "eseidel@galois.com")
+         ("X-Message-SMTP-Method" "smtp relay.galois.com 587"))
+        ))
+;; (defadvice smtpmail-via-smtp (around set-smtp-server-from-header activate)
+;;   (let ((smtpmail-smtp-server (or 
+;;                                (save-restriction
+;;                                  (message-narrow-to-headers)
+;;                                  (mail-fetch-field "X-SMTP-Server"))
+;;                                smtpmail-smtp-server)))
+;;     (message-remove-header "X-SMTP-Server")
+;;     ad-do-it
+;;     ))
+
+
+;; (setq gnus-select-method
+;;       '(nnimap (st)))
+;; (setq gnus-secondary-select-methods
+;;       '((nnmaildir )))
 
 ;;;; irc
 (require 'weechat)
@@ -862,6 +958,7 @@
                  (my/terminal-notifier "IRC Mention"
                                        sender
                                        text))))
+(add-hook 'weechat-mode-hook 'turn-on-visual-line-mode)
 
 
 ;;;; pretty symbols
@@ -885,13 +982,13 @@
 (xterm-mouse-mode 1)
 
 ;;;; theme
-(defadvice load-theme (around disable-other-themes activate)
-  (mapc #'disable-theme custom-enabled-themes)
-  ad-do-it)
+;; (defadvice load-theme (around disable-other-themes activate)
+;;   (mapc #'disable-theme custom-enabled-themes)
+;;   ad-do-it)
 ;; (load-theme 'solarized-light)
 
 (load-theme 'leuven)
-(custom-theme-set-faces 'leuven '(default ((default :background "WhiteSmoke")) t))
+;; (custom-theme-set-faces 'leuven '(default ((default :background "WhiteSmoke")) t))
 ;; (sml/apply-theme 'light)
 
 
