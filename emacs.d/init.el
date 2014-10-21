@@ -11,6 +11,10 @@
   "Are we just running mail/irc?")
 (defconst ns-bundle-id (concat "org.gnu." invocation-name))
 
+(require 'server)
+(unless (server-running-p)
+  (server-start))
+
 ;; config changes made through the customize UI will be store here
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (when (file-exists-p custom-file)
@@ -38,17 +42,24 @@
 (when (and on-mac window-system)
   ;; Emacs users obviously have little need for Command and Option keys,
   ;; but they do need Meta and Super
+  (setq mac-pass-command-to-system nil
+        mac-pass-control-to-system nil)
   (setq mac-command-modifier 'super)
   (setq mac-option-modifier 'meta)
 
   (bind-key "<s-return>" 'toggle-frame-fullscreen)
+  (bind-key "s-`" 'other-frame)
+  (bind-key "s-c" 'kill-ring-save)
+  (bind-key "s-v" 'yank)
+  (bind-key "s-s" 'save-buffer)
+  (bind-key "s-q" 'save-buffers-kill-emacs)
 
   (set-fontset-font "fontset-default"
                     'unicode
                     '("Ubuntu Mono" . "iso10646-1"))
   (set-face-attribute 'default nil
                       :family "Ubuntu Mono"
-                      :height 160)
+                      :height 140)
 
   (require 'exec-path-from-shell)
   (setq exec-path-from-shell-variables

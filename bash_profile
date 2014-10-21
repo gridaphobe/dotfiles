@@ -5,6 +5,7 @@
 
 if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then . "$HOME/.nix-profile/etc/profile.d/nix.sh"; fi # added by Nix installer
 
+export NIX_CONF_DIR="$HOME/.config/nix"
 export NIX_PATH=nixpkgs="$HOME/Source/nixpkgs"
 export CFLAGS="$CFLAGS -I$HOME/.nix-profile/include"
 export CXXFLAGS="$CXXFLAGS -I$HOME/.nix-profile/include"

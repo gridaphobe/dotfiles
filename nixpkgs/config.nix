@@ -4,20 +4,26 @@
 
   packageOverrides = pkgs: with pkgs; rec {
 
+    makeShell = p: extras: lib.overrideDerivation p (attrs: {
+      buildInputs = [fish gitAndTools.git] ++ extras ++ attrs.buildInputs;
+      shellHook = "exec fish";
+    });
+
     shellEnv = pkgs.buildEnv {
       name = "shell-env";
       paths = [
-        # arcanist
+        # acl2
+        arcanist
         autoconf
         automake
         bashInteractive
         cacert
         coreutils
         curl
-        cvc4
+        # cvc4
         findutils
         fish
-        gitAndTools.gitFull
+        gitAndTools.git
         gitAndTools.hub
         gnugrep
         gnumake
@@ -67,6 +73,9 @@
           self.shake
           self.SafeSemaphore
           
+          self.lens
+          self.trifecta
+          
           self.Chart
           self.ChartDiagrams
           self.text
@@ -83,6 +92,7 @@
           self.liquidhaskell
           self.LiquidCheck
           self.ivory
+          self.ivoryBackendAcl2
           self.ivoryBackendC
           self.ivoryExamples
           self.ivoryHw
@@ -94,7 +104,7 @@
           self.languageCQuote
           self.wlPprint
         ]))
-        # haskellPackages_ghc783.hoogleLocal
+        haskellPackages_ghc783.hoogleLocal
       ];
     };
 
@@ -106,6 +116,7 @@
       LiquidCheck    = callPackage ../Source/liquid/check/default.nix {};
       
       ivory           = callPackage ../Source/ivory/ivory/default.nix {};
+      ivoryBackendAcl2   = callPackage ../Source/ivory/ivory-backend-acl2/default.nix {};
       ivoryBackendC   = callPackage ../Source/ivory/ivory-backend-c/default.nix {};
       ivoryExamples   = callPackage ../Source/ivory/ivory-examples/default.nix {};
       ivoryHw         = callPackage ../Source/ivory/ivory-hw/default.nix {};
@@ -122,6 +133,8 @@
       haskellDocs    = self.disableTest (callPackage ./haskellDocs.nix {});
       systemFileio   = self.disableTest  super.systemFileio;
       shake          = self.disableTest  super.shake;
+      lens           = self.disableTest  super.lens;
+      acl2           = callPackage ../Source/acl2/default.nix {};
       intern         = callPackage ./intern.nix {};
       dataTextual    = callPackage ./dataTextual.nix {};
       dataTimeout    = callPackage ./dataTimeout.nix {};
@@ -237,7 +250,7 @@
         s-el
         smartModeLine
         smartparens
-        structuredHaskellMode
+        #structuredHaskellMode
         switch-window
         undoTree
         usePackage
@@ -249,8 +262,8 @@
 
     mu = pkgs.mu.override { libsoup = (libsoup.override { gnomeSupport = false; }); };
 
-    myemacs = callPackage ./emacs.nix {};
-    # myemacs = pkgs.emacs24Macport;
+    # myemacs = callPackage ./emacs.nix {};
+    myemacs = pkgs.emacs24Macport;
     emacs   = myemacs;
     emacs24Packages = recurseIntoAttrs (emacsPackages myemacs pkgs.emacs24Packages);
 

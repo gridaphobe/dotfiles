@@ -3,11 +3,11 @@
 }:
 
 stdenv.mkDerivation rec {
-  name = "emacs-24.3.93";
+  name = "emacs-24.4";
 
   src = fetchurl {
-    url    = "ftp://alpha.gnu.org/gnu/emacs/pretest/${name}.tar.xz";
-    sha256 = "0ym6gk653hs9jzwkjp477sxcqvfqcwisc6lznrg1lvbws6xk8m46";
+    url    = "mirror://gnu/emacs/${name}.tar.xz";
+    sha256 = "1zflm6ac34s6v166p58ilxrxbxjm0q2wfc25f8y0mjml1lbr3qs7";
   };
 
   preConfigure = ''
@@ -29,7 +29,6 @@ stdenv.mkDerivation rec {
       --disable-ns-self-contained
     )
     makeFlagsArray=(
-      # CC=/usr/bin/gcc
       CFLAGS=-O3
       LDFLAGS=-O3
     );
