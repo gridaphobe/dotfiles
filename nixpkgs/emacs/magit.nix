@@ -1,18 +1,14 @@
-{ stdenv, fetchgit, emacs, texinfo, gitModes }:
+{ melpa, fetchgit, git-commit-mode, git-rebase-mode }:
 
-stdenv.mkDerivation {
-  name = "magit-6556c94";
+melpa.mkDerivation (self: {
+  pname = "magit";
+  version = "20141016";
   src = fetchgit {
     url = "git://github.com/magit/magit.git";
-    rev = "6556c94aafb13d48a4bd54ba0f8056c81496dba0";
-    sha256 = "f57b714e15f0e0396ccfab9a4d6c37081267ba96fccf5c042f82ca31d09b5c3c";
+    rev = "fb3bfe4f9dddd628d5c4bbd63bd2de18fec906fe";
+    sha256 = "623a6b45b2ea302f24aad03c76ed58588ebaead8b54ef3923e9a9b9c0f75ae7f";
   };
-  preConfigure = ''
-    makeFlagsArray=( 
-      PREFIX=$out 
-      SYSCONFDIR=$out/etc 
-      EFLAGS="-L ${gitModes}/share/emacs/site-lisp"
-    )
-  '';        
-  buildInputs = [ emacs texinfo gitModes ];
-}
+
+  packageRequires = [ git-commit-mode git-rebase-mode ];
+
+})

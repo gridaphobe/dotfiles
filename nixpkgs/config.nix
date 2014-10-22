@@ -199,28 +199,30 @@
 
     vimEnv = pkgs.buildEnv {
       name = "vim-env";
-      paths = [
+      paths = with vimPlugins; [
         macvim
-        #(vimNox.override {
-        #  luaSupport    = true;
-        #  pythonSupport = true;
-        #  rubySupport   = true;
-        #  tclSupport    = true;
 
-        #  ftNixSupport  = true;
+        align
+        airline
+        commentary
+        easymotion
+        fugitive
+        ghcmod-vim
+        gitgutter
+        gundo
+        hasksyn
+        hoogle
+        idris-vim
+        neco-ghc
+        stylish-haskell
+        surround
+        syntastic
+        tmux-navigator
+        vimproc
+        vimshell
 
-        #  multibyteSupport = true;
-        #})
-
-        vimPlugins.align
-        vimPlugins.commentary
-        vimPlugins.fugitive
-        vimPlugins.ghcmod
-        vimPlugins.hasksyn
-        vimPlugins.hoogle
-        vimPlugins.stylishHaskell
-        vimPlugins.syntastic
-        vimPlugins.tmuxNavigator
+        vim-rsi
+        vim-sensible
       ];
     };
 
@@ -228,7 +230,7 @@
       name = "emacs-env";
       paths = [
         emacs
-        
+
         aspell
         aspellDicts.en
 
@@ -250,22 +252,25 @@
         s-el
         smartModeLine
         smartparens
-        #structuredHaskellMode
+        emacs24Packages.structuredHaskellMode
         switch-window
         undoTree
         usePackage
         weechat-el
 
-        #emacs24Packages.org
+        emacs24Packages.org
       ];
     };
 
     mu = pkgs.mu.override { libsoup = (libsoup.override { gnomeSupport = false; }); };
 
     # myemacs = callPackage ./emacs.nix {};
-    myemacs = pkgs.emacs24Macport;
-    emacs   = myemacs;
-    emacs24Packages = recurseIntoAttrs (emacsPackages myemacs pkgs.emacs24Packages);
+    emacs = pkgs.emacs24Macport;
+    emacs24Packages = recurseIntoAttrs (emacsPackages emacs24Macport emacs24Packages);
+    
+    melpa = callPackage ./emacs/melpa.nix {};
+    git-commit-mode = callPackage ./emacs/git-commit-mode.nix {};
+    git-rebase-mode = callPackage ./emacs/git-rebase-mode.nix {};
 
     companyMode = callPackage ./emacs/company-mode.nix {};
     dash = callPackage ./emacs/dash.nix {};
@@ -290,14 +295,14 @@
     weechat-el = callPackage ./emacs/weechat-el.nix {};
 
     haskellMode = callPackage ./emacs/haskellMode.nix {};
-    structuredHaskellMode = lib.overrideDerivation 
-                            emacs24Packages.structuredHaskellMode (attrs: {
-      name = "structured-haskell-mode-d025da6";
-      src = fetchgit {
-        url = "git://github.com/chrisdone/structured-haskell-mode.git";
-        rev = "d025da601c80669b8618d09836dd2a54f5fb9c1a";
-        sha256 = "f1b26d89d953019d269ba1badeed6ded08d786abb623bf5f3fb1d281b7b655bc";
-      };
-    });
+    #structuredHaskellMode = lib.overrideDerivation
+    #                        emacs24Packages.structuredHaskellMode (attrs: {
+    #  name = "structured-haskell-mode-d025da6";
+    #  src = fetchgit {
+    #    url = "git://github.com/chrisdone/structured-haskell-mode.git";
+    #    rev = "d025da601c80669b8618d09836dd2a54f5fb9c1a";
+    #    sha256 = "f1b26d89d953019d269ba1badeed6ded08d786abb623bf5f3fb1d281b7b655bc";
+    #  };
+    #});
   };
 }

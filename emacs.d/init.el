@@ -50,6 +50,8 @@
   (bind-key "<s-return>" 'toggle-frame-fullscreen)
   (bind-key "s-`" 'other-frame)
   (bind-key "s-c" 'kill-ring-save)
+  (bind-key "s-n" 'make-frame)
+  (bind-key "s-w" 'delete-frame)
   (bind-key "s-v" 'yank)
   (bind-key "s-s" 'save-buffer)
   (bind-key "s-q" 'save-buffers-kill-emacs)
