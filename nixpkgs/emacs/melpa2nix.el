@@ -24,9 +24,6 @@
           (file-name-as-directory
            (expand-file-name name package-build-working-dir))))
 
-    ;; (unless (file-exists-p pkg-working-dir)
-    ;;   (pb/message "Creating directory %s" pkg-working-dir)
-    ;;   (make-directory pkg-working-dir))
 
     (pb/message "\n;;; %s\n" name)
     (let* (;(default-directory package-build-working-dir)
@@ -36,11 +33,12 @@
                                                  files
                                                  "."
                                                  package-build-archive-dir)))
-      ;; (princ archive-entry)
+      (princ archive-entry)
+
       ;; (pb/dump archive-entry (pb/entry-file-name archive-entry))
-      ;; (when package-build-write-melpa-badge-images
-      ;;   (pb/write-melpa-badge-image (symbol-name name) version package-build-archive-dir))
+
       (pb/message "Built in %.3fs, finished at %s"
                   (time-to-seconds (time-since start-time))
                   (current-time-string))
+
       archive-entry)))

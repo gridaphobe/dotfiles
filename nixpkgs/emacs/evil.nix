@@ -1,17 +1,15 @@
-{ stdenv, fetchgit, emacs, texinfo, undoTree }:
+{ melpa, fetchgit, goto-chg, undo-tree }:
 
-stdenv.mkDerivation {
-  name = "evil-4382854";
+melpa.mkDerivation (self: {
+  pname   = "evil";
+  version = "20141020";
+
   src = fetchgit {
     url = "git://gitorious.org/evil/evil";
-    rev = "438285437a9acd7edd99a95f52c1ab0fbb0a6107";
+    rev = "999ec15587f85100311c031aa8efb5d50c35afe4";
     sha256 = "18736fc8100801ab1198b33fbf0f08cf4a3779dd80771dfa3f700e7182ac9f6d";
   };
   
-  buildInputs = [ emacs texinfo undoTree ];
-  
-  installPhase = ''
-    mkdir -p "$out/share/emacs/site-lisp"
-    cp *.el *.elc "$out/share/emacs/site-lisp/"
-  '';
-}
+  packageRequires = [ goto-chg undo-tree ];
+
+})

@@ -1,20 +1,16 @@
-{ stdenv, fetchgit, emacs, texinfo, evil, godMode }:
+{ melpa, fetchFromGitHub, evil, god-mode }:
 
-stdenv.mkDerivation {
-  name = "evil-god-state-234a9b6";
-  src = fetchgit {
-    url = "git://github.com/gridaphobe/evil-god-state";
-    rev = "234a9b6f500ece89c3dfb5c1df5baef6963e4566";
-    sha256 = "de3fbe71f2ed72020bb4791dd3a4bae1eeaeca7e08a907939b794518f86d669b";
+melpa.mkDerivation (self: {
+  pname   = "evil-god-state";
+  version = "20140830";
+
+  src = fetchFromGitHub {
+    owner  = "gridaphobe";
+    repo   = self.pname;
+    rev    = "234a9b6f500ece89c3dfb5c1df5baef6963e4566";
+    sha256 = "16v6dpw1hibrkf9hga88gv5axvp1pajd67brnh5h4wpdy9qvwgyy";
   };
-  buildInputs = [ emacs texinfo evil godMode ];
+  
+  packageRequires = [ evil god-mode ];
 
-  buildPhase = ''
-    emacs --batch -Q -L . -L ${evil}/share/emacs/site-lisp -L ${godMode}/share/emacs/site-lisp -f batch-byte-compile *.el
-  '';
-
-  installPhase = ''
-    mkdir -p "$out/share/emacs/site-lisp"
-    cp *.el *.elc "$out/share/emacs/site-lisp/"
-  '';
-}
+})

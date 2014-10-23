@@ -1,21 +1,18 @@
-{ stdenv, fetchgit, emacs, texinfo }:
+{ melpa, fetchFromGitHub, bind-key, diminish }:
 
-stdenv.mkDerivation {
-  name = "use-package-a3ac75f";
-  src = fetchgit {
-    url = "git://github.com/jwiegley/use-package.git";
-    rev = "a3ac75ff82680864cde1a7091c5427004ae6238b";
-    sha256 = "178e532f7faeb1a3463ab1a22ee7e28ca4ed769d619a3af18ad0236378758ee6";
+melpa.mkDerivation (self: {
+  pname   = "use-package";
+  version = "20141013";
+
+  src = fetchFromGitHub {
+    owner  = "jwiegley";
+    repo   = self.pname;
+    rev    = "d43af5e0769a92f77e01dea229e376d9006722ef";
+    sha256 = "1m4v5h52brg2g9rpbqfq9m3m8fv520vg5mjwppnbw6099d17msqd";
   };
   
-  buildInputs = [ emacs texinfo ];
+  packageRequires = [ bind-key diminish ];
   
-  buildPhase = ''
-     emacs --batch -Q -L . -f batch-byte-compile bind-key.el use-package.el
-  '';
-  
-  installPhase = ''
-    mkdir -p "$out/share/emacs/site-lisp"
-    cp *.el *.elc "$out/share/emacs/site-lisp/"
-  '';
-}
+  files = [ "use-package.el" ];
+
+})

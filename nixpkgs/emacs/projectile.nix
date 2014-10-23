@@ -1,24 +1,16 @@
-{ stdenv, fetchgit, emacs, texinfo, dash, helm, s-el, pkg-info, epl }:
+{ melpa, fetchFromGitHub, dash-el, helm, s-el, pkg-info-el, epl }:
 
-stdenv.mkDerivation {
-  name = "projectile-8d6b17f";
-  src = fetchgit {
-    url = "git://github.com/bbatsov/projectile.git";
-    rev = "8d6b17fbe78c238c0e8d5a81d2bba805c0b18151";
-    sha256 = "4cfc91310391e058cf51aa9a504418bf90f3b22be6af4ff8279e185344533248";
+melpa.mkDerivation (self: {
+  pname   = "projectile";
+  version = "20141020";
+
+  src = fetchFromGitHub {
+    owner  = "bbatsov";
+    repo   = self.pname;
+    rev    = "13580d83374e0c17c55b3a680b816dfae407657e";
+    sha256 = "10c28h2g53sg68lwamhak0shdhh26h5xaipipz3n4281sr1fwg58";
   };
-  
-  buildInputs = [ emacs texinfo dash helm s-el pkg-info epl ];
-  
-  buildPhase = ''
-    emacs --batch -Q -L . -L ${dash}/share/emacs/site-lisp -L ${helm}/share/emacs/site-lisp \
-          -L ${s-el}/share/emacs/site-lisp -L ${pkg-info}/share/emacs/site-lisp \
-          -L ${epl}/share/emacs/site-lisp \
-          -f batch-byte-compile projectile.el helm-projectile.el
-  '';
-  
-  installPhase = ''
-    mkdir -p "$out/share/emacs/site-lisp"
-    cp *.el *.elc "$out/share/emacs/site-lisp/"
-  '';
-}
+
+  packageRequires = [ dash-el helm s-el pkg-info-el epl ];
+
+})

@@ -49,24 +49,11 @@ in
             # fname.
             name = "emacs-${self.pname}-${self.version}";
 
-            # the default download location for Cabal packages is Hackage,
-            # you still have to specify the checksum
-            # src = fetchurl {
-            #   url = "mirror://hackage/${self.pname}/${self.fname}.tar.gz";
-            #   inherit (self) sha256;
-            # };
 
-            # default buildInputs are just ghc, if more buildInputs are required
-            # buildInputs can be extended by the client by using extraBuildInputs,
-            # but often propagatedBuildInputs is preferable anyway
             buildInputs = [emacs texinfo] ++ self.packageRequires;
 
-            # we make sure that propagatedBuildInputs is defined, so that we don't
-            # have to check for its existence
             propagatedBuildInputs = self.packageRequires;
 
-            # By default, also propagate all dependencies to the user environment. This is required, otherwise packages would be broken, because
-            # GHC also needs all dependencies to be available.
             propagatedUserEnvPkgs = self.packageRequires;
             
             packageRequires = [];
@@ -93,8 +80,6 @@ in
               eval "$postConfigure"
             '';
 
-            # builds via Cabal
-            
             setupHook = ./melpa-setup.sh;
             
             targets = stdenv.lib.concatStringsSep " " 
@@ -110,12 +95,6 @@ in
                 $out/share/emacs/site-lisp/elpa \
                 ${self.pname} ${self.version} ${self.targets}
 
-              # mkdir ${self.fname}
-              
-              # cp ${toString self.targets} ${self.fname}
-
-              # tar -cv --mtime=./${self.pname} -f ${self.fname}.tar ${self.pname}
-
               eval "$postBuild"
             '';
 
@@ -126,9 +105,6 @@ in
               eval "$postCheck"
             '';
 
-            # installs via Cabal; creates a registration file for nix-support
-            # so that the package can be used in other Haskell-builds; also
-            # adds all propagated build inputs to the user environment packages
             installPhase = ''
               eval "$preInstall"
 

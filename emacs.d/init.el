@@ -31,10 +31,10 @@
 (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/")
 
 (require 'package)
-(setq package-archives nil)
+(setq package-archives nil
+      package-user-dir "~/.nix-profile/share/emacs/site-lisp/elpa")
 (package-initialize)
 
-(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/magit/")
 (require 'use-package)
 (require 'bind-key)
 
@@ -471,7 +471,6 @@
 (add-hook 'evil-god-stop-hook (lambda () (diminish-undo 'god-local-mode)))
 
 ;;;; haskell
-(require 'haskell-mode-autoloads)
 (require 'haskell-mode)
 (sp-local-pair '(haskell-mode literate-haskell-mode) 
                "{- " " -}" 

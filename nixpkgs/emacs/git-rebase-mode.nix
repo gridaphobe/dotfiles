@@ -1,37 +1,16 @@
-{ melpa, fetchgit }:
+{ melpa, fetchFromGitHub }:
 
 melpa.mkDerivation (self: {
   pname = "git-rebase-mode";
-  version = "0.14.0";
+  version = "0.15.0";
 
-  src = fetchgit {
-    url = "git://github.com/magit/git-modes.git";
-    rev = "42e989c178aa0f90cedf9e6221dcbf888a9db2b0";
-    sha256 = "6b6815034180c698df6ccdbcabea173c7ba9c2fa60a24a28bec6854544e290b6";
+  src = fetchFromGitHub {
+    owner  = "magit";
+    repo   = "git-modes";
+    rev    = self.version;
+    sha256 = "1x03276yq63cddc89n8i47k1f6p26b7a5la4hz66fdf15gmr8496";
   };
   
   files = [ "git-rebase-mode.el" ];
 
-  # buildInputs = [ emacs texinfo ];
-
-  # buildPhase = ''
-  #   make lisp
-  # '';
-
-  # checkPhase = ''
-  #   make test
-  # '';
-  # doCheck = true;
-
-  # installPhase = ''
-  #   emacs --batch -q --eval \
-  #     "(progn (setq package-user-dir \"$out/share/emacs/site-lisp/elpa\") \
-  #             (package-initialize) \
-  #             (package-install-file \"git-commit-mode.el\") \
-  #             (package-install-file \"git-rebase-mode.el\") \
-  #             (package-install-file \"gitattributes-mode.el\") \
-  #             (package-install-file \"gitconfig-mode.el\") \
-  #             (package-install-file \"gitignore-mode.el\") \
-  #      )"
-  # '';
 })

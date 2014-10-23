@@ -1,17 +1,16 @@
-{ stdenv, fetchgit, emacs, texinfo }:
+{ melpa, fetchFromGitHub, async }:
 
-stdenv.mkDerivation {
-  name = "helm-2c5ab7d";
-  src = fetchgit {
-    url = "git://github.com/emacs-helm/helm.git";
-    rev = "2c5ab7de1d3084422ce062c999e27d96384e8808";
-    sha256 = "4195fa646d2829cb7d72fd37f67c75b826f954d868d6c0a2d5b5ff0a5fc6628d";
+melpa.mkDerivation (self: {
+  pname   = "helm";
+  version = "20141022";
+
+  src = fetchFromGitHub {
+    owner  = "emacs-helm";
+    repo   = self.pname;
+    rev    = "c0acb0f7dc5360fea754f06995669a0cd369c100";
+    sha256 = "0rmq08xqyy5qw33cdhv43vjqzkqajhms1cx798iknb61l8nslayw";
   };
   
-  buildInputs = [ emacs texinfo ];
-  
-  installPhase = ''
-    mkdir -p "$out/share/emacs/site-lisp"
-    cp *.el *.elc "$out/share/emacs/site-lisp/"
-  '';
-}
+  packageRequires = [ async ];
+
+})

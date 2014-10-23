@@ -1,21 +1,14 @@
-{ stdenv, fetchgit, emacs, texinfo }:
+{ melpa, fetchFromGitHub }:
 
-stdenv.mkDerivation {
-  name = "exec-path-from-shell-8748769";
-  src = fetchgit {
-    url = "git://github.com/purcell/exec-path-from-shell.git";
-    rev = "8748769a6c64dc7496c9967244c177c6b3977e65";
-    sha256 = "6984dc5eed71272a456437161569fa167d214a410704e606510579e4f03dd32e";
+melpa.mkDerivation (self: {
+  pname   = "exec-path-from-shell";
+  version = "20141022";
+
+  src = fetchFromGitHub {
+    owner  = "purcell";
+    repo   = self.pname;
+    rev    = "e4af0e9b44738e7474c89ed895200b42e6541515";
+    sha256 = "0lxikiqf1jik88lf889q4f4f8kdgg3npciz298x605nhbfd5snbd";
   };
-  
-  buildInputs = [ emacs texinfo ];
-  
-  buildPhase = ''
-    emacs --batch -Q -L . exec-path-from-shell.el
-  '';
-  
-  installPhase = ''
-    mkdir -p "$out/share/emacs/site-lisp"
-    cp *.el *.elc "$out/share/emacs/site-lisp/"
-  '';
-}
+
+})

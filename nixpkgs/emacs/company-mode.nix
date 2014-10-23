@@ -1,22 +1,14 @@
-{ stdenv, fetchgit, emacs, texinfo }:
+{ melpa, fetchFromGitHub }:
 
-stdenv.mkDerivation {
-  name = "company-mode-0.8.5";
-  src = fetchgit {
-    url = "git://github.com/company-mode/company-mode.git";
-    rev = "fa4ba155a3e22ddc4b8bc33fcbf8cc69ef8f0043";
-    sha256 = "063f6c5595ba112ec9c9bb7d09a2f7453c8b427cee3a822dfac0cc1de5452cac";
+melpa.mkDerivation (self: {
+  pname   = "company-mode";
+  version = "0.8.6";
+
+  src = fetchFromGitHub {
+    owner  = "company-mode";
+    repo   = "company-mode";
+    rev    = self.version;
+    sha256 = "1xwxyqg5dan8m1qkdxyzm066ryf24h07karpdlm3s09izfdny33f";
   };
   
-  buildInputs = [ emacs texinfo ];
-  
-  buildPhase = ''
-    rm company-yasnippet.el
-    make compile
-  '';
-  
-  installPhase = ''
-    mkdir -p "$out/share/emacs/site-lisp"
-    cp *.el *.elc "$out/share/emacs/site-lisp/"
-  '';
-}
+})

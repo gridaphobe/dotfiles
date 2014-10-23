@@ -1,24 +1,19 @@
-{ stdenv, fetchurl, emacs, texinfo }:
+{ melpa, fetchgit }:
 
-stdenv.mkDerivation {
-  name = "undo-tree-0.6.4";
-  src = fetchurl {
-    url = "http://www.dr-qubit.org/download.php?file=undo-tree/undo-tree-0.6.4.el";
-    sha256 = "00fja17ibdgyjwfm2a4j7gx7f7m4hxjnmwiaz4452xcwcbwhqbz9";
+melpa.mkDerivation (self: {
+  pname   = "undo-tree";
+  version = "0.6.4";
+
+  src = fetchgit {
+    url    = "http://www.dr-qubit.org/git/${self.pname}.git";
+    rev    = "a3e81b682053a81e082139300ef0a913a7a610a2";
+    sha256 = "1qla7njkb7gx5aj87i8x6ni8jfk1k78ivwfiiws3gpbnyiydpx8y";
   };
   
-  buildInputs = [ emacs texinfo ];
-  
-  unpackPhase = ''
-    cp $src undo-tree.el
-  '';
-  
-  buildPhase = ''
-    emacs --batch -Q -L . -f batch-byte-compile undo-tree.el
-  '';
-  
-  installPhase = ''
-    mkdir -p "$out/share/emacs/site-lisp"
-    cp *.el *.elc "$out/share/emacs/site-lisp/"
-  '';
-}
+  # unpackPhase = ''
+  #   mkdir undo-tree
+  #   cp $src undo-tree/undo-tree.el
+  #   cd undo-tree
+  # '';
+
+})
