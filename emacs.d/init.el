@@ -962,7 +962,7 @@ Return a notification id if any, or t on success."
                                        "royal blue" "dark gray" "gray")
       weechat-host-default "seidel.io"
       weechat-port-default 40900
-      weechat-mode-default nil
+      weechat-mode-default 'plain
       )
 (add-to-list 'weechat-notification-handler-functions
              (defun my/weechat-notify (type sender text date buffer-ptr)

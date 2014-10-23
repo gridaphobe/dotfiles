@@ -33,7 +33,6 @@
                                                  files
                                                  "."
                                                  package-build-archive-dir)))
-      (princ archive-entry)
 
       ;; (pb/dump archive-entry (pb/entry-file-name archive-entry))
 

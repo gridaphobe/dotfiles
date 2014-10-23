@@ -75,8 +75,6 @@ in
             configurePhase = ''
               eval "$preConfigure"
               
-              echo "EMACSLOADPATH=$EMACSLOADPATH"
-
               eval "$postConfigure"
             '';
 
