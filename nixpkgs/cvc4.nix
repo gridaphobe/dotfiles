@@ -1,4 +1,5 @@
-{ stdenv, fetchgit, pkgconfig, boost, gmp, curl, which, autoconf, automake, libtool, openjdk
+{ stdenv, fetchgit, pkgconfig, boost, gmp, curl, which, autoconf, automake
+, libtool, openjdk, antlr3, libantlr3c
 }:
 
 stdenv.mkDerivation rec {
@@ -6,8 +7,8 @@ stdenv.mkDerivation rec {
 
   src = fetchgit {
     url    = "git://github.com/CVC4/CVC4.git";
-    rev    = "ff788863577dbc8d15a584d869f543773ce0ff1d";
-    sha256 = "a1cefb938c2bfc6899819d5beadc5e98b21ef46f28e163f3d999717d7d7477b1";
+    rev    = "28027d15202a0dea0c13f5b01188ec3f1c4f0c38";
+    sha256 = "2546e490799727fa2125f43cfc30c8fb66f298393b82ae1d0f4b2af5e51d5e2d";
   };
 
   # src = fetchurl {
@@ -17,19 +18,20 @@ stdenv.mkDerivation rec {
 
   preConfigure = ''
     ./autogen.sh
-    ./contrib/get-antlr-3.4
 
     configureFlagsArray=(
-      --with-antlr-dir=$(pwd)/antlr-3.4
-      ANTLR=$(pwd)/antlr-3.4/bin/antlr3
+      --with-antlr-dir=${libantlr3c}
+      ANTLR=${antlr3}/bin/antlr
       --enable-language-bindings=c
     )
   '';
 
   buildInputs =
-    [ pkgconfig boost gmp curl which autoconf automake libtool openjdk ];
+    [ pkgconfig boost gmp curl which autoconf automake libtool openjdk
+      antlr3 libantlr3c
+    ];
 
-  doCheck = false;
+  doCheck = true;
 
   meta = with stdenv.lib; {
     description = "CVC4: the smt solver";
