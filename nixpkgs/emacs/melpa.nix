@@ -44,7 +44,7 @@ in
             fname = "${self.pname}-${self.version}";
 
             # name is the external full name of the package; usually we prefix
-            # all packages with haskell- to avoid name clashes for libraries;
+            # all packages with emacs- to avoid name clashes for libraries;
             # if that is not desired (for applications), name can be set to
             # fname.
             name = "emacs-${self.pname}-${self.version}";

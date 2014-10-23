@@ -66,6 +66,7 @@
           # self.hdevtools
           self.hlint
           self.hscolour
+          self.structuredHaskellMode
           self.stylishHaskell
           self.pandoc
           self.pandocCiteproc
@@ -146,7 +147,10 @@
       ChartDiagrams  = callPackage ./ChartDiagrams.nix {};
       
       monadJournal   = callPackage ./monad-journal.nix {};
-      ghcMod         = self.disableTest (callPackage ./ghc-mod.nix { emacs = emacs; });
+      ghcMod         = callPackage ./ghc-mod.nix { makeWrapper = makeWrapper; };
+      structuredHaskellMode = callPackage ./structured-haskell-mode.nix {
+        haskellSrcExts = self.haskellSrcExts_1_15_0_1;
+      };
 
       hoogleLocal    = super.hoogleLocal.override {
         packages = with self; ([
@@ -183,6 +187,7 @@
         };
       });
 
+    haskellPackages = haskellPackages_wrapper pkgs.haskellPackages;
     haskellPackages_ghc783 = haskellPackages_wrapper pkgs.haskellPackages_ghc783;
     haskellPackages_ghc783_profiling = haskellPackages_wrapper pkgs.haskellPackages_ghc783_profiling;
 
@@ -251,19 +256,20 @@
         helm
         magit
         # mu4eMaildirsExtension
+        org-plus-contrib
         pkg-info-el
         projectile
         rich-minority
         s-el
         smart-mode-line
         smartparens
-        emacs24Packages.structuredHaskellMode
+        structured-haskell-mode-el
         switch-window
         undo-tree
         use-package
         weechat-el
 
-        emacs24Packages.org
+        # emacs24Packages.org
       ];
     };
 
@@ -274,6 +280,7 @@
     emacs24Packages = recurseIntoAttrs (emacsPackages emacs24Macport emacs24Packages);
     
     melpa = callPackage ./emacs/melpa.nix {};
+
     git-commit-mode = callPackage ./emacs/git-commit-mode.nix {};
     git-rebase-mode = callPackage ./emacs/git-rebase-mode.nix {};
     gitattributes-mode = callPackage ./emacs/gitattributes-mode.nix {};
@@ -292,20 +299,24 @@
     ghc-mod-el = callPackage ./emacs/ghc-mod.nix { ghcMod = haskellPackages.ghcMod; };
     god-mode = callPackage ./emacs/god-mode.nix {};
     goto-chg = callPackage ./emacs/goto-chg.nix {};
+    haskell-mode = callPackage ./emacs/haskell-mode.nix {};
     helm = callPackage ./emacs/helm.nix {};
     magit = callPackage ./emacs/magit.nix {};
     # mu4eMaildirsExtension = callPackage ./emacs/mu4e-maildirs-extension.nix { mu = mu; };
     rich-minority = callPackage ./emacs/rich-minority.nix {};
+    org-plus-contrib = callPackage ./emacs/org-plus-contrib.nix {};
     projectile = callPackage ./emacs/projectile.nix {};
     pkg-info-el = callPackage ./emacs/pkg-info.nix {};
     s-el = callPackage ./emacs/s-el.nix {};
     smart-mode-line = callPackage ./emacs/smart-mode-line.nix {};
     smartparens = callPackage ./emacs/smartparens.nix {};
+    structured-haskell-mode-el = callPackage ./emacs/structured-haskell-mode.nix {
+      structuredHaskellMode = haskellPackages.structuredHaskellMode;
+    };
     switch-window = callPackage ./emacs/switch-window.nix {};
     undo-tree = callPackage ./emacs/undo-tree.nix {};
     use-package = callPackage ./emacs/use-package.nix {};
     weechat-el = callPackage ./emacs/weechat-el.nix {};
 
-    haskell-mode = callPackage ./emacs/haskellMode.nix {};
   };
 }
