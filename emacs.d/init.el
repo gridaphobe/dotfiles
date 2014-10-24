@@ -215,8 +215,9 @@
 (setq-default sp-autoskip-closing-pair 'always)
 (setq sp-hybrid-kill-entire-symbol nil)
 (show-smartparens-global-mode 1)
-(smartparens-global-strict-mode 1)
-(add-to-list 'rm-blacklist " SP/s")
+(add-hook 'prog-mode-hook 'smartparens-strict-mode)
+;; (smartparens-global-strict-mode 1)
+;; (add-to-list 'rm-blacklist " SP/s")
 
 ;;;; rainbow-mode
 (use-package rainbow-mode
@@ -228,7 +229,8 @@
 ;;;; helm
 (require 'helm-config)
 (helm-mode 1)
-(add-to-list 'rm-blacklist " Helm")
+(diminish 'helm-mode)
+;; (add-to-list 'rm-blacklist " Helm")
 (helm-adaptive-mode 1)
 (setq helm-buffers-fuzzy-matching t
       ido-use-virtual-buffers t
@@ -259,6 +261,7 @@
 ;;;; projectile
 (require 'projectile)
 (projectile-global-mode)
+(diminish 'projectile-mode)
 ;; (add-to-list 'rm-blacklist " Projectile\\*")
 (setq projectile-remember-window-configs t
       projectile-completion-system 'helm)
@@ -267,7 +270,8 @@
 ;;;; auto complete
 (require 'company)
 (global-company-mode)
-(add-to-list 'rm-blacklist " company")
+(diminish 'company-mode)
+;; (add-to-list 'rm-blacklist " company")
 
 ;;;; compile
 (require 'compile)
@@ -321,7 +325,9 @@
 ;;(add-hook 'emacs-lisp-mode-hook 'rainbow-mode)
 (add-hook 'emacs-lisp-mode-hook 'my/remove-elc-on-save)
 
-(add-to-list 'rm-blacklist " ElDoc")
+
+(add-hook 'eldoc-mode-hook (lambda () (diminish 'eldoc-mode)))
+;; (add-to-list 'rm-blacklist " ElDoc")
 
 (bind-key "M-." 'find-function-at-point emacs-lisp-mode-map)
 (bind-key "TAB" 'completion-at-point read-expression-map)
@@ -336,7 +342,8 @@
 (setq undo-tree-visualizer-relative-timestamps t
       undo-tree-visualizer-timestamps t)
 (global-undo-tree-mode)
-(add-to-list 'rm-blacklist " Undo-Tree")
+(diminish 'undo-tree-mode)
+;; (add-to-list 'rm-blacklist " Undo-Tree")
 
 
 ;;;; evil
@@ -486,7 +493,7 @@
 (setq haskell-process-type 'ghci
       haskell-process-log t
       haskell-align-imports-pad-after-name t
-      ;; haskell-font-lock-symbols 'unicode
+      haskell-font-lock-symbols 'unicode
       haskell-stylish-on-save nil
       haskell-process-suggest-hoogle-imports t
       haskell-process-suggest-remove-import-lines t
@@ -498,19 +505,19 @@
 ;; (require 'ghc)
 ;; (add-hook 'haskell-mode-hook (lambda () (ghc-init)))
 
-;; (require 'shm)
-;; (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
-;; (add-hook 'haskell-mode-hook 'structured-haskell-mode)
-;; (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
-;; (add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
-;; (remove-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-;; (setq shm-colon-enabled t
-;;       shm-indent-point-after-adding-where-clause t
-;;       shm-lambda-indent-style 'leftmost-parent
-;;       shm-use-hdevtools t
-;;       shm-use-presentation-mode t)
-;; (set-face-background 'shm-current-face "#eee8d5")
-;; (set-face-background 'shm-quarantine-face "lemonchiffon")
+(require 'shm)
+(add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
+(add-hook 'haskell-mode-hook 'structured-haskell-mode)
+(add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
+(add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
+(remove-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+(setq shm-colon-enabled t
+      shm-indent-point-after-adding-where-clause t
+      shm-lambda-indent-style 'leftmost-parent
+      shm-use-hdevtools nil
+      shm-use-presentation-mode nil)
+(set-face-background 'shm-current-face "#eee8d5")
+(set-face-background 'shm-quarantine-face "lemonchiffon")
 
 (add-to-list 'completion-ignored-extensions ".hi")
 (add-to-list 'completion-ignored-extensions ".hdevtools.sock")
@@ -546,7 +553,8 @@
 
 ;;;; magit
 (require 'magit)
-(add-to-list 'rm-blacklist " MRev")
+(diminish 'magit-auto-revert-mode)
+;; (add-to-list 'rm-blacklist " MRev")
 (defalias 'magit 'magit-status)
 (defadvice magit-status (around magit-fullscreen activate)
   (window-configuration-to-register :magit-fullscreen)
