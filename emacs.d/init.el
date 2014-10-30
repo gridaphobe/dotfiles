@@ -56,12 +56,12 @@
   (bind-key "s-s" 'save-buffer)
   (bind-key "s-q" 'save-buffers-kill-emacs)
 
-  (set-fontset-font "fontset-default"
-                    'unicode
-                    '("Ubuntu Mono" . "iso10646-1"))
-  (set-face-attribute 'default nil
-                      :family "Ubuntu Mono"
-                      :height 140)
+  ;; (set-fontset-font "fontset-default"
+  ;;                   'unicode
+  ;;                   '("Ubuntu Mono" . "iso10646-1"))
+  ;; (set-face-attribute 'default nil
+  ;;                     :family "Ubuntu Mono"
+  ;;                     :height 140)
 
   (require 'exec-path-from-shell)
   (setq exec-path-from-shell-variables
@@ -73,8 +73,6 @@
   (setq browse-url-browser-function 'browse-url-default-macosx-browser))
 
 ;;;; smart-mode-line
-(require 'rich-minority)
-(rich-minority-mode 1)
 (require 'smart-mode-line)
 (sml/setup)
 
@@ -214,8 +212,9 @@
 (bind-key "C-M-o" 'sp-forward-barf-sexp)
 (setq-default sp-autoskip-closing-pair 'always)
 (setq sp-hybrid-kill-entire-symbol nil)
-(show-smartparens-global-mode 1)
-(add-hook 'prog-mode-hook 'smartparens-strict-mode)
+;; (show-smartparens-global-mode 1)
+(add-hook 'prog-mode-hook 'turn-on-smartparens-strict-mode)
+(add-hook 'prog-mode-hook 'turn-on-show-smartparens-mode)
 ;; (smartparens-global-strict-mode 1)
 ;; (add-to-list 'rm-blacklist " SP/s")
 
@@ -493,8 +492,8 @@
 (setq haskell-process-type 'ghci
       haskell-process-log t
       haskell-align-imports-pad-after-name t
-      haskell-font-lock-symbols 'unicode
-      haskell-stylish-on-save nil
+      ;; haskell-font-lock-symbols t
+      hcaskell-stylish-on-save nil
       haskell-process-suggest-hoogle-imports t
       haskell-process-suggest-remove-import-lines t
       haskell-process-use-presentation-mode nil)
@@ -641,6 +640,7 @@
       eshell-smart-space-goes-to-end t
       eshell-cmpl-cycle-completions nil
       eshell-cmpl-ignore-case t
+      eshell-buffer-maximum-lines 30000
       eshell-output-filter-functions '(eshell-handle-ansi-color
                                        eshell-handle-control-codes
                                        eshell-watch-for-password-prompt
@@ -673,7 +673,8 @@
     (erase-buffer)))
 
 (require 'shell)
-(setq shell-file-name "zsh")
+(setq shell-file-name "bash"
+      )
 
 
 ;;;; switch-window
@@ -752,7 +753,7 @@
 
 ;;;; email
 (setq user-full-name "Eric Seidel"
-      user-mail-address "gridaphobe@gmail.com")
+      user-mail-address "eric@seidel.io")
 
 ;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
 ;; (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
@@ -979,14 +980,16 @@ Return a notification id if any, or t on success."
                                        sender
                                        text))))
 (add-hook 'weechat-mode-hook 'turn-on-visual-line-mode)
+(add-to-list 'evil-emacs-state-modes 'weechat-mode)
 
 
 ;;;; pretty symbols
-(when (fboundp 'global-prettify-symbols-mode)
-  (setq-default prettify-symbols-alist
-                '(("<-" . ?\u2190)
-                  ("->" . ?\u2192)))
-  (global-prettify-symbols-mode +1))
+;; (when (fboundp 'global-prettify-symbols-mode)
+;;   (setq-default prettify-symbols-alist nil
+;;               ;  '(("<-" . ?\u2190)
+;;                ;   ("->" . ?\u2192)))
+;;                 )
+;;   (global-prettify-symbols-mode +1))
 
 
 ;;;; mode line settings

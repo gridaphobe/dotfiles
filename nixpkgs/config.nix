@@ -38,6 +38,7 @@
         pkgconfig
         rlwrap
         rubyLibs.terminal_notifier
+        silver-searcher
         sloccount
         tmux
         tree
@@ -241,6 +242,7 @@
         aspell
         aspellDicts.en
 
+        ag-el
         auctex
         company-mode
         dash-el
@@ -284,6 +286,7 @@
     emacs                      = pkgs.emacs24Macport;
     melpa                      = callPackage ./emacs/melpa.nix {};
 
+    ag-el                      = callPackage ./emacs/ag.nix {};
     async                      = callPackage ./emacs/async.nix {};
     auctex                     = callPackage ./emacs/auctex.nix {};
     bind-key                   = callPackage ./emacs/bind-key.nix {};
