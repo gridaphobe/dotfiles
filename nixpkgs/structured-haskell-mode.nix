@@ -7,13 +7,6 @@ cabal.mkDerivation (self: {
   isLibrary = false;
   isExecutable = true;
   buildDepends = [ haskellSrcExts ];
-  # buildTools = [ emacs ];
-  # postInstall = ''
-  #   emacs -L elisp -L ${haskellMode}/share/emacs/site-lisp \
-  #     --batch -f batch-byte-compile "elisp/"*.el
-  #   install -d $out/share/emacs/site-lisp
-  #   install "elisp/"*.el "elisp/"*.elc  $out/share/emacs/site-lisp
-  # '';
   meta = {
     homepage = "https://github.com/chrisdone/structured-haskell-mode";
     description = "Structured editing Emacs mode for Haskell";

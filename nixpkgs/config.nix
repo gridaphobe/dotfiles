@@ -12,7 +12,7 @@
     shellEnv = pkgs.buildEnv {
       name = "shell-env";
       paths = [
-        # acl2
+        acl2
         arcanist
         autoconf
         automake
@@ -21,9 +21,11 @@
         coreutils
         curl
         # cvc4
+        diffutils
+        dovecot22
         findutils
         fish
-        gitAndTools.git
+        gitAndTools.gitFull
         gitAndTools.hub
         gnugrep
         gnumake
@@ -32,19 +34,23 @@
         gnused
         gnutar
         isync
-        # mu
+        leafnode
+        mu
         nix-prefetch-scripts
-        # notmuch
+        #notmuch
+        patchutils
         pkgconfig
         rlwrap
         rubyLibs.terminal_notifier
+        sbcl
         silver-searcher
         sloccount
+        subversion
         tmux
         tree
-        wget
-        zsh
+        (wget.override { python3 = null; })
         z3
+        zsh
       ];
     };
 
@@ -57,12 +63,15 @@
     haskellEnv = pkgs.buildEnv {
       name = "haskell-env";
       paths = [
-        (haskellPackages_ghc783.ghcWithPackages (self: [
+        ((haskellPackages_ghc783.ghcWithPackages (self: [
           self.cabal2nix
           self.cabalInstall
           self.ghcCore
           self.ghcMod
-          # self.haskellDocs
+          self.ghciNg
+          #(lowPrio self.haddock)
+          #self.hakyll
+          #self.haskellDocs
           self.hasktags
           # self.hdevtools
           self.hlint
@@ -70,11 +79,13 @@
           self.structuredHaskellMode
           self.stylishHaskell
           self.pandoc
-          self.pandocCiteproc
-          self.pandocTypes
+          #self.pandocCiteproc
+          #self.pandocTypes
           self.shake
           self.SafeSemaphore
           
+          self.ad
+          self.dataReify
           self.lens
           self.trifecta
           
@@ -82,18 +93,21 @@
           self.ChartDiagrams
           self.text
           self.prettyShow
+          self.dataTimeout
+          self.xmlConduit
 
           self.QuickCheck
           self.smallcheck
           self.criterion
           self.tasty
           self.tastyHunit
-          self.tastyRerun      
+          self.tastyRerun
           
           self.liquidFixpoint
           self.liquidhaskell
-          self.LiquidCheck
+          self.target
           self.ivory
+          self.ivoryArtifact
           self.ivoryBackendAadl
           self.ivoryBackendAcl2
           self.ivoryBackendC
@@ -106,7 +120,7 @@
           self.ivoryStdlib
           self.languageCQuote
           self.wlPprint
-        ]))
+        ])).override { exposeGHC = true; })
         haskellPackages_ghc783.hoogleLocal
       ];
     };
@@ -116,9 +130,10 @@
         ocaml  = ocaml;
       };
       liquidhaskell  = callPackage ../Source/liquid/haskell/default.nix {};
-      LiquidCheck    = callPackage ../Source/liquid/check/default.nix {};
+      target         = callPackage ../Source/liquid/check/default.nix {};
       
       ivory           = callPackage ../Source/ivory/ivory/default.nix {};
+      ivoryArtifact   = callPackage ../Source/ivory/ivory-artifact/default.nix {};
       ivoryBackendAadl   = callPackage ../Source/ivory/ivory-backend-aadl/default.nix {};
       ivoryBackendAcl2   = callPackage ../Source/ivory/ivory-backend-acl2/default.nix {};
       ivoryBackendC   = callPackage ../Source/ivory/ivory-backend-c/default.nix {};
@@ -135,6 +150,7 @@
       attoparsec     = self.disableTest  super.attoparsec;
       #hdevtools      = callPackage /Users/gridaphobe/Source/hdevtools {};
       haskellDocs    = self.disableTest (callPackage ./haskellDocs.nix {});
+      enclosedExceptions   = self.disableTest  super.enclosedExceptions;
       systemFileio   = self.disableTest  super.systemFileio;
       shake          = self.disableTest  super.shake;
       lens           = self.disableTest  super.lens;
@@ -151,8 +167,13 @@
       
       monadJournal   = callPackage ./monad-journal.nix {};
       ghcMod         = callPackage ./ghc-mod.nix { makeWrapper = makeWrapper; };
-      structuredHaskellMode = callPackage ../Source/structured-haskell-mode/default.nix {
-        # haskellSrcExts = self.haskellSrcExts_1_15_0_1;
+      ghciNg = callPackage ./ghci-ng.nix { 
+        fetchgit = fetchgit; 
+        makeWrapper = makeWrapper; 
+        ncurses = ncurses;
+      };
+      structuredHaskellMode = callPackage ./structured-haskell-mode.nix {
+        haskellSrcExts = self.haskellSrcExts_1_15_0_1;
       };
 
       hoogleLocal    = super.hoogleLocal.override {
@@ -163,12 +184,12 @@
           ivoryOpts
           liquidFixpoint
           liquidhaskell
-          LiquidCheck
+          target
           Chart
           ChartDiagrams
         ] ++ liquidFixpoint.propagatedNativeBuildInputs
           ++ liquidhaskell.propagatedNativeBuildInputs
-          ++ LiquidCheck.propagatedNativeBuildInputs
+          ++ target.propagatedNativeBuildInputs
           ++ ivory.propagatedNativeBuildInputs
           ++ Chart.propagatedNativeBuildInputs
           ++ ChartDiagrams.propagatedNativeBuildInputs
@@ -178,7 +199,14 @@
     
     haskellFilterSource = paths: src: builtins.filterSource (path: type:
         let baseName = baseNameOf path; in
-        !(builtins.elem baseName ([".git" ".cabal-sandbox" "dist"] ++ paths)))
+        !( type == "unknown"
+        || builtins.elem baseName ([".git" ".cabal-sandbox" "dist"] ++ paths)
+        || stdenv.lib.hasSuffix ".hi" path
+        || stdenv.lib.hasSuffix ".hi-boot" path
+        || stdenv.lib.hasSuffix ".o" path
+        || stdenv.lib.hasSuffix ".o-boot" path
+        || stdenv.lib.hasSuffix ".dyn_o" path
+        || stdenv.lib.hasSuffix ".p_o" path))
       src;
 
 
@@ -215,9 +243,9 @@
         commentary
         easymotion
         fugitive
-        ghcmod-vim
+        # ghcmod-vim
         gitgutter
-        gundo
+        # gundo
         hasksyn
         hoogle
         idris-vim
@@ -227,10 +255,9 @@
         syntastic
         tmux-navigator
         vimproc
+        vimrsi
+        vimsensible
         vimshell
-
-        vim-rsi
-        vim-sensible
       ];
     };
 
@@ -242,6 +269,7 @@
         aspell
         aspellDicts.en
 
+        ace-jump-mode
         ag-el
         auctex
         company-mode
@@ -251,6 +279,7 @@
         evil-god-state
         evil-surround
         exec-path-from-shell
+        expand-region
         flycheck
         flycheck-pos-tip
         ghc-mod-el
@@ -259,6 +288,7 @@
         gitattributes-mode
         gitconfig-mode
         gitignore-mode
+        gnus
         god-mode
         haskell-mode
         helm
@@ -282,10 +312,12 @@
     };
 
     mu = pkgs.mu.override { libsoup = (libsoup.override { gnomeSupport = false; }); };
+    notmuch = pkgs.notmuch.override { talloc = (talloc.override { libcap = null; }); };
 
     emacs                      = pkgs.emacs24Macport;
     melpa                      = callPackage ./emacs/melpa.nix {};
 
+    ace-jump-mode              = callPackage ./emacs/ace-jump-mode.nix {};
     ag-el                      = callPackage ./emacs/ag.nix {};
     async                      = callPackage ./emacs/async.nix {};
     auctex                     = callPackage ./emacs/auctex.nix {};
@@ -300,6 +332,7 @@
     flycheck-pos-tip           = callPackage ./emacs/flycheck-pos-tip.nix {};
     epl                        = callPackage ./emacs/epl.nix {};
     exec-path-from-shell       = callPackage ./emacs/exec-path-from-shell.nix {};
+    expand-region              = callPackage ./emacs/expand-region.nix {};
     ghc-mod-el                 = callPackage ./emacs/ghc-mod.nix { 
       ghcMod                   = haskellPackages.ghcMod; 
     };
@@ -308,6 +341,7 @@
     gitattributes-mode         = callPackage ./emacs/gitattributes-mode.nix {};
     gitconfig-mode             = callPackage ./emacs/gitconfig-mode.nix {};
     gitignore-mode             = callPackage ./emacs/gitignore-mode.nix {};
+    gnus                       = callPackage ./emacs/gnus.nix {};
     god-mode                   = callPackage ./emacs/god-mode.nix {};
     goto-chg                   = callPackage ./emacs/goto-chg.nix {};
     haskell-mode               = callPackage ./emacs/haskell-mode.nix {};

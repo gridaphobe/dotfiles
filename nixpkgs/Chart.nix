@@ -6,6 +6,7 @@ cabal.mkDerivation (self: {
   pname = "Chart";
   version = "1.3.1";
   sha256 = "019q77hgv5hyhfpsfs2k1a4qn8fandk1nj7xkzn00z21jqhman2s";
+  jailbreak = true;
   buildDepends = [
     colour dataDefaultClass lens mtl operational time
   ];

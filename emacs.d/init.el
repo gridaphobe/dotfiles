@@ -453,6 +453,8 @@
 ;;;; flycheck
 (use-package flycheck
   :init (global-flycheck-mode 1)
+  :bind (("M-n" . flycheck-next-error)
+         ("M-p" . flycheck-previous-error))
   :config (setq flycheck-check-syntax-automatically '(mode-enabled save)))
 (use-package flycheck-pos-tip
   :init (setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
@@ -485,18 +487,23 @@
                "{-@ " " @-}" 
                :trigger "@{")
 (bind-key "C-c C-l" 'haskell-process-load-file haskell-mode-map)
-(bind-key "C-c C-t" 'haskell-process-do-type   haskell-mode-map)
+(bind-key "C-c C-t" 'haskell-mode-show-type-at haskell-mode-map)
 (bind-key "C-c C-i" 'haskell-process-do-info   haskell-mode-map)
 (bind-key "SPC" 'haskell-mode-contextual-space haskell-mode-map)
+(bind-key "M-." 'haskell-mode-goto-loc haskell-mode-map)
+(add-to-list 'evil-emacs-state-modes 'haskell-presentation-mode)
 
-(setq haskell-process-type 'ghci
+(setq haskell-process-type 'cabal-repl
+      haskell-process-path-ghci "ghci-ng"
+      haskell-process-args-cabal-repl '(;"--with-ghc=ghci-ng" 
+                                        "--ghc-option=-ferror-spans")
       haskell-process-log t
       haskell-align-imports-pad-after-name t
       ;; haskell-font-lock-symbols t
       hcaskell-stylish-on-save nil
       haskell-process-suggest-hoogle-imports t
       haskell-process-suggest-remove-import-lines t
-      haskell-process-use-presentation-mode nil)
+      haskell-process-use-presentation-mode t)
 
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
@@ -504,19 +511,84 @@
 ;; (require 'ghc)
 ;; (add-hook 'haskell-mode-hook (lambda () (ghc-init)))
 
-(require 'shm)
-(add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
-(add-hook 'haskell-mode-hook 'structured-haskell-mode)
-(add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
-(add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
-(remove-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-(setq shm-colon-enabled t
-      shm-indent-point-after-adding-where-clause t
-      shm-lambda-indent-style 'leftmost-parent
-      shm-use-hdevtools nil
-      shm-use-presentation-mode nil)
-(set-face-background 'shm-current-face "#eee8d5")
-(set-face-background 'shm-quarantine-face "lemonchiffon")
+;; (require 'shm)
+;; ;; (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
+;; (add-hook 'haskell-mode-hook 'structured-haskell-mode)
+;; ;; (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
+;; (add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
+;; ;; (remove-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+;; (setq shm-colon-enabled t
+;;       shm-indent-point-after-adding-where-clause t
+;;       shm-lambda-indent-style 'leftmost-parent
+;;       shm-use-hdevtools nil
+;;       shm-use-presentation-mode t)
+;; (set-face-background 'shm-current-face "#eee8d5")
+;; (set-face-background 'shm-quarantine-face "lemonchiffon")
+
+;; (let ((map shm-map))
+;;   (when (require 'shm-case-split nil 'noerror)
+;;     (define-key map (kbd "C-c S") 'shm/case-split))
+;;   (define-key map (kbd "C-k") nil)
+;;   (define-key map (kbd "C-j") nil)
+;;   (evil-define-key 'normal map (kbd "D") 'shm/kill-line)
+;;   (evil-define-key 'normal map (kbd "R") 'shm/raise)
+;;   (evil-define-key 'normal map (kbd "P") 'shm/yank)
+
+;;   (define-key map (kbd "C-j") nil)
+;;   (evil-define-key 'insert map (kbd "RET") 'shm/newline-indent)
+;;   (evil-define-key 'normal map (kbd "RET") 'shm/newline-indent)
+;;   (evil-define-key 'insert map (kbd "M-RET") 'evil-ret)
+;;   (define-key map (kbd "C-k") nil)
+
+;;   (evil-define-key 'normal map
+;;     (kbd "M-k") 'sp-splice-sexp-killing-backward
+;;     (kbd "M-j") 'sp-splice-sexp-killing-forward
+;;     (kbd "M-l") 'sp-forward-slurp-sexp
+;;     (kbd "M-h") 'sp-forward-barf-sexp
+;;     (kbd "M-H") 'sp-backward-slurp-sexp
+;;     (kbd "M-L") 'sp-backward-barf-sexp
+;;     (kbd "s") 'sp-splice-sexp
+;;     (kbd "S") 'shm/split-list
+;;     (kbd "M-R") 'sp-raise-sexp
+;;     (kbd "J") 'sp-join-sexp
+;;     (kbd ")") 'shm/forward-node
+;;     (kbd "(") 'shm/backward-node
+;;     (kbd "M-(") 'sp-backward-up-sexp
+;;     (kbd "M-)") 'sp-down-sexp
+;;     (kbd "C-(") 'sp-backward-down-sexp
+;;     (kbd "C-)") 'sp-up-sexp)
+
+;;   (evil-define-key 'operator map
+;;     (kbd ")") 'shm/forward-node
+;;     (kbd "(") 'shm/backward-node
+;;     (kbd "M-(") 'sp-backward-up-sexp
+;;     (kbd "M-)") 'sp-down-sexp
+;;     (kbd "C-(") 'sp-backward-down-sexp
+;;     (kbd "C-)") 'sp-up-sexp)
+
+;;   (evil-define-key 'motion map
+;;     (kbd ")") 'shm/forward-node
+;;     (kbd "(") 'shm/backward-node
+;;     (kbd "M-(") 'sp-backward-up-sexp
+;;     (kbd "M-)") 'sp-down-sexp
+;;     (kbd "C-(") 'sp-backward-down-sexp
+;;     (kbd "C-)") 'sp-up-sexp)
+
+;;   (evil-define-key 'insert map
+;;     (kbd "M-k") 'sp-splice-sexp-killing-backward
+;;     (kbd "M-j") 'sp-splice-sexp-killing-forward
+;;     (kbd "M-l") 'sp-forward-slurp-sexp
+;;     (kbd "M-h") 'sp-forward-barf-sexp
+;;     (kbd "M-H") 'sp-backward-slurp-sexp
+;;     (kbd "M-L") 'sp-backward-barf-sexp)
+
+;;   (evil-define-key 'emacs map
+;;     (kbd "M-k") 'sp-splice-sexp-killing-backward
+;;     (kbd "M-j") 'sp-splice-sexp-killing-forward
+;;     (kbd "M-l") 'sp-forward-slurp-sexp
+;;     (kbd "M-h") 'sp-forward-barf-sexp
+;;     (kbd "M-H") 'sp-backward-slurp-sexp
+;;     (kbd "M-L") 'sp-backward-barf-sexp))
 
 (add-to-list 'completion-ignored-extensions ".hi")
 (add-to-list 'completion-ignored-extensions ".hdevtools.sock")
@@ -606,7 +678,7 @@
 
 (defun my/add-watchwords ()
   (font-lock-add-keywords
-   nil '(("\\<\\(FIXME\\|TODO\\|NOTE\\|FIX\\|HACK\\|REFACTOR\\)"
+   nil '(("\\<\\(XXX\\|FIXME\\|TODO\\|NOTE\\|FIX\\|HACK\\|REFACTOR\\)"
           1 font-lock-warning-face t))))
 
 (electric-indent-mode -1)
@@ -756,75 +828,75 @@
       user-mail-address "eric@seidel.io")
 
 ;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
-;; (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
-;; (require 'mu4e)
-;; (setq mu4e-maildir "~/.mail"
-;;      mu4e-drafts-folder "/gmail/drafts"
-;;      mu4e-refile-folder "/gmail/archive"
-;;      mu4e-sent-folder "/gmail/sent"
-;;      mu4e-trash-folder "/gmail/trash"
-;;      mu4e-attachment-dir "~/Downloads"
-;;      mu4e-user-mail-address-list '("gridaphobe@gmail.com"
-;;                                    "eseidel@galois.com"
-;;                                    "eric@eseidel.org"
-;;                                    "eric@seidel.io"
-;;                                    "eric9@mac.com"
-;;                                    "eric9@me.com"
-;;                                    "eric9@icloud.com"
-;;                                    "eseidel@cs.ucsd.edu"
-;;                                    "eseidel@ucsd.edu"
-;;                                    "eseidel@eng.ucsd.edu"
-;;                                    "eseidel01@ccny.cuny.edu"
-;;                                    "eric@fluidinfo.com"
-;;                                    "seidel@apple.com")
-;;      mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-;;                        "Starred Messages"
-;;                        ?s)
-;;                       ("flag:unread AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-;;                        "Unread Messages"
-;;                        ?u)
-;;                       ("to:*.ucsd.edu AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-;;                        "UCSD"
-;;                        ?w))
-;;      mu4e-sent-messages-behavior 'delete
-;;      mu4e-auto-retrieve-keys t
-;;      mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
-;;                             ("tag message" . mu4e-action-retag-message))
-;;      mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
-;;                          ("view as pdf" . mu4e-action-view-as-pdf)
-;;                          ("tag message" . mu4e-action-retag-message))
-;;      mu4e-completing-read-function 'completing-read
-;;      mu4e-change-filenames-when-moving t
-;;      mu4e-compose-dont-reply-to-self t
-;;      mu4e-compose-signature-auto-include nil
-;;      mu4e-headers-skip-duplicates t
-;;      mu4e-headers-include-related nil
-;;      mu4e-headers-results-limit 100
-;;      mu4e-hide-index-messages nil
-;;      mu4e-use-fancy-chars nil
-;;      mu4e-debug nil
-;;      mu4e-get-mail-command "true" ;"mbsync -a"
-;;      mu4e-update-interval nil ; (* 5 60)
-;;      )
+(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
+(require 'mu4e)
+(setq mu4e-maildir "~/.mail"
+     mu4e-drafts-folder "/seidel.io/INBOX.Drafts"
+     mu4e-refile-folder "/seidel.io/INBOX.Archive"
+     mu4e-sent-folder "/seidel.io/INBOX.Sent Items"
+     mu4e-trash-folder "/seidel.io/INBOX.Trash"
+     mu4e-attachment-dir "~/Downloads"
+     mu4e-user-mail-address-list '("gridaphobe@gmail.com"
+                                   "eseidel@galois.com"
+                                   "eric@eseidel.org"
+                                   "eric@seidel.io"
+                                   "eric9@mac.com"
+                                   "eric9@me.com"
+                                   "eric9@icloud.com"
+                                   "eseidel@cs.ucsd.edu"
+                                   "eseidel@ucsd.edu"
+                                   "eseidel@eng.ucsd.edu"
+                                   "eseidel01@ccny.cuny.edu"
+                                   "eric@fluidinfo.com"
+                                   "seidel@apple.com")
+     mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+                       "Starred Messages"
+                       ?s)
+                      ("flag:unread AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+                       "Unread Messages"
+                       ?u)
+                      ("to:*.ucsd.edu AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+                       "UCSD"
+                       ?w))
+     mu4e-sent-messages-behavior 'delete
+     mu4e-auto-retrieve-keys t
+     mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
+                            ("tag message" . mu4e-action-retag-message))
+     mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
+                         ("view as pdf" . mu4e-action-view-as-pdf)
+                         ("tag message" . mu4e-action-retag-message))
+     mu4e-completing-read-function 'completing-read
+     mu4e-change-filenames-when-moving t
+     mu4e-compose-dont-reply-to-self t
+     mu4e-compose-signature-auto-include nil
+     mu4e-headers-skip-duplicates nil
+     mu4e-headers-include-related nil
+     mu4e-headers-results-limit 100
+     mu4e-hide-index-messages nil
+     mu4e-use-fancy-chars nil
+     mu4e-debug nil
+     mu4e-get-mail-command "true" ;"mbsync -a"
+     mu4e-update-interval nil ; (* 5 60)
+     )
 
-;; (setq mu4e-html2text-command
-;;      #'(lambda () 
-;;          (shr-render-region (point-min) (point-max))))
+(setq mu4e-html2text-command
+     #'(lambda () 
+         (shr-render-region (point-min) (point-max))))
 
-;; (load "~/.emacs.d/vendor/window-margin.el")
-;; (add-hook 'mu4e-view-mode-hook 'turn-on-window-margin-mode)
+(load "~/.emacs.d/vendor/window-margin.el")
+(add-hook 'mu4e-view-mode-hook 'turn-on-window-margin-mode)
 
-;; (add-hook 'mu4e-compose-pre-hook
-;;  (defun my/set-from-address ()
-;;    (let ((msg mu4e-compose-parent-message))
-;;      (when msg
-;;        (setq user-mail-address
-;;              (cond
-;;               ((mu4e-message-contact-field-matches msg :to "ucsd.edu")
-;;                "eseidel@cs.ucsd.edu")
-;;               ((mu4e-message-contact-field-matches msg :to "galois.com")
-;;                "eseidel@galois.com")
-;;               (t "gridaphobe@gmail.com")))))))
+(add-hook 'mu4e-compose-pre-hook
+ (defun my/set-from-address ()
+   (let ((msg mu4e-compose-parent-message))
+     (when msg
+       (setq user-mail-address
+             (cond
+              ((mu4e-message-contact-field-matches msg :to "ucsd.edu")
+               "eseidel@cs.ucsd.edu")
+              ((mu4e-message-contact-field-matches msg :to "galois.com")
+               "eseidel@galois.com")
+              (t "gridaphobe@gmail.com")))))))
 
 (setq message-send-mail-function 'smtpmail-send-it
      smtpmail-stream-type 'starttls
@@ -873,14 +945,25 @@
 
 
 (require 'gnus)
-(setq gnus-select-method '(nnimap "seidel" 
-                                  (nnimap-address "mail.messagingengine.com")
-                                  (nnimap-stream ssl))
-      gnus-secondary-select-methods '((nnimap "galois"
-                                              (nnimap-address "mail.galois.com")
-                                              (nnimap-stream ssl)))
+(setq gnus-select-method '(nntp "news.gmane.org")
+      gnus-secondary-select-methods '((nnimap "seidel"
+                                              (nnimap-address "localhost")
+                                              (nnimap-server-port 8143)
+                                              (nnimap-user "eric@seidel.io")
+                                              (nnimap-authenticator login)
+                                              (nnimap-stream network)
+                                              )
+                                      (nnimap "galois"
+                                              (nnimap-address "localhost")
+                                              (nnimap-server-port 8143)
+                                              (nnimap-user "eseidel@galois.com")
+                                              (nnimap-authenticator login)
+                                              (nnimap-stream network)
+                                              )
+                                      )
       gnus-asynchronous t
-
+      
+      gnus-message-archive-group nil
       ;; gnus-sum-thread-tree-false-root      ""
       ;; gnus-sum-thread-tree-single-indent   ""
       ;; gnus-sum-thread-tree-root            ""
@@ -889,16 +972,22 @@
       ;; gnus-sum-thread-tree-single-leaf     "\\-> "
       ;; gnus-sum-thread-tree-indent          " "
 
-      gnus-use-cache t
-      gnus-cache-directory "~/.cache/gnus/"
-      gnus-cache-enter-articles '(read unread ticked dormant)
-      gnus-cache-remove-articles nil
+      nndraft-directory "~/.cache/gnus/drafts/"
+      gnus-agent t
+      gnus-agent-directory "~/.cache/gnus/agent/"
+
+      gnus-use-cache nil
+      ;; gnus-cache-directory "~/.cache/gnus/"
+      ;; gnus-cache-enter-articles '(read unread ticked dormant)
+      ;; gnus-cache-remove-articles nil
 
       gnus-read-newsrc-file nil
       gnus-save-newsrc-file nil
       
       gnus-read-active-file 'some
 )
+(add-to-list 'evil-emacs-state-modes 'gnus-category-mode)
+(add-to-list 'evil-emacs-state-modes 'gnus-custom-mode)
 ;; http://groups.google.com/group/gnu.emacs.gnus/browse_thread/thread/a673a74356e7141f
 (when window-system
   (setq gnus-sum-thread-tree-indent "  ")
@@ -928,7 +1017,7 @@ Return a notification id if any, or t on success."
   (my/terminal-notifier "Gnus - New Message" from subject)
   t
   )
-(remove-hook 'gnus-after-getting-new-news-hook 'gnus-notifications)
+(add-hook 'gnus-after-getting-new-news-hook 'gnus-notifications)
 ;; (require 'gnus-alias)
 (setq gnus-posting-styles
       '(;
