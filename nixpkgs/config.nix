@@ -275,8 +275,8 @@
         ag-el
         auctex
         company-mode
-        dash-el
-        epl
+        # dash-el
+        # epl
         evil
         evil-god-state
         evil-surround
@@ -285,11 +285,11 @@
         flycheck
         flycheck-pos-tip
         ghc-mod-el
-        git-commit-mode
-        git-rebase-mode
-        gitattributes-mode
-        gitconfig-mode
-        gitignore-mode
+        # git-commit-mode
+        # git-rebase-mode
+        # gitattributes-mode
+        # gitconfig-mode
+        # gitignore-mode
         gnus
         god-mode
         haskell-mode
@@ -300,8 +300,8 @@
         org-plus-contrib
         pkg-info-el
         projectile
-        rich-minority
-        s-el
+        # rich-minority
+        # s-el
         smart-mode-line
         smartparens
         structured-haskell-mode-el
