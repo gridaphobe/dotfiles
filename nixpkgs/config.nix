@@ -35,7 +35,7 @@
         gnutar
         isync
         leafnode
-        mu
+        #mu
         nix-prefetch-scripts
         #notmuch
         patchutils
@@ -74,7 +74,7 @@
           #self.haskellDocs
           self.hasktags
           # self.hdevtools
-          self.hlint
+          # self.hlint
           self.hscolour
           self.structuredHaskellMode
           self.stylishHaskell
@@ -105,11 +105,13 @@
           
           self.liquidFixpoint
           self.liquidhaskell
+          self.optparseApplicative
           self.target
           self.ivory
           self.ivoryArtifact
           self.ivoryBackendAadl
           self.ivoryBackendAcl2
+          self.acl2
           self.ivoryBackendC
           self.ivoryExamples
           self.ivoryHw

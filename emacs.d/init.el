@@ -268,8 +268,8 @@
 
 ;;;; auto complete
 (require 'company)
-(global-company-mode)
-(diminish 'company-mode)
+;; (global-company-mode)
+;; (diminish 'company-mode)
 ;; (add-to-list 'rm-blacklist " company")
 
 ;;;; compile
@@ -475,8 +475,8 @@
 
 (require 'evil-god-state)
 (evil-define-key 'normal global-map "," 'evil-execute-in-god-state)
-(add-hook 'evil-god-start-hook (lambda () (diminish 'god-local-mode)))
-(add-hook 'evil-god-stop-hook (lambda () (diminish-undo 'god-local-mode)))
+(add-hook 'evil-god-state-entry-hook (lambda () (diminish 'god-local-mode)))
+(add-hook 'evil-god-state-exit-hook (lambda () (diminish-undo 'god-local-mode)))
 
 ;;;; haskell
 (require 'haskell-mode)
@@ -493,7 +493,7 @@
 (bind-key "M-." 'haskell-mode-goto-loc haskell-mode-map)
 (add-to-list 'evil-emacs-state-modes 'haskell-presentation-mode)
 
-(setq haskell-process-type 'cabal-repl
+(setq haskell-process-type 'ghci ;;'cabal-repl
       haskell-process-path-ghci "ghci-ng"
       haskell-process-args-cabal-repl '(;"--with-ghc=ghci-ng" 
                                         "--ghc-option=-ferror-spans")
@@ -508,6 +508,55 @@
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 
+;; (load "~/.nix-profile/share/x86_64-osx-ghc-7.8.3/liquidhaskell-0.2.1.0/syntax/flycheck-liquid.el")
+(load "~/.nix-profile/share/x86_64-osx-ghc-7.8.3/liquidhaskell-0.2.1.0/syntax/liquid-tip.el")
+(add-hook 'flycheck-after-syntax-check-hook 
+          (defun my-liquid-tip ()
+            (liquid-tip-update 'flycheck)))
+(bind-key "C-c C-s C-l" 'liquid-tip-show haskell-mode-map)
+
+(flycheck-define-checker haskell-liquid
+  "A Haskell refinement type checker using liquidhaskell.
+
+See URL `https://github.com/ucsd-progsys/liquidhaskell'."
+  :command
+  ("liquid" (option-flag "--diffcheck" flycheck-liquid-diffcheck) source-inplace)
+  ;; ("~/bin/Checker.hs" source-inplace)
+  :error-patterns
+  (
+   (error line-start " " (file-name) ":" line ":" column ":"
+          (message
+	   (one-or-more " ") (one-or-more not-newline)
+	   (zero-or-more "\n"
+			 (one-or-more " ")
+			 (zero-or-more not-newline)))
+          line-end)
+
+   (error line-start " " (file-name) ":" line ":" column "-" (one-or-more digit) ":"
+	  (message
+	   (one-or-more " ") (one-or-more not-newline)
+	   (zero-or-more "\n"
+			 (one-or-more " ")
+			 (zero-or-more not-newline)))
+          line-end)
+
+   (error line-start " " (file-name) ":(" line "," column ")-(" (one-or-more digit) "," (one-or-more digit) "):"
+	  (message
+	   (one-or-more " ") (one-or-more not-newline)
+	   (zero-or-more "\n"
+			 (one-or-more " ")
+			 (zero-or-more not-newline)))
+          line-end)
+   )
+  :error-filter
+  (lambda (errors)
+    (-> errors
+      flycheck-dedent-error-messages
+      flycheck-sanitize-errors))
+  :modes (haskell-mode literate-haskell-mode)
+  ;:next-checkers ((warnings-only . haskell-hlint))
+  )
+(add-to-list 'flycheck-checkers 'haskell-liquid t)
 ;; (require 'ghc)
 ;; (add-hook 'haskell-mode-hook (lambda () (ghc-init)))
 

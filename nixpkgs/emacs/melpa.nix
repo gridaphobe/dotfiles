@@ -17,17 +17,11 @@ in
 {
   mkDerivation =
     args : # arguments for the individual package, can modify the defaults
-    let # These attributes are removed in the end. This is in order not to spoil the build
-        # environment overly, but also to keep hash-backwards-compatible with the old cabal.nix.
-        internalAttrs = [
-          "files" "fileSpecs" "packageRequires" "targets"
-        ];
-
-        # Stuff happening after the user preferences have been processed. We remove
+    let # Stuff happening after the user preferences have been processed. We remove
         # internal attributes and strip null elements from the dependency lists, all
         # in the interest of keeping hashes stable.
         postprocess =
-          x : (removeAttrs x internalAttrs) // {
+          x : x // {
                 buildInputs           = filter (y : ! (y == null)) x.buildInputs;
                 propagatedBuildInputs = filter (y : ! (y == null)) x.propagatedBuildInputs;
                 propagatedUserEnvPkgs = filter (y : ! (y == null)) x.propagatedUserEnvPkgs;
@@ -55,31 +49,30 @@ in
             propagatedBuildInputs = self.packageRequires;
 
             propagatedUserEnvPkgs = self.packageRequires;
-            
+
             packageRequires = [];
 
             doCheck = false;
-            
+
             files = [];
 
             fileSpecs = [ "*.el" "*.el.in" "dir"
                           "*.info" "*.texi" "*.texinfo"
                           "doc/dir" "doc/*.info" "doc/*.texi" "doc/*.texinfo"
                         ];
-    # "*.el" "*.el.in" "dir"
-    # "*.info" "*.texi" "*.texinfo"
-    # "doc/dir" "doc/*.info" "doc/*.texi" "doc/*.texinfo"
-    # (:exclude ".dir-locals.el" "tests.el" "*-test.el" "*-tests.el")
 
-            # compiles Setup and configures
             configurePhase = ''
               eval "$preConfigure"
-              
+
+              for p in $packageRequires; do
+                if [ -d $p/share/emacs/site-lisp ]; then
+                  export EMACSLOADPATH="$p/share/emacs/site-lisp:$EMACSLOADPATH"
+                fi
+              done
+
               eval "$postConfigure"
             '';
 
-            setupHook = ./melpa-setup.sh;
-            
             targets = stdenv.lib.concatStringsSep " " 
                         (if self.files == []
                          then self.fileSpecs
@@ -87,7 +80,7 @@ in
 
             buildPhase = ''
               eval "$preBuild"
-              
+
               emacs --batch -Q -l ${./package-build.el} -l ${./melpa2nix.el} \
                 -f melpa2nix-build-package \
                 $out/share/emacs/site-lisp/elpa \

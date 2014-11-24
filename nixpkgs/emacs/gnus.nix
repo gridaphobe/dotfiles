@@ -1,12 +1,13 @@
-{ melpa, fetchurl }:
+{ melpa, fetchgit }:
 
 melpa.mkDerivation (self: {
   pname   = "gnus";
   version = "20140501";
 
-  src = fetchurl {
-    url = "http://git.gnus.org/cgit/gnus.git/snapshot/m0-11.zip";
-    sha256 = "1c05x9vzaw34s88v015h5yills0g23af4h818c8gv7myvg8jxh8v";
+  src = fetchgit {
+    url = "http://git.gnus.org/gnus.git";
+    rev = "4228cffcb7afb77cf39678e4a8988a57753502a5";
+    sha256 = "0qd0wpxkz47irxghmdpa524c9626164p8vgqs26wlpbdwyvm64a0";
   };
   
   fileSpecs = [ "lisp/*.el" "texi/*.texi" ];

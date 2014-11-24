@@ -4,4 +4,4 @@
 :def doc \x -> return $ ":!hoogle --info \"" ++ x ++ "\""
 :set -package pretty-show
 import Text.Show.Pretty (ppShow)
-let pprint x = putStrLn $ ppShow x
+:def pprint \x -> return $ "putStrLn $ ppShow $ " ++ x
