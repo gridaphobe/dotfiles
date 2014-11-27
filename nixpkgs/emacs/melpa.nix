@@ -56,22 +56,14 @@ in
 
             files = [];
 
+            setupHook = ./melpa-setup.sh;
+
+            melpa2nixArchiveFile = ".melpa2nix-archive";
+
             fileSpecs = [ "*.el" "*.el.in" "dir"
                           "*.info" "*.texi" "*.texinfo"
                           "doc/dir" "doc/*.info" "doc/*.texi" "doc/*.texinfo"
                         ];
-
-            configurePhase = ''
-              eval "$preConfigure"
-
-              for p in $packageRequires; do
-                if [ -d $p/share/emacs/site-lisp ]; then
-                  export EMACSLOADPATH="$p/share/emacs/site-lisp:$EMACSLOADPATH"
-                fi
-              done
-
-              eval "$postConfigure"
-            '';
 
             targets = stdenv.lib.concatStringsSep " " 
                         (if self.files == []
@@ -83,31 +75,17 @@ in
 
               emacs --batch -Q -l ${./package-build.el} -l ${./melpa2nix.el} \
                 -f melpa2nix-build-package \
-                $out/share/emacs/site-lisp/elpa \
                 ${self.pname} ${self.version} ${self.targets}
 
               eval "$postBuild"
             '';
 
-            checkPhase = optional self.doCheck ''
-              eval "$preCheck"
-
-
-              eval "$postCheck"
-            '';
-
             installPhase = ''
               eval "$preInstall"
 
-              # emacs --batch -q -l ${./melpa2nix.el} --eval \
-              #   "(progn (setq package-user-dir \"$out/share/emacs/site-lisp/elpa\") \
-              #           (package-initialize) \
-              #           (package-install-file \"${self.fname}.tar\")
-              #    )"
-
-              if test -f $out/nix-support/propagated-native-build-inputs; then
-                ln -s $out/nix-support/propagated-native-build-inputs $out/nix-support/propagated-user-env-packages
-              fi
+              emacs --batch -Q -l ${./package-build.el} -l ${./melpa2nix.el} \
+                -f melpa2nix-install-package \
+                $out/share/emacs/site-lisp/elpa
 
               eval "$postInstall"
             '';

@@ -11,9 +11,6 @@ melpa.mkDerivation (self: {
     sha256 = "003sihp7irm0qqba778dx0gf8xhkxd1xk7ig5kgkryvl2jyirk28";
   };
   
-  preConfigure = stdenv.lib.optionalString (!stdenv.isLinux) 
-    "rm weechat-sauron.el weechat-secrets.el";
-  
   packageRequires = [ s-el ];
 
 })

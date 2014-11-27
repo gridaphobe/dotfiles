@@ -4,4 +4,4 @@ addCVars () {
   fi
 }
 
-envHooks=(${envHooks[@]} addCVars)
+envHooks+=(addCVars)

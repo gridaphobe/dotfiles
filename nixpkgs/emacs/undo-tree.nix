@@ -10,10 +10,4 @@ melpa.mkDerivation (self: {
     sha256 = "1qla7njkb7gx5aj87i8x6ni8jfk1k78ivwfiiws3gpbnyiydpx8y";
   };
   
-  # unpackPhase = ''
-  #   mkdir undo-tree
-  #   cp $src undo-tree/undo-tree.el
-  #   cd undo-tree
-  # '';
-
 })

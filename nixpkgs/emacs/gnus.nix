@@ -12,8 +12,7 @@ melpa.mkDerivation (self: {
   
   fileSpecs = [ "lisp/*.el" "texi/*.texi" ];
   
-  preBuild = ''
-    ./configure
+  buildPhase = ''
     make
   '';
 })
