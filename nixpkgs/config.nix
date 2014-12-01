@@ -114,6 +114,7 @@
           self.acl2
           self.ivoryBackendC
           self.ivoryExamples
+          self.ivoryEval
           self.ivoryHw
           self.ivoryModelCheck
           self.ivoryOpts
@@ -133,12 +134,14 @@
       };
       liquidhaskell  = callPackage ../Source/liquid/haskell/default.nix {};
       target         = callPackage ../Source/liquid/check/default.nix {};
+      simpleSmt      = callPackage ./simpleSmt.nix {};
       
       ivory           = callPackage ../Source/ivory/ivory/default.nix {};
       ivoryArtifact   = callPackage ../Source/ivory/ivory-artifact/default.nix {};
       ivoryBackendAadl   = callPackage ../Source/ivory/ivory-backend-aadl/default.nix {};
       ivoryBackendAcl2   = callPackage ../Source/ivory/ivory-backend-acl2/default.nix {};
       ivoryBackendC   = callPackage ../Source/ivory/ivory-backend-c/default.nix {};
+      ivoryEval       = callPackage ../Source/ivory/ivory-eval/default.nix {};
       ivoryExamples   = callPackage ../Source/ivory/ivory-examples/default.nix {};
       ivoryHw         = callPackage ../Source/ivory/ivory-hw/default.nix {};
       ivoryModelCheck = callPackage ../Source/ivory/ivory-model-check/default.nix {};

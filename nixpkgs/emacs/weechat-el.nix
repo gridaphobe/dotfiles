@@ -10,7 +10,11 @@ melpa.mkDerivation (self: {
     rev    = "4cb2ced1eda5167ce774e04657d2cd077b63c706";
     sha256 = "003sihp7irm0qqba778dx0gf8xhkxd1xk7ig5kgkryvl2jyirk28";
   };
-  
+
+  postPatch = stdenv.lib.optionalString (!stdenv.isLinux) ''
+    rm weechat-sauron.el weechat-secrets.el
+  '';
+
   packageRequires = [ s-el ];
 
 })

@@ -877,75 +877,75 @@ See URL `https://github.com/ucsd-progsys/liquidhaskell'."
       user-mail-address "eric@seidel.io")
 
 ;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
-(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
-(require 'mu4e)
-(setq mu4e-maildir "~/.mail"
-     mu4e-drafts-folder "/seidel.io/INBOX.Drafts"
-     mu4e-refile-folder "/seidel.io/INBOX.Archive"
-     mu4e-sent-folder "/seidel.io/INBOX.Sent Items"
-     mu4e-trash-folder "/seidel.io/INBOX.Trash"
-     mu4e-attachment-dir "~/Downloads"
-     mu4e-user-mail-address-list '("gridaphobe@gmail.com"
-                                   "eseidel@galois.com"
-                                   "eric@eseidel.org"
-                                   "eric@seidel.io"
-                                   "eric9@mac.com"
-                                   "eric9@me.com"
-                                   "eric9@icloud.com"
-                                   "eseidel@cs.ucsd.edu"
-                                   "eseidel@ucsd.edu"
-                                   "eseidel@eng.ucsd.edu"
-                                   "eseidel01@ccny.cuny.edu"
-                                   "eric@fluidinfo.com"
-                                   "seidel@apple.com")
-     mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-                       "Starred Messages"
-                       ?s)
-                      ("flag:unread AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-                       "Unread Messages"
-                       ?u)
-                      ("to:*.ucsd.edu AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-                       "UCSD"
-                       ?w))
-     mu4e-sent-messages-behavior 'delete
-     mu4e-auto-retrieve-keys t
-     mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
-                            ("tag message" . mu4e-action-retag-message))
-     mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
-                         ("view as pdf" . mu4e-action-view-as-pdf)
-                         ("tag message" . mu4e-action-retag-message))
-     mu4e-completing-read-function 'completing-read
-     mu4e-change-filenames-when-moving t
-     mu4e-compose-dont-reply-to-self t
-     mu4e-compose-signature-auto-include nil
-     mu4e-headers-skip-duplicates nil
-     mu4e-headers-include-related nil
-     mu4e-headers-results-limit 100
-     mu4e-hide-index-messages nil
-     mu4e-use-fancy-chars nil
-     mu4e-debug nil
-     mu4e-get-mail-command "true" ;"mbsync -a"
-     mu4e-update-interval nil ; (* 5 60)
-     )
+;; (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
+;; (require 'mu4e)
+;; (setq mu4e-maildir "~/.mail"
+;;      mu4e-drafts-folder "/seidel.io/INBOX.Drafts"
+;;      mu4e-refile-folder "/seidel.io/INBOX.Archive"
+;;      mu4e-sent-folder "/seidel.io/INBOX.Sent Items"
+;;      mu4e-trash-folder "/seidel.io/INBOX.Trash"
+;;      mu4e-attachment-dir "~/Downloads"
+;;      mu4e-user-mail-address-list '("gridaphobe@gmail.com"
+;;                                    "eseidel@galois.com"
+;;                                    "eric@eseidel.org"
+;;                                    "eric@seidel.io"
+;;                                    "eric9@mac.com"
+;;                                    "eric9@me.com"
+;;                                    "eric9@icloud.com"
+;;                                    "eseidel@cs.ucsd.edu"
+;;                                    "eseidel@ucsd.edu"
+;;                                    "eseidel@eng.ucsd.edu"
+;;                                    "eseidel01@ccny.cuny.edu"
+;;                                    "eric@fluidinfo.com"
+;;                                    "seidel@apple.com")
+;;      mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+;;                        "Starred Messages"
+;;                        ?s)
+;;                       ("flag:unread AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+;;                        "Unread Messages"
+;;                        ?u)
+;;                       ("to:*.ucsd.edu AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+;;                        "UCSD"
+;;                        ?w))
+;;      mu4e-sent-messages-behavior 'delete
+;;      mu4e-auto-retrieve-keys t
+;;      mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
+;;                             ("tag message" . mu4e-action-retag-message))
+;;      mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
+;;                          ("view as pdf" . mu4e-action-view-as-pdf)
+;;                          ("tag message" . mu4e-action-retag-message))
+;;      mu4e-completing-read-function 'completing-read
+;;      mu4e-change-filenames-when-moving t
+;;      mu4e-compose-dont-reply-to-self t
+;;      mu4e-compose-signature-auto-include nil
+;;      mu4e-headers-skip-duplicates nil
+;;      mu4e-headers-include-related nil
+;;      mu4e-headers-results-limit 100
+;;      mu4e-hide-index-messages nil
+;;      mu4e-use-fancy-chars nil
+;;      mu4e-debug nil
+;;      mu4e-get-mail-command "true" ;"mbsync -a"
+;;      mu4e-update-interval nil ; (* 5 60)
+;;      )
 
-(setq mu4e-html2text-command
-     #'(lambda () 
-         (shr-render-region (point-min) (point-max))))
+;; (setq mu4e-html2text-command
+;;      #'(lambda () 
+;;          (shr-render-region (point-min) (point-max))))
 
-(load "~/.emacs.d/vendor/window-margin.el")
-(add-hook 'mu4e-view-mode-hook 'turn-on-window-margin-mode)
+;; (load "~/.emacs.d/vendor/window-margin.el")
+;; (add-hook 'mu4e-view-mode-hook 'turn-on-window-margin-mode)
 
-(add-hook 'mu4e-compose-pre-hook
- (defun my/set-from-address ()
-   (let ((msg mu4e-compose-parent-message))
-     (when msg
-       (setq user-mail-address
-             (cond
-              ((mu4e-message-contact-field-matches msg :to "ucsd.edu")
-               "eseidel@cs.ucsd.edu")
-              ((mu4e-message-contact-field-matches msg :to "galois.com")
-               "eseidel@galois.com")
-              (t "gridaphobe@gmail.com")))))))
+;; (add-hook 'mu4e-compose-pre-hook
+;;  (defun my/set-from-address ()
+;;    (let ((msg mu4e-compose-parent-message))
+;;      (when msg
+;;        (setq user-mail-address
+;;              (cond
+;;               ((mu4e-message-contact-field-matches msg :to "ucsd.edu")
+;;                "eseidel@cs.ucsd.edu")
+;;               ((mu4e-message-contact-field-matches msg :to "galois.com")
+;;                "eseidel@galois.com")
+;;               (t "gridaphobe@gmail.com")))))))
 
 (setq message-send-mail-function 'smtpmail-send-it
      smtpmail-stream-type 'starttls
