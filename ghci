@@ -1,3 +1,4 @@
+:set +c
 :set +t
 :set prompt "ghci> "
 :def hoogle \x -> return $ ":!hoogle \"" ++ x ++ "\""

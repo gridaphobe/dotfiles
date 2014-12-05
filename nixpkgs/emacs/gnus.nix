@@ -12,4 +12,8 @@ melpa.mkDerivation (self: {
   
   fileSpecs = [ "lisp/*.el" "texi/*.texi" ];
   
+  preBuild = ''
+    (cd lisp && make gnus-load.el)
+  '';
+  
 })

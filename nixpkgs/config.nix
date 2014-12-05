@@ -109,7 +109,6 @@
           self.target
           self.ivory
           self.ivoryArtifact
-          self.ivoryBackendAadl
           self.ivoryBackendAcl2
           self.acl2
           self.ivoryBackendC
@@ -129,26 +128,27 @@
     };
 
     haskellProjects = { self, super, callPackage }: {
-      liquidFixpoint = callPackage ../Source/liquid/fixpoint/default.nix {
+      liquidFixpoint = callPackage ../Source/liquid/fixpoint {
         ocaml  = ocaml;
       };
-      liquidhaskell  = callPackage ../Source/liquid/haskell/default.nix {};
-      target         = callPackage ../Source/liquid/check/default.nix {};
+      liquidhaskell  = callPackage ../Source/liquid/haskell {};
+      target         = callPackage ../Source/liquid/check {};
       simpleSmt      = callPackage ./simpleSmt.nix {};
       
-      ivory           = callPackage ../Source/ivory/ivory/default.nix {};
-      ivoryArtifact   = callPackage ../Source/ivory/ivory-artifact/default.nix {};
-      ivoryBackendAadl   = callPackage ../Source/ivory/ivory-backend-aadl/default.nix {};
-      ivoryBackendAcl2   = callPackage ../Source/ivory/ivory-backend-acl2/default.nix {};
-      ivoryBackendC   = callPackage ../Source/ivory/ivory-backend-c/default.nix {};
-      ivoryEval       = callPackage ../Source/ivory/ivory-eval/default.nix {};
-      ivoryExamples   = callPackage ../Source/ivory/ivory-examples/default.nix {};
-      ivoryHw         = callPackage ../Source/ivory/ivory-hw/default.nix {};
-      ivoryModelCheck = callPackage ../Source/ivory/ivory-model-check/default.nix {};
-      ivoryOpts       = callPackage ../Source/ivory/ivory-opts/default.nix {};
-      ivoryQuickcheck = callPackage ../Source/ivory/ivory-quickcheck/default.nix {};
-      ivorySerialize  = callPackage ../Source/ivory/ivory-serialize/default.nix {};
-      ivoryStdlib     = callPackage ../Source/ivory/ivory-stdlib/default.nix {};
+      ivory           = callPackage ../Source/ivory/ivory {};
+      ivoryArtifact   = callPackage ../Source/ivory/ivory-artifact {};
+      ivoryBackendAcl2   = callPackage ../Source/ivory/ivory-backend-acl2 {};
+      ivoryBackendC   = callPackage ../Source/ivory/ivory-backend-c {};
+      ivoryEval       = callPackage ../Source/ivory/ivory-eval {};
+      ivoryExamples   = callPackage ../Source/ivory/ivory-examples {};
+      ivoryHw         = callPackage ../Source/ivory/ivory-hw {};
+      ivoryModelCheck = callPackage ../Source/ivory/ivory-model-check {};
+      ivoryOpts       = callPackage ../Source/ivory/ivory-opts {};
+      ivoryQuickcheck = callPackage ../Source/ivory/ivory-quickcheck {};
+      ivorySerialize  = callPackage ../Source/ivory/ivory-serialize {};
+      ivoryStdlib     = callPackage ../Source/ivory/ivory-stdlib {};
+
+      ghcSrcspanPlugin = callPackage ../Source/ghc-srcspan-plugin {};
 
       languageCQuote = callPackage ./languageCQuote.nix {};
 
@@ -159,7 +159,7 @@
       systemFileio   = self.disableTest  super.systemFileio;
       shake          = self.disableTest  super.shake;
       lens           = self.disableTest  super.lens;
-      acl2           = callPackage ../Source/acl2/default.nix {};
+      acl2           = callPackage ../Source/acl2 {};
       intern         = callPackage ./intern.nix {};
       dataTextual    = callPackage ./dataTextual.nix {};
       dataTimeout    = callPackage ./dataTimeout.nix {};
@@ -172,7 +172,7 @@
       
       monadJournal   = callPackage ./monad-journal.nix {};
       ghcMod         = callPackage ./ghc-mod.nix { makeWrapper = makeWrapper; };
-      ghciNg = callPackage ./ghci-ng.nix { 
+      ghciNg         = callPackage ./ghci-ng.nix { 
         fetchgit = fetchgit; 
         makeWrapper = makeWrapper; 
         ncurses = ncurses;
@@ -278,8 +278,6 @@
         ag-el
         auctex
         company-mode
-        # dash-el
-        # epl
         evil
         evil-god-state
         evil-surround
@@ -287,24 +285,16 @@
         expand-region
         flycheck
         flycheck-pos-tip
-        ghc-mod-el
-        # git-commit-mode
-        # git-rebase-mode
-        # gitattributes-mode
-        # gitconfig-mode
-        # gitignore-mode
+        # ghc-mod-el
         gnus
         god-mode
         haskell-mode
         helm
         magit
         markdown-mode
-        # mu4eMaildirsExtension
         org-plus-contrib
         pkg-info-el
         projectile
-        # rich-minority
-        # s-el
         smart-mode-line
         smartparens
         structured-haskell-mode-el
@@ -370,6 +360,5 @@
     use-package                = callPackage ./emacs/use-package.nix {};
     volatile-highlights        = callPackage ./emacs/volatile-highlights.nix {};
     weechat-el                 = callPackage ./emacs/weechat-el.nix {};
-
   };
 }
