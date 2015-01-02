@@ -12,7 +12,7 @@
     shellEnv = pkgs.buildEnv {
       name = "shell-env";
       paths = [
-        acl2
+        # acl2
         arcanist
         autoconf
         automake
@@ -36,6 +36,7 @@
         isync
         leafnode
         #mu
+        # (mutt.override { withSidebar = true;})
         nix-prefetch-scripts
         #notmuch
         patchutils
@@ -48,13 +49,12 @@
         subversion
         tmux
         tree
+        weechat
         (wget.override { python3 = null; })
         z3
         zsh
       ];
     };
-
-    # bash = pkgs.bashInteractive;
 
     cvc4 = callPackage ./cvc4.nix {};
     xapian = callPackage ./xapian.nix {};
@@ -63,24 +63,23 @@
     haskellEnv = pkgs.buildEnv {
       name = "haskell-env";
       paths = [
-        ((haskellPackages_ghc783.ghcWithPackages (self: [
+        ((haskellPackages_ghc784.ghcWithPackages (self: [
           self.cabal2nix
           self.cabalInstall
           self.ghcCore
-          self.ghcMod
+          #self.ghcMod
           self.ghciNg
-          #(lowPrio self.haddock)
-          #self.hakyll
+          self.hakyll
           #self.haskellDocs
           self.hasktags
-          # self.hdevtools
-          # self.hlint
+          #self.hdevtools
+          self.hlint
           self.hscolour
           self.structuredHaskellMode
           self.stylishHaskell
           self.pandoc
-          #self.pandocCiteproc
-          #self.pandocTypes
+          self.pandocCiteproc
+          self.pandocTypes
           self.shake
           self.SafeSemaphore
           
@@ -95,6 +94,9 @@
           self.prettyShow
           self.dataTimeout
           self.xmlConduit
+          self.toml
+
+          self.ghcSybUtils
 
           self.QuickCheck
           self.smallcheck
@@ -109,8 +111,8 @@
           self.target
           self.ivory
           self.ivoryArtifact
-          self.ivoryBackendAcl2
-          self.acl2
+          # self.ivoryBackendAcl2
+          # self.acl2
           self.ivoryBackendC
           self.ivoryExamples
           self.ivoryEval
@@ -121,9 +123,13 @@
           self.ivorySerialize
           self.ivoryStdlib
           self.languageCQuote
+          self.tower
+          self.towerAadl
+          self.towerConfig
+          self.towerStatemachine
           self.wlPprint
         ])).override { exposeGHC = true; })
-        haskellPackages_ghc783.hoogleLocal
+        haskellPackages_ghc784.hoogleLocal
       ];
     };
 
@@ -148,6 +154,11 @@
       ivorySerialize  = callPackage ../Source/ivory/ivory-serialize {};
       ivoryStdlib     = callPackage ../Source/ivory/ivory-stdlib {};
 
+      tower           = callPackage ../Source/tower/tower {};
+      towerAadl       = callPackage ../Source/tower/tower-aadl {};
+      towerConfig     = callPackage ../Source/tower/tower-config {};
+      towerStatemachine = callPackage ../Source/tower/tower-statemachine {};
+
       ghcSrcspanPlugin = callPackage ../Source/ghc-srcspan-plugin {};
 
       languageCQuote = callPackage ./languageCQuote.nix {};
@@ -166,18 +177,18 @@
       textLatin1     = callPackage ./textLatin1.nix {};
       textPrinter    = callPackage ./textPrinter.nix {};
       typeHint       = callPackage ./typeHint.nix {};
+      toml           = callPackage ./toml.nix {};
 
       Chart          = callPackage ./Chart.nix {};
       ChartDiagrams  = callPackage ./ChartDiagrams.nix {};
       
       monadJournal   = callPackage ./monad-journal.nix {};
       ghcMod         = callPackage ./ghc-mod.nix { makeWrapper = makeWrapper; };
-      ghciNg         = callPackage ./ghci-ng.nix { 
-        fetchgit = fetchgit; 
-        makeWrapper = makeWrapper; 
-        ncurses = ncurses;
+      ghciNg         = callPackage ./ghci-ng.nix {
+        inherit fetchFromGitHub makeWrapper ncurses;
       };
       structuredHaskellMode = callPackage ./structured-haskell-mode.nix {
+        inherit fetchFromGitHub;
         haskellSrcExts = self.haskellSrcExts_1_15_0_1;
       };
 
@@ -224,8 +235,8 @@
       });
 
     haskellPackages = haskellPackages_wrapper pkgs.haskellPackages;
-    haskellPackages_ghc783 = haskellPackages_wrapper pkgs.haskellPackages_ghc783;
-    haskellPackages_ghc783_profiling = haskellPackages_wrapper pkgs.haskellPackages_ghc783_profiling;
+    haskellPackages_ghc784 = haskellPackages_wrapper pkgs.haskellPackages_ghc784;
+    haskellPackages_ghc784_profiling = haskellPackages_wrapper pkgs.haskellPackages_ghc784_profiling;
 
     # Define own GHC HEAD package pointing to local checkout.
     packages_ghcHEAD = pkgs.haskell.packages {
@@ -260,8 +271,8 @@
         syntastic
         tmux-navigator
         vimproc
-        vimrsi
-        vimsensible
+        #vimrsi
+        #vimsensible
         vimshell
       ];
     };
@@ -277,6 +288,8 @@
         ace-jump-mode
         ag-el
         auctex
+        change-inner
+        circe
         company-mode
         evil
         evil-god-state
@@ -290,6 +303,7 @@
         god-mode
         haskell-mode
         helm
+        idris-mode
         magit
         markdown-mode
         org-plus-contrib
@@ -317,6 +331,12 @@
     async                      = callPackage ./emacs/async.nix {};
     auctex                     = callPackage ./emacs/auctex.nix {};
     bind-key                   = callPackage ./emacs/bind-key.nix {};
+    change-inner               = callPackage ./emacs/change-inner.nix {};
+    circe                      = callPackage ./emacs/circe.nix {};
+    lcs                        = callPackage ./emacs/lcs.nix {};
+    lui                        = callPackage ./emacs/lui.nix {};
+    shorten                    = callPackage ./emacs/shorten.nix {};
+    tracking                   = callPackage ./emacs/tracking.nix {};
     company-mode               = callPackage ./emacs/company-mode.nix {};
     dash-el                    = callPackage ./emacs/dash.nix {};
     diminish                   = callPackage ./emacs/diminish.nix {};
@@ -341,6 +361,7 @@
     goto-chg                   = callPackage ./emacs/goto-chg.nix {};
     haskell-mode               = callPackage ./emacs/haskell-mode.nix {};
     helm                       = callPackage ./emacs/helm.nix {};
+    idris-mode                 = callPackage ./emacs/idris-mode.nix {};
     magit                      = callPackage ./emacs/magit.nix {};
     markdown-mode              = callPackage ./emacs/markdown-mode.nix {};
     # mu4eMaildirsExtension    = callPackage ./emacs/mu4e-maildirs-extension.nix { mu = mu; };

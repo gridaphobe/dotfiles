@@ -3,22 +3,24 @@
 set -e
 set -x
 
+~/.nix-profile/bin/timeout 3m ~/.nix-profile/bin/mbsync -a
+
 # remove archived mails from inbox
-notmuch search --output=files folder:inbox and not tag:inbox \
-  | grep inbox/cur | xargs --no-run-if-empty -l rm
-
-mbsync gmail
-
-notmuch new
-
-# folders
-notmuch tag --remove-all +inbox folder:inbox
-notmuch tag --remove-all +draft folder:drafts
-notmuch tag --remove-all +spam  folder:spam
-notmuch tag --remove-all +trash folder:trash
-notmuch tag +sent  folder:sent
-
-# other tags
-notmuch tag +github from:notifications@github.com
-notmuch tag +travis from:notifications@travis-ci.org
-notmuch tag +ucsd to:*@uscd.edu or to:*@cs.ucsd.edu or to:*@eng.ucsd.edu
+# notmuch search --output=files folder:inbox and not tag:inbox \
+#   | grep inbox/cur | xargs --no-run-if-empty -l rm
+# 
+# mbsync gmail
+# 
+# notmuch new
+# 
+# # folders
+# notmuch tag --remove-all +inbox folder:inbox
+# notmuch tag --remove-all +draft folder:drafts
+# notmuch tag --remove-all +spam  folder:spam
+# notmuch tag --remove-all +trash folder:trash
+# notmuch tag +sent  folder:sent
+# 
+# # other tags
+# notmuch tag +github from:notifications@github.com
+# notmuch tag +travis from:notifications@travis-ci.org
+# notmuch tag +ucsd to:*@uscd.edu or to:*@cs.ucsd.edu or to:*@eng.ucsd.edu

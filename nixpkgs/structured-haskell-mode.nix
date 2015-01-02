@@ -1,9 +1,14 @@
-{ cabal, haskellSrcExts }:
+{ cabal, haskellSrcExts, fetchFromGitHub }:
 
 cabal.mkDerivation (self: {
   pname = "structured-haskell-mode";
-  version = "1.0.4";
-  sha256 = "1402wx27py7292ad7whsb13ywv71k36501jpfrn2p0v7knzknj8z";
+  version = "20141129";
+  src = fetchFromGitHub {
+    owner = "chrisdone";
+    repo = self.pname;
+    rev  = "92f0accef811e091eeb2d72f1fc567f1a39285a4";
+    sha256 = "1kif8f97knx9klfg39674597sjlcd89jn30vbv9dvdz0cjkfqp8b";
+  };
   isLibrary = false;
   isExecutable = true;
   buildDepends = [ haskellSrcExts ];

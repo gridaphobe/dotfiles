@@ -56,12 +56,12 @@
   (bind-key "s-s" 'save-buffer)
   (bind-key "s-q" 'save-buffers-kill-emacs)
 
-  ;; (set-fontset-font "fontset-default"
-  ;;                   'unicode
-  ;;                   '("Ubuntu Mono" . "iso10646-1"))
-  ;; (set-face-attribute 'default nil
-  ;;                     :family "Ubuntu Mono"
-  ;;                     :height 140)
+  (set-fontset-font "fontset-default"
+                    'unicode
+                    '("Source Code Pro" . "iso10646-1"))
+  (set-face-attribute 'default nil
+                      :family "Source Code Pro"
+                      :height 120)
 
   (require 'exec-path-from-shell)
   (setq exec-path-from-shell-variables
@@ -74,13 +74,40 @@
 
 ;;;; smart-mode-line
 (require 'smart-mode-line)
+(setq sml/name-width '(20 . 40))
+
+;;(defun my-god-mode-indicator ()
+;;  "Display a custom indicator for `god-mode' in the mode-line."
+;;  (when god-local-mode (propertize " <G> " 'font-lock-face '(:background "#FF9999" :weight bold))))
+;;(add-to-list 'mode-line-position
+;;             '((:eval (my-god-mode-indicator))))
+;;(diminish 'god-local-mode)
 (sml/setup)
+
+(add-to-list 'completion-ignored-extensions ".hi")
+(add-to-list 'completion-ignored-extensions ".hdevtools.sock")
+(add-to-list 'completion-ignored-extensions ".liquid/")
+(add-to-list 'completion-ignored-extensions ".hpc/")
 
 
 ;;;; misc
 (blink-cursor-mode -1)
 
+(set-default 'tags-case-fold-search nil)
+(require 'dired-x)
+(setq-default dired-omit-files-p t)
+(setq dired-omit-files
+      (concat "\\.dyn_hi$\\|\\.dyn_o$\\|\\.hi$\\|\\.o$\\|"
+              dired-omit-files))
+
 (setq ring-bell-function 'ignore)
+
+(electric-indent-mode -1)
+(electric-layout-mode -1)
+(electric-pair-mode -1)
+(show-paren-mode 1)
+
+(setq-default major-mode 'text-mode)
 
 ;; nice scrolling
 (setq scroll-margin 0
@@ -210,12 +237,13 @@
 (bind-key "C-M-k" 'sp-kill-sexp)
 (bind-key "C-M-p" 'sp-forward-slurp-sexp)
 (bind-key "C-M-o" 'sp-forward-barf-sexp)
+
 (setq-default sp-autoskip-closing-pair 'always)
 (setq sp-hybrid-kill-entire-symbol nil)
 ;; (show-smartparens-global-mode 1)
-(add-hook 'prog-mode-hook 'turn-on-smartparens-strict-mode)
-(add-hook 'prog-mode-hook 'turn-on-show-smartparens-mode)
-;; (smartparens-global-strict-mode 1)
+;; (add-hook 'prog-mode-hook 'turn-on-smartparens-strict-mode)
+;; (add-hook 'prog-mode-hook 'turn-on-show-smartparens-mode)
+(smartparens-global-strict-mode 1)
 ;; (add-to-list 'rm-blacklist " SP/s")
 
 ;;;; rainbow-mode
@@ -240,10 +268,7 @@
       helm-split-window-default-side 'other ; open helm buffer in another window
       helm-split-window-in-side-p nil         ; open helm buffer inside current window,
                                             ; don't occupy whole other window
-      helm-always-two-windows t
-      
-      helm-boring-file-regexp-list (append helm-boring-file-regexp-list
-                                           '("\\.hi$" "\\.tags$"))
+      helm-always-two-windows nil ; t
       )
 
 (bind-key "C-x b" 'helm-mini)
@@ -264,12 +289,16 @@
 ;; (add-to-list 'rm-blacklist " Projectile\\*")
 (setq projectile-remember-window-configs t
       projectile-completion-system 'helm)
+(require 'helm-projectile)
+(helm-projectile-on)
+(setq projectile-switch-project-action 'helm-projectile)
+(setq projectile-enable-caching t)
 
 
 ;;;; auto complete
 (require 'company)
-;; (global-company-mode)
-;; (diminish 'company-mode)
+(global-company-mode)
+(diminish 'company-mode)
 ;; (add-to-list 'rm-blacklist " company")
 
 ;;;; compile
@@ -336,6 +365,11 @@
 (use-package expand-region
   :bind (("M-m" . er/expand-region)))
 
+;;;; change-inner
+(use-package change-inner
+  :bind (("M-i" . change-inner)
+         ("M-o" . change-outer)))
+
 ;;;; undo-tree
 (require 'undo-tree)
 (setq undo-tree-visualizer-relative-timestamps t
@@ -346,111 +380,112 @@
 
 
 ;;;; evil
-;; (require 'evil)
-;; (evil-mode 1)
-;; ;; prevent esc-key from translating to meta-key in terminal mode
-;; (setq evil-esc-delay 0)
-;; (setq evil-search-module 'evil-search
-;;       evil-cross-lines t
-;;       evil-move-cursor-back nil)
-;; (add-to-list 'evil-emacs-state-modes 'special-mode)
-;; (evil-ex-define-cmd "e[dit]" 'helm-find-files)
-;; (evil-ex-define-cmd "b[uffer]" 'helm-buffers-list)
-;; (bind-key "[escape]" 'keyboard-escape-quit evil-normal-state-map)
-;; (bind-key "[escape]" 'keyboard-escape-quit evil-visual-state-map)
-;; (bind-key "<escape>" 'keyboard-escape-quit)
-;; (bind-key "\"" 'ace-jump-mode evil-normal-state-map)
-;; 
-;; ;; Make movement keys work like they should
-;; (bind-key "<remap> <evil-next-line>"     
-;;           'evil-next-visual-line     
-;;           evil-normal-state-map)
-;; (bind-key "<remap> <evil-previous-line>" 
-;;           'evil-previous-visual-line 
-;;           evil-normal-state-map)
-;; (bind-key "<remap> <evil-next-line>"     
-;;           'evil-next-visual-line     
-;;           evil-motion-state-map)
-;; (bind-key "<remap> <evil-previous-line>" 
-;;           'evil-previous-visual-line 
-;;           evil-motion-state-map)
-;; 
-;; (defun evil-undefine ()
-;;   (interactive)
-;;   (let (evil-mode-map-alist)
-;;     (call-interactively (key-binding (this-command-keys)))))
-;; 
-;; (bind-key "C-e" 'evil-end-of-line    evil-normal-state-map)
-;; (bind-key "C-e" 'end-of-line         evil-insert-state-map)
-;; (bind-key "C-e" 'evil-end-of-line    evil-visual-state-map)
-;; (bind-key "C-e" 'evil-end-of-line    evil-motion-state-map)
-;; (bind-key "C-f" 'evil-forward-char   evil-normal-state-map)
-;; (bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
-;; (bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
-;; (bind-key "C-b" 'evil-backward-char  evil-normal-state-map)
-;; (bind-key "C-b" 'evil-backward-char  evil-insert-state-map)
-;; (bind-key "C-b" 'evil-backward-char  evil-visual-state-map)
-;; (bind-key "C-d" 'evil-delete-char    evil-normal-state-map)
-;; (bind-key "C-d" 'evil-delete-char    evil-insert-state-map)
-;; (bind-key "C-d" 'evil-delete-char    evil-visual-state-map)
-;; (bind-key "C-n" 'evil-next-line      evil-normal-state-map)
-;; (bind-key "C-n" 'evil-next-line      evil-insert-state-map)
-;; (bind-key "C-n" 'evil-next-line      evil-visual-state-map)
-;; (bind-key "C-p" 'evil-previous-line  evil-normal-state-map)
-;; (bind-key "C-p" 'evil-previous-line  evil-insert-state-map)
-;; (bind-key "C-p" 'evil-previous-line  evil-visual-state-map)
-;; (bind-key "C-w" 'evil-delete         evil-normal-state-map)
-;; (bind-key "C-w" 'evil-delete         evil-insert-state-map)
-;; (bind-key "C-w" 'evil-delete         evil-visual-state-map)
-;; (bind-key "C-y" 'yank                evil-normal-state-map)
-;; (bind-key "C-y" 'yank                evil-insert-state-map)
-;; (bind-key "C-y" 'yank                evil-visual-state-map)
-;; (bind-key "C-k" 'kill-line           evil-normal-state-map)
-;; (bind-key "C-k" 'kill-line           evil-insert-state-map)
-;; (bind-key "C-k" 'kill-line           evil-visual-state-map)
-;; (bind-key "C-r" 'isearch-backward    evil-normal-state-map)
-;; (bind-key "C-r" 'isearch-backward    evil-insert-state-map)
-;; (bind-key "C-r" 'isearch-backward    evil-visual-state-map)
-;; (bind-key "Q"   'call-last-kbd-macro evil-normal-state-map)
-;; (bind-key "Q"   'call-last-kbd-macro evil-visual-state-map)
-;; (bind-key "TAB" 'evil-undefine       evil-normal-state-map)
-;; (bind-key "RET" 'evil-undefine       evil-insert-state-map)
-;; 
-;; (use-package evil-surround
-;;   :init (global-evil-surround-mode 1))
+(require 'evil)
+(evil-mode 1)
+;; prevent esc-key from translating to meta-key in terminal mode
+(setq evil-esc-delay 0)
+(setq evil-search-module 'evil-search
+      evil-cross-lines t
+      evil-move-cursor-back nil)
+(add-to-list 'evil-emacs-state-modes 'special-mode)
+(evil-ex-define-cmd "e[dit]" 'helm-find-files)
+(evil-ex-define-cmd "b[uffer]" 'helm-buffers-list)
+(bind-key "[escape]" 'keyboard-escape-quit evil-normal-state-map)
+(bind-key "[escape]" 'keyboard-escape-quit evil-visual-state-map)
+(bind-key "<escape>" 'keyboard-escape-quit)
+(bind-key "\"" 'ace-jump-mode evil-normal-state-map)
 
-;; (defadvice switch-to-buffer (before evil-back-to-initial-state activate)
-;;   (evil-change-state
-;;    (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;; Make movement keys work like they should
+(bind-key "<remap> <evil-next-line>"     
+          'evil-next-visual-line     
+          evil-normal-state-map)
+(bind-key "<remap> <evil-previous-line>" 
+          'evil-previous-visual-line 
+          evil-normal-state-map)
+(bind-key "<remap> <evil-next-line>"     
+          'evil-next-visual-line     
+          evil-motion-state-map)
+(bind-key "<remap> <evil-previous-line>" 
+          'evil-previous-visual-line 
+          evil-motion-state-map)
 
-;; (defadvice select-window (around evil-back-to-initial-state activate)
-;;   (when (ad-get-arg 1)
-;;     (evil-change-state
-;;      (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
-;;   ad-do-it)
-;; (defadvice other-window (before evil-back-to-initial-state activate)
-;;   (evil-change-state
-;;    (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
-;; (defadvice other-frame (before evil-back-to-initial-state activate)
-;;   (evil-change-state
-;;    (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
-;; (defadvice windmove-up (before evil-back-to-initial-state activate)
-;;   (evil-change-state
-;;    (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
-;; (defadvice windmove-down (before evil-back-to-initial-state activate)
-;;   (evil-change-state
-;;    (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
-;; (defadvice windmove-left (before evil-back-to-initial-state activate)
-;;   (evil-change-state
-;;    (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
-;; (defadvice windmove-right (before evil-back-to-initial-state activate)
-;;   (evil-change-state
-;;    (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+(defun evil-undefine ()
+  (interactive)
+  (let (evil-mode-map-alist)
+    (call-interactively (key-binding (this-command-keys)))))
+
+(bind-key "C-e" 'evil-end-of-line    evil-normal-state-map)
+(bind-key "C-e" 'end-of-line         evil-insert-state-map)
+(bind-key "C-e" 'evil-end-of-line    evil-visual-state-map)
+(bind-key "C-e" 'evil-end-of-line    evil-motion-state-map)
+(bind-key "C-f" 'evil-forward-char   evil-normal-state-map)
+(bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
+(bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
+(bind-key "C-b" 'evil-backward-char  evil-normal-state-map)
+(bind-key "C-b" 'evil-backward-char  evil-insert-state-map)
+(bind-key "C-b" 'evil-backward-char  evil-visual-state-map)
+(bind-key "C-d" 'evil-delete-char    evil-normal-state-map)
+(bind-key "C-d" 'evil-delete-char    evil-insert-state-map)
+(bind-key "C-d" 'evil-delete-char    evil-visual-state-map)
+(bind-key "C-n" 'evil-next-line      evil-normal-state-map)
+(bind-key "C-n" 'evil-next-line      evil-insert-state-map)
+(bind-key "C-n" 'evil-next-line      evil-visual-state-map)
+(bind-key "C-p" 'evil-previous-line  evil-normal-state-map)
+(bind-key "C-p" 'evil-previous-line  evil-insert-state-map)
+(bind-key "C-p" 'evil-previous-line  evil-visual-state-map)
+(bind-key "C-w" 'evil-delete         evil-normal-state-map)
+(bind-key "C-w" 'evil-delete         evil-insert-state-map)
+(bind-key "C-w" 'evil-delete         evil-visual-state-map)
+(bind-key "C-y" 'yank                evil-normal-state-map)
+(bind-key "C-y" 'yank                evil-insert-state-map)
+(bind-key "C-y" 'yank                evil-visual-state-map)
+(bind-key "C-k" 'kill-line           evil-normal-state-map)
+(bind-key "C-k" 'kill-line           evil-insert-state-map)
+(bind-key "C-k" 'kill-line           evil-visual-state-map)
+(bind-key "C-r" 'isearch-backward    evil-normal-state-map)
+(bind-key "C-r" 'isearch-backward    evil-insert-state-map)
+(bind-key "C-r" 'isearch-backward    evil-visual-state-map)
+(bind-key "Q"   'call-last-kbd-macro evil-normal-state-map)
+(bind-key "Q"   'call-last-kbd-macro evil-visual-state-map)
+(bind-key "TAB" 'evil-undefine       evil-normal-state-map)
+(bind-key "RET" 'evil-undefine       evil-insert-state-map)
+
+(use-package evil-surround
+  :init (global-evil-surround-mode 1))
+
+;;(defadvice switch-to-buffer (before evil-back-to-initial-state activate)
+;;  (evil-change-state
+;;   (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;;
+;;(defadvice select-window (around evil-back-to-initial-state activate)
+;;  (when (ad-get-arg 1)
+;;    (evil-change-state
+;;     (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;;  ad-do-it)
+;;(defadvice other-window (before evil-back-to-initial-state activate)
+;;  (evil-change-state
+;;   (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;;(defadvice other-frame (before evil-back-to-initial-state activate)
+;;  (evil-change-state
+;;   (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;;(defadvice windmove-up (before evil-back-to-initial-state activate)
+;;  (evil-change-state
+;;   (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;;(defadvice windmove-down (before evil-back-to-initial-state activate)
+;;  (evil-change-state
+;;   (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;;(defadvice windmove-left (before evil-back-to-initial-state activate)
+;;  (evil-change-state
+;;   (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
+;;(defadvice windmove-right (before evil-back-to-initial-state activate)
+;;  (evil-change-state
+;;   (evil-initial-state-for-buffer (current-buffer) evil-default-state)))
 
 
 
 
 ;;;; flycheck
+(require 'flycheck)
 (use-package flycheck
   :init (global-flycheck-mode 1)
   :bind (("M-n" . flycheck-next-error)
@@ -472,35 +507,32 @@
 
 ;;;; god-mode
 (require 'god-mode)
-(bind-key "<escape>" 'god-local-mode)
-(bind-key "i" 'god-local-mode god-local-mode-map)
-(bind-key "." 'repeat god-local-mode-map)
-
-(defun my-update-cursor ()
-  (setq cursor-type (if (or god-local-mode buffer-read-only)
-                        'box
-                      'bar)))
-
-(add-hook 'god-mode-enabled-hook 'my-update-cursor)
-(add-hook 'god-mode-disabled-hook 'my-update-cursor)
-
-(defun god-toggle-on-overwrite ()
-  "Toggle god-mode on overwrite-mode."
-  (if (bound-and-true-p overwrite-mode)
-      (god-local-mode-pause)
-    (god-local-mode-resume)))
-
-(add-hook 'overwrite-mode-hook 'god-toggle-on-overwrite)
+;;(god-mode)
+;;(bind-key "<escape>" 'god-local-mode)
+;;(bind-key "i" 'god-local-mode god-local-mode-map)
+;;(bind-key "." 'repeat god-local-mode-map)
+;;
+;;(add-to-list 'god-exempt-major-modes 'weechat-mode)
+;;
+;;(defun god-toggle-on-overwrite ()
+;;  "Toggle god-mode on command `overwrite-mode'."
+;;  (if (bound-and-true-p overwrite-mode)
+;;      (god-local-mode-pause)
+;;    (god-local-mode-resume)))
+;;(add-hook 'overwrite-mode-hook 'god-toggle-on-overwrite)
 
 (global-set-key (kbd "C-x C-1") 'delete-other-windows)
 (global-set-key (kbd "C-x C-2") 'split-window-below)
 (global-set-key (kbd "C-x C-3") 'split-window-right)
 (global-set-key (kbd "C-x C-0") 'delete-window)
 
+
 ;; (require 'evil-god-state)
-;; (evil-define-key 'normal global-map "," 'evil-execute-in-god-state)
-;; (add-hook 'evil-god-state-entry-hook (lambda () (diminish 'god-local-mode)))
-;; (add-hook 'evil-god-state-exit-hook (lambda () (diminish-undo 'god-local-mode)))
+(load "~/Source/evil-god-state/evil-god-state.el")
+(evil-define-key 'normal global-map "," 'evil-execute-in-god-state)
+(evil-define-key 'visual global-map "," 'evil-execute-in-god-state)
+(add-hook 'evil-god-state-entry-hook (lambda () (diminish 'god-local-mode)))
+(add-hook 'evil-god-state-exit-hook (lambda () (diminish-undo 'god-local-mode)))
 
 ;;;; haskell
 (require 'haskell-mode)
@@ -511,12 +543,17 @@
 (sp-local-pair '(haskell-mode literate-haskell-mode) 
                "{-@ " " @-}" 
                :trigger "@{")
+(sp-local-pair '(haskell-mode literate-haskell-mode) 
+               "{-# " " #-}" 
+               :trigger "#{")
 (bind-key "C-c C-l" 'haskell-process-load-file haskell-mode-map)
 (bind-key "C-c C-t" 'haskell-mode-show-type-at haskell-mode-map)
 (bind-key "C-c C-i" 'haskell-process-do-info   haskell-mode-map)
-(bind-key "SPC" 'haskell-mode-contextual-space haskell-mode-map)
-(bind-key "M-." 'haskell-mode-goto-loc haskell-mode-map)
-;; (add-to-list 'evil-emacs-state-modes 'haskell-presentation-mode)
+(bind-key "C-c C-." 'haskell-mode-goto-loc haskell-mode-map)
+(bind-key "C-c C-?" 'haskell-mode-find-uses haskell-mode-map)
+(add-to-list 'evil-emacs-state-modes 'haskell-presentation-mode)
+
+(add-hook 'haskell-mode-hook 'interactive-haskell-mode)
 
 (setq haskell-process-type 'ghci ;;'cabal-repl
       haskell-process-path-ghci "ghci-ng"
@@ -526,26 +563,27 @@
       haskell-align-imports-pad-after-name t
       ;; haskell-font-lock-symbols t
       haskell-stylish-on-save nil
+      haskell-process-auto-import-loaded-modules t
       haskell-process-suggest-hoogle-imports t
       haskell-process-suggest-remove-import-lines t
       haskell-process-use-presentation-mode t)
 
-(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+;; (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 
 ;; (load "~/.nix-profile/share/x86_64-osx-ghc-7.8.3/liquidhaskell-0.2.1.0/syntax/flycheck-liquid.el")
-(load "~/.nix-profile/share/x86_64-osx-ghc-7.8.3/liquidhaskell-0.2.1.0/syntax/liquid-tip.el")
-(add-hook 'flycheck-after-syntax-check-hook 
-          (defun my-liquid-tip ()
-            (liquid-tip-update 'flycheck)))
-(bind-key "C-c C-s C-l" 'liquid-tip-show haskell-mode-map)
+;; (load "~/.nix-profile/share/x86_64-osx-ghc-7.8.3/liquidhaskell-0.2.1.0/syntax/liquid-tip.el")
+;; (add-hook 'flycheck-after-syntax-check-hook 
+;;           (defun my-liquid-tip ()
+;;             (liquid-tip-update 'flycheck)))
+;; (bind-key "C-c C-s C-l" 'liquid-tip-show haskell-mode-map)
 
 (flycheck-define-checker haskell-liquid
   "A Haskell refinement type checker using liquidhaskell.
 
 See URL `https://github.com/ucsd-progsys/liquidhaskell'."
   :command
-  ("liquid" (option-flag "--diffcheck" flycheck-liquid-diffcheck) source-inplace)
+  ("liquid" source-inplace)
   ;; ("~/bin/Checker.hs" source-inplace)
   :error-patterns
   (
@@ -586,6 +624,8 @@ See URL `https://github.com/ucsd-progsys/liquidhaskell'."
 ;; (add-hook 'haskell-mode-hook (lambda () (ghc-init)))
 
 ;; (require 'shm)
+;; (require 'shm-case-split)
+;; ;; (require 'shm-reformat)
 ;; ;; (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
 ;; (add-hook 'haskell-mode-hook 'structured-haskell-mode)
 ;; ;; (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
@@ -596,8 +636,11 @@ See URL `https://github.com/ucsd-progsys/liquidhaskell'."
 ;;       shm-lambda-indent-style 'leftmost-parent
 ;;       shm-use-hdevtools nil
 ;;       shm-use-presentation-mode t)
-;; (set-face-background 'shm-current-face "#eee8d5")
-;; (set-face-background 'shm-quarantine-face "lemonchiffon")
+;; (custom-set-faces
+;;  '(shm-quarantine-face ((t (:inherit font-lock-error))))
+;;  '(shm-current-face ((t (:background "#efefef")))))
+;; (bind-key "C-c C-p" 'shm/expand-pattern shm-map)
+;; (bind-key "C-c C-s" 'shm/case-split shm-map)
 
 ;; (let ((map shm-map))
 ;;   (when (require 'shm-case-split nil 'noerror)
@@ -663,9 +706,6 @@ See URL `https://github.com/ucsd-progsys/liquidhaskell'."
 ;;     (kbd "M-h") 'sp-forward-barf-sexp
 ;;     (kbd "M-H") 'sp-backward-slurp-sexp
 ;;     (kbd "M-L") 'sp-backward-barf-sexp))
-
-(add-to-list 'completion-ignored-extensions ".hi")
-(add-to-list 'completion-ignored-extensions ".hdevtools.sock")
 
 
 ;;;; javascript
@@ -755,9 +795,6 @@ See URL `https://github.com/ucsd-progsys/liquidhaskell'."
    nil '(("\\<\\(XXX\\|FIXME\\|TODO\\|NOTE\\|FIX\\|HACK\\|REFACTOR\\)"
           1 font-lock-warning-face t))))
 
-(electric-indent-mode -1)
-(electric-layout-mode -1)
-(electric-pair-mode -1)
 
 ;; show the name of the current function definition in the modeline
 (require 'which-func)
@@ -1019,22 +1056,28 @@ See URL `https://github.com/ucsd-progsys/liquidhaskell'."
 
 
 (require 'gnus)
-(setq gnus-select-method '(nntp "news.gmane.org")
-      gnus-secondary-select-methods '((nnimap "seidel"
-                                              (nnimap-address "localhost")
-                                              (nnimap-server-port 8143)
-                                              (nnimap-user "eric@seidel.io")
-                                              (nnimap-authenticator login)
-                                              (nnimap-stream network)
-                                              )
-                                      (nnimap "galois"
-                                              (nnimap-address "localhost")
-                                              (nnimap-server-port 8143)
-                                              (nnimap-user "eseidel@galois.com")
-                                              (nnimap-authenticator login)
-                                              (nnimap-stream network)
-                                              )
-                                      )
+(setq ;gnus-select-method '(nntp "news.gmane.org")
+      gnus-select-method '(nnimap "seidel"
+                                  (nnimap-address "localhost")
+                                  (nnimap-server-port 8143)
+                                  (nnimap-user "eric@seidel.io")
+                                  (nnimap-authenticator login)
+                                  (nnimap-stream network))
+      ;gnus-secondary-select-methods '((nnimap "seidel"
+      ;                                        (nnimap-address "localhost")
+      ;                                        (nnimap-server-port 8143)
+      ;                                        (nnimap-user "eric@seidel.io")
+      ;                                        (nnimap-authenticator login)
+      ;                                        (nnimap-stream network)
+      ;                                        )
+      ;                                (nnimap "galois"
+      ;                                        (nnimap-address "localhost")
+      ;                                        (nnimap-server-port 8143)
+      ;                                        (nnimap-user "eseidel@galois.com")
+      ;                                        (nnimap-authenticator login)
+      ;                                        (nnimap-stream network)
+      ;                                        )
+      ;                                )
       gnus-asynchronous t
       
       gnus-message-archive-group nil
@@ -1051,17 +1094,21 @@ See URL `https://github.com/ucsd-progsys/liquidhaskell'."
       gnus-agent-directory "~/.cache/gnus/agent/"
 
       gnus-use-cache nil
-      ;; gnus-cache-directory "~/.cache/gnus/"
+      gnus-cache-directory "~/.cache/gnus/"
       ;; gnus-cache-enter-articles '(read unread ticked dormant)
       ;; gnus-cache-remove-articles nil
 
       gnus-read-newsrc-file nil
       gnus-save-newsrc-file nil
-      
+
       gnus-read-active-file 'some
+
+      gnus-article-sort-functions '(gnus-article-sort-by-most-recent-date)
+      gnus-thread-sort-functions '(gnus-thread-sort-by-most-recent-date)
+      gnus-thread-hide-subtree t
 )
-;; (add-to-list 'evil-emacs-state-modes 'gnus-category-mode)
-;; (add-to-list 'evil-emacs-state-modes 'gnus-custom-mode)
+(add-to-list 'evil-emacs-state-modes 'gnus-category-mode)
+(add-to-list 'evil-emacs-state-modes 'gnus-custom-mode)
 ;; http://groups.google.com/group/gnu.emacs.gnus/browse_thread/thread/a673a74356e7141f
 (when window-system
   (setq gnus-sum-thread-tree-indent "  ")
@@ -1107,9 +1154,9 @@ Return a notification id if any, or t on success."
         ((header "to" "eseidel@.*\\.ucsd\\.edu")
          (address "eseidel@cs.ucsd.edu")
          ("X-Message-SMTP-Method" "smtp smtp.gmail.com 587"))
-        ((header "to" "eseidel@galois\\.com")
-         (address "eseidel@galois.com")
-         ("X-Message-SMTP-Method" "smtp relay.galois.com 587"))
+        ;((header "to" "eseidel@galois\\.com")
+        ; (address "eseidel@galois.com")
+        ; ("X-Message-SMTP-Method" "smtp relay.galois.com 587"))
         ))
 ;; (defadvice smtpmail-via-smtp (around set-smtp-server-from-header activate)
 ;;   (let ((smtpmail-smtp-server (or 
@@ -1163,8 +1210,8 @@ Return a notification id if any, or t on success."
 (line-number-mode 1)
 (column-number-mode 1)
 (size-indication-mode 1)
-(setq display-time-format "%a %m-%d %R")
-(display-time-mode 1)
+;; (setq display-time-format "%a %m-%d %R")
+;; (display-time-mode 1)
 (global-hl-line-mode 1)
 
 (xterm-mouse-mode 1)
@@ -1182,6 +1229,9 @@ Return a notification id if any, or t on success."
 
 ;; FIXME: why is this being set to nil?!
 ;; (setq mu4e-mu-binary (executable-find "mu"))
+
+(add-to-list 'load-path "~/Downloads/idris-mode-master")
+(require 'idris-mode)
 
 (message "Emacs is ready to do thy bidding, Master %s!" (getenv "USER"))
 

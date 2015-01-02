@@ -1,8 +1,7 @@
+:set -haddock
 :set +c
 :set +t
 :set prompt "ghci> "
-:def hoogle \x -> return $ ":!hoogle \"" ++ x ++ "\""
-:def doc \x -> return $ ":!hoogle --info \"" ++ x ++ "\""
 :set -package pretty-show
 import Text.Show.Pretty (ppShow)
 :def pprint \x -> return $ "putStrLn $ ppShow $ " ++ x

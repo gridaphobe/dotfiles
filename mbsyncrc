@@ -1,48 +1,51 @@
 CopyArrivalDate yes
-Create Both
+Create Slave
 Expunge Both
-SyncState *
 
-IMAPStore gmail
-Host imap.gmail.com
-User gridaphobe@gmail.com
-PassCmd "/usr/bin/security find-internet-password -s imap.gmail.com -w"
+IMAPStore seidel-remote
+Host mail.messagingengine.com
+User eric@seidel.io
+PassCmd "/usr/bin/security find-internet-password -s mail.messagingengine.com -w"
 UseIMAPS yes
 RequireSSL yes
 CertificateFile ~/.nix-profile/etc/ca-bundle.crt
 
-MaildirStore local
-Path ~/.mail/gmail/
-Inbox ~/.mail/gmail/inbox
+IMAPStore seidel-local
+Host localhost
+Port 8143
+User eric@seidel.io
+Pass password
+UseIMAPS no
+RequireSSL no
 
-Group gmail
-Channel gmail-inbox
-Channel gmail-drafts
-Channel gmail-archive
-Channel gmail-sent
-Channel gmail-spam
-Channel gmail-trash
+Channel seidel-inbox
+Master :seidel-remote:INBOX
+Slave  :seidel-local:inbox
 
-Channel gmail-inbox
-Master :gmail:INBOX
-Slave  :local:inbox
+Channel seidel-archive
+Master :seidel-remote:INBOX/Archive
+Slave  :seidel-local:archive
 
-Channel gmail-drafts
-Master :gmail:"[Gmail]/Drafts"
-Slave  :local:drafts
+Channel seidel-drafts
+Master :seidel-remote:INBOX/Drafts
+Slave  :seidel-local:drafts
 
-Channel gmail-archive
-Master :gmail:"[Gmail]/All Mail"
-Slave  :local:archive
+Channel seidel-junk
+Master :seidel-remote:INBOX/"Junk Mail"
+Slave  :seidel-local:junk
 
-Channel gmail-sent
-Master :gmail:"[Gmail]/Sent Mail"
-Slave  :local:sent
+Channel seidel-sent
+Master :seidel-remote:INBOX/"Sent Items"
+Slave  :seidel-local:sent
 
-Channel gmail-spam
-Master :gmail:"[Gmail]/Spam"
-Slave  :local:spam
+Channel seidel-trash
+Master :seidel-remote:INBOX/Trash
+Slave  :seidel-local:trash
 
-Channel gmail-trash
-Master :gmail:"[Gmail]/Trash"
-Slave  :local:trash
+Channel seidel-other
+Master :seidel-remote:INBOX/
+Slave  :seidel-local:
+Patterns * !INBOX !%Archive !%Chats !%Drafts !%"Junk Mail" !%"Sent Items" !%Trash
+
+Group seidel
+Channels seidel-inbox seidel-archive seidel-drafts seidel-junk seidel-sent seidel-trash seidel-other
