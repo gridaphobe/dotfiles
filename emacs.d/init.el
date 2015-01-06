@@ -255,21 +255,24 @@
 
 ;;;; helm
 (require 'helm-config)
-(helm-mode 1)
-(diminish 'helm-mode)
-;; (add-to-list 'rm-blacklist " Helm")
-(helm-adaptive-mode 1)
+(require 'helm)
 (setq helm-buffers-fuzzy-matching t
       ido-use-virtual-buffers t
       helm-ff-auto-update-initial-value t
       helm-ff-file-name-history-use-recentf t
       helm-ff-skip-boring-files t
       helm-quick-update t                   ; do not display invisible candidates
-      helm-split-window-default-side 'other ; open helm buffer in another window
-      helm-split-window-in-side-p nil         ; open helm buffer inside current window,
-                                            ; don't occupy whole other window
-      helm-always-two-windows nil ; t
+      helm-split-window-default-side 'below
+      helm-split-window-in-side-p t 
+      ;; helm-always-two-windows nil ; t
+      helm-autoresize-max-height 40
+      helm-autoresize-min-height 40
       )
+(helm-mode 1)
+(diminish 'helm-mode)
+;; (add-to-list 'rm-blacklist " Helm")
+(helm-adaptive-mode 1)
+(helm-autoresize-mode 1)
 
 (bind-key "C-x b" 'helm-mini)
 (bind-key "C-c i" 'helm-semantic-or-imenu)

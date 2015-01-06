@@ -2,13 +2,13 @@
 
 melpa.mkDerivation (self: {
   pname   = "helm";
-  version = "20141022";
+  version = "20150105";
 
   src = fetchFromGitHub {
     owner  = "emacs-helm";
     repo   = self.pname;
-    rev    = "c0acb0f7dc5360fea754f06995669a0cd369c100";
-    sha256 = "0rmq08xqyy5qw33cdhv43vjqzkqajhms1cx798iknb61l8nslayw";
+    rev    = "e5608ad86e7ca72446a4b1aa0faf604200ffe895";
+    sha256 = "0n2kr6pyzcsi8pq6faxz2y8kicz1gmvj98fzzlq3a107dqqp25ay";
   };
   
   packageRequires = [ async ];
