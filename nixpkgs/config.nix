@@ -1,6 +1,77 @@
-{
+{ pkgs }: {
   allowBroken = true;
   allowUnfree = true;
+
+  haskellPackageOverrides = self: super: {
+    liquid-fixpoint = self.callPackage ../Source/liquid/fixpoint {
+      inherit (pkgs) ocaml;
+    };
+    liquidhaskell  = self.callPackage ../Source/liquid/haskell {};
+    target         = self.callPackage ../Source/liquid/check {};
+
+    Chart = pkgs.haskell-ng.lib.doJailbreak super.Chart;
+    Chart-diagrams = pkgs.haskell-ng.lib.doJailbreak super.Chart-diagrams;
+    diagrams-postscript = pkgs.haskell-ng.lib.doJailbreak super.diagrams-postscript;
+
+    # ivory           = self.callPackage ../Source/ivory/ivory {};
+    # ivory-artifact   = self.callPackage ../Source/ivory/ivory-artifact {};
+    # ivory-backend-acl2   = self.callPackage ../Source/ivory/ivory-backend-acl2 {};
+    # ivory-backend-c   = self.callPackage ../Source/ivory/ivory-backend-c {};
+    # ivory-eval       = self.callPackage ../Source/ivory/ivory-eval {};
+    # ivory-examples   = self.callPackage ../Source/ivory/ivory-examples {};
+    # ivory-hw         = self.callPackage ../Source/ivory/ivory-hw {};
+    # ivory-model-check = self.callPackage ../Source/ivory/ivory-model-check {};
+    # ivory-opts       = self.callPackage ../Source/ivory/ivory-opts {};
+    # ivory-quickcheck = self.callPackage ../Source/ivory/ivory-quickcheck {};
+    # ivory-serialize  = self.callPackage ../Source/ivory/ivory-serialize {};
+    # ivory-stdlib     = self.callPackage ../Source/ivory/ivory-stdlib {};
+
+    # tower           = self.callPackage ../Source/tower/tower {};
+    # tower-aadl       = self.callPackage ../Source/tower/tower-aadl {};
+    # tower-config     = self.callPackage ../Source/tower/tower-config {};
+    # tower-statemachine = self.callPackage ../Source/tower/tower-statemachine {};
+
+    # ghc-srcspan-plugin = self.callPackage ../Source/ghc-srcspan-plugin {};
+
+
+    ### KILL THE REST
+    # languageCQuote = self.callPackage ./languageCQuote.nix {};
+
+    # attoparsec     = self.disableTest  super.attoparsec;
+    #hdevtools      = self.callPackage /Users/gridaphobe/Source/hdevtools {};
+    # haskell-docs    = self.disableTest (self.callPackage ./haskellDocs.nix {});
+    # enclosedExceptions   = self.disableTest  super.enclosedExceptions;
+    # systemFileio   = self.disableTest  super.systemFileio;
+    # shake          = self.disableTest  super.shake;
+    # lens           = self.disableTest  super.lens;
+    # acl2           = self.callPackage ../Source/acl2 {};
+    # intern         = self.callPackage ./intern.nix {};
+    # dataTextual    = self.callPackage ./dataTextual.nix {};
+    # dataTimeout    = self.callPackage ./dataTimeout.nix {};
+    # textLatin1     = self.callPackage ./textLatin1.nix {};
+    # textPrinter    = self.callPackage ./textPrinter.nix {};
+    # typeHint       = self.callPackage ./typeHint.nix {};
+    # toml           = self.callPackage ./toml.nix {};
+
+    # Chart          = self.callPackage ./Chart.nix {};
+    # ChartDiagrams  = self.callPackage ./ChartDiagrams.nix {};
+    
+    # monad-journal   = self.callPackage ./monad-journal.nix {};
+    # ghc-mod         = self.callPackage ./ghc-mod.nix { 
+    #   inherit (super) makeWrapper;
+    # };
+    # ghci-ng         = self.callPackage ./ghci-ng.nix {
+    #   inherit (super) fetchFromGitHub makeWrapper ncurses;
+    # };
+    # structured-haskell-mode = self.callPackage ./structured-haskell-mode.nix {
+    #   inherit (super) fetchFromGitHub;
+    #   haskellSrcExts = self.haskellSrcExts_1_15_0_1;
+    # };
+
+    #hoogleLocal = self.hoogleLocal.override {
+    #  packages  = super.cabalPackages self;
+    #};
+  };
 
   packageOverrides = pkgs: with pkgs; rec {
 
@@ -20,7 +91,7 @@
         cacert
         coreutils
         curl
-        # cvc4
+        cvc4
         diffutils
         dovecot22
         findutils
@@ -50,169 +121,89 @@
         tmux
         tree
         weechat
-        (wget.override { python3 = null; })
+        wget
         z3
         zsh
       ];
     };
 
-    cvc4 = callPackage ./cvc4.nix {};
+    # cvc4 = callPackage ./cvc4.nix {};
     xapian = callPackage ./xapian.nix {};
     z3 = callPackage ./z3.nix {};
 
-    haskellEnv = pkgs.buildEnv {
-      name = "haskell-env";
-      paths = [
-        ((haskellPackages_ghc784.ghcWithPackages (self: [
-          self.cabal2nix
-          self.cabalInstall
-          self.ghcCore
-          #self.ghcMod
-          self.ghciNg
-          self.hakyll
-          #self.haskellDocs
-          self.hasktags
-          #self.hdevtools
-          self.hlint
-          self.hscolour
-          self.structuredHaskellMode
-          self.stylishHaskell
-          self.pandoc
-          self.pandocCiteproc
-          self.pandocTypes
-          self.shake
-          self.SafeSemaphore
-          
-          self.ad
-          self.dataReify
-          self.lens
-          self.trifecta
-          
-          self.Chart
-          self.ChartDiagrams
-          self.text
-          self.prettyShow
-          self.dataTimeout
-          self.xmlConduit
-          self.toml
+    haskellEnv = (haskellngPackages.ghcWithPackages cabalPackages).overrideDerivation 
+     (drv: { postBuild = ''
+      ${drv.postBuild}
+      $out/bin/ghc-pkg expose ghc
+    '';});
 
-          self.ghcSybUtils
+    cabalPackages = hp: with hp; [
+      cabal2nix
+      cabal-install
+      ghc-core
+      #ghc-mod
+      ## ghci-ng
+      #hakyll
+      #haskell-docs
+      hasktags
+      #hdevtools
+      #hlint
+      hscolour
+      #structured-haskell-mode
+      stylish-haskell
+      pandoc
+      pandoc-citeproc
+      pandoc-types
+      #shake
+      SafeSemaphore
 
-          self.QuickCheck
-          self.smallcheck
-          self.criterion
-          self.tasty
-          self.tastyHunit
-          self.tastyRerun
-          
-          self.liquidFixpoint
-          self.liquidhaskell
-          self.optparseApplicative
-          self.target
-          self.ivory
-          self.ivoryArtifact
-          # self.ivoryBackendAcl2
-          # self.acl2
-          self.ivoryBackendC
-          self.ivoryExamples
-          self.ivoryEval
-          self.ivoryHw
-          self.ivoryModelCheck
-          self.ivoryOpts
-          self.ivoryQuickcheck
-          self.ivorySerialize
-          self.ivoryStdlib
-          self.languageCQuote
-          self.tower
-          self.towerAadl
-          self.towerConfig
-          self.towerStatemachine
-          self.wlPprint
-        ])).override { exposeGHC = true; })
-        haskellPackages_ghc784.hoogleLocal
-      ];
-    };
+      ad
+      data-reify
+      lens
+      trifecta
 
-    haskellProjects = { self, super, callPackage }: {
-      liquidFixpoint = callPackage ../Source/liquid/fixpoint {
-        ocaml  = ocaml;
-      };
-      liquidhaskell  = callPackage ../Source/liquid/haskell {};
-      target         = callPackage ../Source/liquid/check {};
-      simpleSmt      = callPackage ./simpleSmt.nix {};
-      
-      ivory           = callPackage ../Source/ivory/ivory {};
-      ivoryArtifact   = callPackage ../Source/ivory/ivory-artifact {};
-      ivoryBackendAcl2   = callPackage ../Source/ivory/ivory-backend-acl2 {};
-      ivoryBackendC   = callPackage ../Source/ivory/ivory-backend-c {};
-      ivoryEval       = callPackage ../Source/ivory/ivory-eval {};
-      ivoryExamples   = callPackage ../Source/ivory/ivory-examples {};
-      ivoryHw         = callPackage ../Source/ivory/ivory-hw {};
-      ivoryModelCheck = callPackage ../Source/ivory/ivory-model-check {};
-      ivoryOpts       = callPackage ../Source/ivory/ivory-opts {};
-      ivoryQuickcheck = callPackage ../Source/ivory/ivory-quickcheck {};
-      ivorySerialize  = callPackage ../Source/ivory/ivory-serialize {};
-      ivoryStdlib     = callPackage ../Source/ivory/ivory-stdlib {};
+      Chart
+      Chart-diagrams
+      text
+      pretty-show
+      data-timeout
+      xml-conduit
+      toml
 
-      tower           = callPackage ../Source/tower/tower {};
-      towerAadl       = callPackage ../Source/tower/tower-aadl {};
-      towerConfig     = callPackage ../Source/tower/tower-config {};
-      towerStatemachine = callPackage ../Source/tower/tower-statemachine {};
+      ghc-syb-utils
 
-      ghcSrcspanPlugin = callPackage ../Source/ghc-srcspan-plugin {};
+      QuickCheck
+      smallcheck
+      criterion
+      tasty
+      tasty-hunit
+      tasty-rerun
 
-      languageCQuote = callPackage ./languageCQuote.nix {};
+      liquid-fixpoint
+      liquidhaskell
+      optparse-applicative
+      target
+      # ivory
+      # ivory-artifact
+      # ivory-backend-c
+      # ivory-examples
+      # ivory-eval
+      # ivory-hw
+      # ivory-model-check
+      # ivory-opts
+      # ivory-quickcheck
+      # ivory-serialize
+      # ivory-stdlib
+      # language-c-quote
+      # tower
+      # tower-aadl
+      # tower-config
+      # tower-statemachine
+      wl-pprint
+    ];
 
-      attoparsec     = self.disableTest  super.attoparsec;
-      #hdevtools      = callPackage /Users/gridaphobe/Source/hdevtools {};
-      haskellDocs    = self.disableTest (callPackage ./haskellDocs.nix {});
-      enclosedExceptions   = self.disableTest  super.enclosedExceptions;
-      systemFileio   = self.disableTest  super.systemFileio;
-      shake          = self.disableTest  super.shake;
-      lens           = self.disableTest  super.lens;
-      acl2           = callPackage ../Source/acl2 {};
-      intern         = callPackage ./intern.nix {};
-      dataTextual    = callPackage ./dataTextual.nix {};
-      dataTimeout    = callPackage ./dataTimeout.nix {};
-      textLatin1     = callPackage ./textLatin1.nix {};
-      textPrinter    = callPackage ./textPrinter.nix {};
-      typeHint       = callPackage ./typeHint.nix {};
-      toml           = callPackage ./toml.nix {};
+    # hoogleLocal = haskellngPackages.hoogleLocal;
 
-      Chart          = callPackage ./Chart.nix {};
-      ChartDiagrams  = callPackage ./ChartDiagrams.nix {};
-      
-      monadJournal   = callPackage ./monad-journal.nix {};
-      ghcMod         = callPackage ./ghc-mod.nix { makeWrapper = makeWrapper; };
-      ghciNg         = callPackage ./ghci-ng.nix {
-        inherit fetchFromGitHub makeWrapper ncurses;
-      };
-      structuredHaskellMode = callPackage ./structured-haskell-mode.nix {
-        inherit fetchFromGitHub;
-        haskellSrcExts = self.haskellSrcExts_1_15_0_1;
-      };
-
-      hoogleLocal    = super.hoogleLocal.override {
-        packages = with self; ([
-          ghc
-          ivory
-          ivoryModelCheck
-          ivoryOpts
-          liquidFixpoint
-          liquidhaskell
-          target
-          Chart
-          ChartDiagrams
-        ] ++ liquidFixpoint.propagatedNativeBuildInputs
-          ++ liquidhaskell.propagatedNativeBuildInputs
-          ++ target.propagatedNativeBuildInputs
-          ++ ivory.propagatedNativeBuildInputs
-          ++ Chart.propagatedNativeBuildInputs
-          ++ ChartDiagrams.propagatedNativeBuildInputs
-        );
-      };
-    };
-    
     haskellFilterSource = paths: src: builtins.filterSource (path: type:
         let baseName = baseNameOf path; in
         !( type == "unknown"
@@ -226,27 +217,27 @@
       src;
 
 
-    haskellPackages_wrapper = hp: recurseIntoAttrs (hp.override {
-        extension = this: super: haskellProjects {
-          self = this;
-          super = super;
-          callPackage = lib.callPackageWith this;
-        };
-      });
+    # haskellPackages_wrapper = hp: recurseIntoAttrs (hp.override {
+    #     extension = this: super: haskellProjects {
+    #       self = this;
+    #       super = super;
+    #       callPackage = lib.callPackageWith this;
+    #     };
+    #   });
 
-    haskellPackages = haskellPackages_wrapper pkgs.haskellPackages;
-    haskellPackages_ghc784 = haskellPackages_wrapper pkgs.haskellPackages_ghc784;
-    haskellPackages_ghc784_profiling = haskellPackages_wrapper pkgs.haskellPackages_ghc784_profiling;
+    # haskellPackages = haskellPackages_wrapper pkgs.haskellngPackages;
+    # haskellPackages_ghc784 = haskellPackages_wrapper pkgs.haskellPackages_ghc784;
+    # haskellPackages_ghc784_profiling = haskellPackages_wrapper pkgs.haskellPackages_ghc784_profiling;
 
-    # Define own GHC HEAD package pointing to local checkout.
-    packages_ghcHEAD = pkgs.haskell.packages {
-      ghcPath = ../Source/ghc;
-      ghcBinary = pkgs.haskellPackages.ghcPlain;
-      prefFun = pkgs.haskell.ghcHEADPrefs;
-    };
+    # # Define own GHC HEAD package pointing to local checkout.
+    # packages_ghcHEAD = pkgs.haskell.packages {
+    #   ghcPath = ../Source/ghc;
+    #   ghcBinary = pkgs.haskellPackages.ghcPlain;
+    #   prefFun = pkgs.haskell.ghcHEADPrefs;
+    # };
 
-    haskellPackages_ghcHEAD = haskellPackages_wrapper packages_ghcHEAD;
-    haskellPackages_ghcHEAD_profiling = haskellPackages_wrapper packages_ghcHEAD.profiling;
+    # haskellPackages_ghcHEAD = haskellPackages_wrapper packages_ghcHEAD;
+    # haskellPackages_ghcHEAD_profiling = haskellPackages_wrapper packages_ghcHEAD.profiling;
 
 
     vimEnv = pkgs.buildEnv {
@@ -285,6 +276,7 @@
         aspell
         aspellDicts.en
 
+        ace-isearch
         ace-jump-mode
         ag-el
         auctex
@@ -311,7 +303,7 @@
         projectile
         smart-mode-line
         smartparens
-        structured-haskell-mode-el
+        # structured-haskell-mode-el
         switch-window
         undo-tree
         use-package
@@ -326,6 +318,7 @@
     emacs                      = pkgs.emacs24Macport;
     melpa                      = callPackage ./emacs/melpa.nix {};
 
+    ace-isearch                = callPackage ./emacs/ace-isearch.nix {};
     ace-jump-mode              = callPackage ./emacs/ace-jump-mode.nix {};
     ag-el                      = callPackage ./emacs/ag.nix {};
     async                      = callPackage ./emacs/async.nix {};
@@ -361,6 +354,7 @@
     goto-chg                   = callPackage ./emacs/goto-chg.nix {};
     haskell-mode               = callPackage ./emacs/haskell-mode.nix {};
     helm                       = callPackage ./emacs/helm.nix {};
+    helm-swoop                 = callPackage ./emacs/helm-swoop.nix {};
     idris-mode                 = callPackage ./emacs/idris-mode.nix {};
     magit                      = callPackage ./emacs/magit.nix {};
     markdown-mode              = callPackage ./emacs/markdown-mode.nix {};
@@ -373,9 +367,9 @@
     s-el                       = callPackage ./emacs/s-el.nix {};
     smart-mode-line            = callPackage ./emacs/smart-mode-line.nix {};
     smartparens                = callPackage ./emacs/smartparens.nix {};
-    structured-haskell-mode-el = callPackage ./emacs/structured-haskell-mode.nix {
-      structuredHaskellMode    = haskellPackages.structuredHaskellMode;
-    };
+    # structured-haskell-mode-el = callPackage ./emacs/structured-haskell-mode.nix {
+    #   structuredHaskellMode    = haskellngPackages.structuredHaskellMode;
+    # };
     switch-window              = callPackage ./emacs/switch-window.nix {};
     undo-tree                  = callPackage ./emacs/undo-tree.nix {};
     use-package                = callPackage ./emacs/use-package.nix {};
