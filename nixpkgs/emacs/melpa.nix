@@ -58,8 +58,6 @@ in
 
             setupHook = ./melpa-setup.sh;
 
-            melpa2nixArchiveFile = ".melpa2nix-archive";
-
             fileSpecs = [ "*.el" "*.el.in" "dir"
                           "*.info" "*.texi" "*.texinfo"
                           "doc/dir" "doc/*.info" "doc/*.texi" "doc/*.texinfo"
@@ -85,6 +83,7 @@ in
 
               emacs --batch -Q -l ${./package-build.el} -l ${./melpa2nix.el} \
                 -f melpa2nix-install-package \
+                ${self.pname}-${self.version}.* \
                 $out/share/emacs/site-lisp/elpa
 
               eval "$postInstall"

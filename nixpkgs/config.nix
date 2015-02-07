@@ -9,9 +9,14 @@
     liquidhaskell  = self.callPackage ../Source/liquid/haskell {};
     target         = self.callPackage ../Source/liquid/check {};
 
+    ghci-ng        = self.callPackage ../Source/ghci-ng {
+    };
+
     Chart = pkgs.haskell-ng.lib.doJailbreak super.Chart;
     Chart-diagrams = pkgs.haskell-ng.lib.doJailbreak super.Chart-diagrams;
     diagrams-postscript = pkgs.haskell-ng.lib.doJailbreak super.diagrams-postscript;
+    
+    shake = pkgs.haskell-ng.lib.dontCheck super.shake;
 
     # ivory           = self.callPackage ../Source/ivory/ivory {};
     # ivory-artifact   = self.callPackage ../Source/ivory/ivory-artifact {};
@@ -33,41 +38,6 @@
 
     # ghc-srcspan-plugin = self.callPackage ../Source/ghc-srcspan-plugin {};
 
-
-    ### KILL THE REST
-    # languageCQuote = self.callPackage ./languageCQuote.nix {};
-
-    # attoparsec     = self.disableTest  super.attoparsec;
-    #hdevtools      = self.callPackage /Users/gridaphobe/Source/hdevtools {};
-    # haskell-docs    = self.disableTest (self.callPackage ./haskellDocs.nix {});
-    # enclosedExceptions   = self.disableTest  super.enclosedExceptions;
-    # systemFileio   = self.disableTest  super.systemFileio;
-    # shake          = self.disableTest  super.shake;
-    # lens           = self.disableTest  super.lens;
-    # acl2           = self.callPackage ../Source/acl2 {};
-    # intern         = self.callPackage ./intern.nix {};
-    # dataTextual    = self.callPackage ./dataTextual.nix {};
-    # dataTimeout    = self.callPackage ./dataTimeout.nix {};
-    # textLatin1     = self.callPackage ./textLatin1.nix {};
-    # textPrinter    = self.callPackage ./textPrinter.nix {};
-    # typeHint       = self.callPackage ./typeHint.nix {};
-    # toml           = self.callPackage ./toml.nix {};
-
-    # Chart          = self.callPackage ./Chart.nix {};
-    # ChartDiagrams  = self.callPackage ./ChartDiagrams.nix {};
-    
-    # monad-journal   = self.callPackage ./monad-journal.nix {};
-    # ghc-mod         = self.callPackage ./ghc-mod.nix { 
-    #   inherit (super) makeWrapper;
-    # };
-    # ghci-ng         = self.callPackage ./ghci-ng.nix {
-    #   inherit (super) fetchFromGitHub makeWrapper ncurses;
-    # };
-    # structured-haskell-mode = self.callPackage ./structured-haskell-mode.nix {
-    #   inherit (super) fetchFromGitHub;
-    #   haskellSrcExts = self.haskellSrcExts_1_15_0_1;
-    # };
-
     #hoogleLocal = self.hoogleLocal.override {
     #  packages  = super.cabalPackages self;
     #};
@@ -88,7 +58,7 @@
         autoconf
         automake
         bashInteractive
-        cacert
+        #cacert
         coreutils
         curl
         cvc4
@@ -113,14 +83,14 @@
         patchutils
         pkgconfig
         rlwrap
-        rubyLibs.terminal_notifier
-        sbcl
+        # rubyPackages.terminal-notifier
+        # sbcl
         silver-searcher
         sloccount
         subversion
         tmux
         tree
-        weechat
+        #weechat
         wget
         z3
         zsh
@@ -128,8 +98,8 @@
     };
 
     # cvc4 = callPackage ./cvc4.nix {};
-    xapian = callPackage ./xapian.nix {};
-    z3 = callPackage ./z3.nix {};
+    # xapian = callPackage ./xapian.nix {};
+    # z3 = callPackage ./z3.nix {};
 
     haskellEnv = (haskellngPackages.ghcWithPackages cabalPackages).overrideDerivation 
      (drv: { postBuild = ''
@@ -141,20 +111,20 @@
       cabal2nix
       cabal-install
       ghc-core
-      #ghc-mod
-      ## ghci-ng
-      #hakyll
-      #haskell-docs
+      ghc-mod
+      ghci-ng
+      # hakyll
+      haskell-docs
       hasktags
       #hdevtools
       #hlint
       hscolour
-      #structured-haskell-mode
+      structured-haskell-mode
       stylish-haskell
       pandoc
       pandoc-citeproc
       pandoc-types
-      #shake
+      shake
       SafeSemaphore
 
       ad
@@ -162,6 +132,12 @@
       lens
       trifecta
 
+      cartel
+      doctest
+      hackage-db
+      hspec
+      prettyclass
+      regex-posix
       Chart
       Chart-diagrams
       text
@@ -183,6 +159,9 @@
       liquidhaskell
       optparse-applicative
       target
+
+      OpenGL
+      #GLFW
       # ivory
       # ivory-artifact
       # ivory-backend-c
@@ -309,6 +288,7 @@
         use-package
         volatile-highlights
         weechat-el
+        wgrep
       ];
     };
 
@@ -375,5 +355,6 @@
     use-package                = callPackage ./emacs/use-package.nix {};
     volatile-highlights        = callPackage ./emacs/volatile-highlights.nix {};
     weechat-el                 = callPackage ./emacs/weechat-el.nix {};
+    wgrep                      = callPackage ./emacs/wgrep.nix {};
   };
 }

@@ -9,7 +9,7 @@ melpa.mkDerivation (self: {
     sha256 = "07bhw8zc3d1f2basjy80njmxpsp4f70kg3ynkch9ghlai3mm2b7n";
   };
   
-  buildPhase   = ''
-    echo "\"$src\"" > $melpa2nixArchiveFile
+  buildPhase = ''
+    cp $src .
   '';
 })

@@ -10,6 +10,6 @@ melpa.mkDerivation (self: {
   };
   
   buildPhase = ''
-    echo "\"$src\"" > $melpa2nixArchiveFile
+    cp $src .
   '';
 })

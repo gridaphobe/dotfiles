@@ -5,6 +5,11 @@
 
 ;;; Code:
 
+(defmacro csetq (variable value)
+  `(funcall (or (get ',variable 'custom-set)
+                'set-default)
+            ',variable ,value))
+
 (defconst on-mac (eq system-type 'darwin)
   "Are we on a Mac?")
 (defconst is-netmacs (string= invocation-name "Netmacs")
@@ -58,9 +63,9 @@
 
   (set-fontset-font "fontset-default"
                     'unicode
-                    '("Source Code Pro" . "iso10646-1"))
+                    '("Input Mono Narrow" . "iso10646-1"))
   (set-face-attribute 'default nil
-                      :family "Source Code Pro"
+                      :family "Input Mono Narrow"
                       :height 120)
 
   (require 'exec-path-from-shell)
@@ -224,10 +229,14 @@
 (setq-default save-place t)
 (require 'saveplace)
 
+;; ediff defaults
+(csetq ediff-window-setup-function 'ediff-setup-windows-plain)
+(csetq ediff-split-window-function 'split-window-horizontally)
+(csetq ediff-diff-options "-w")
 
 ;;;; subword-mode
-;; (global-subword-mode 1)
-;; (diminish 'subword-mode)
+(global-subword-mode 1)
+(diminish 'subword-mode)
 
 ;;;; smartparens
 (require 'smartparens-config)
@@ -241,21 +250,24 @@
 (setq-default sp-autoskip-closing-pair 'always)
 (setq sp-hybrid-kill-entire-symbol nil)
 ;; (show-smartparens-global-mode 1)
-;; (add-hook 'prog-mode-hook 'turn-on-smartparens-strict-mode)
+(add-hook 'prog-mode-hook 'turn-on-smartparens-strict-mode)
 ;; (add-hook 'prog-mode-hook 'turn-on-show-smartparens-mode)
-(smartparens-global-strict-mode 1)
+;; (smartparens-global-strict-mode 1)
 ;; (add-to-list 'rm-blacklist " SP/s")
 
 ;;;; rainbow-mode
 (use-package rainbow-mode
-             :diminish "")
+  :diminish "")
 
 ;;;; ace-jump-mode
-(use-package ace-jump-mode)
+(use-package ace-jump-mode
+  :bind ("M-j" . ace-jump-char-mode))
 
 ;;;; helm
 (require 'helm-config)
 (require 'helm)
+(require 'helm-files)
+(require 'ido)
 (setq helm-buffers-fuzzy-matching t
       ido-use-virtual-buffers t
       helm-ff-auto-update-initial-value t
@@ -284,6 +296,16 @@
 (bind-key "n"        'helm-grep-mode-jump-other-window-forward  helm-grep-mode-map)
 (bind-key "p"        'helm-grep-mode-jump-other-window-backward helm-grep-mode-map)
 
+(use-package helm-swoop
+  :init (setq helm-multi-swoop-edit-save t))
+(bind-key "M-i" 'helm-swoop-from-isearch isearch-mode-map)
+(bind-key "M-i" 'helm-multi-swoop-all-from-helm-swoop helm-swoop-map)
+
+;;;; ace-isearch
+;; (use-package ace-isearch
+;;   :diminish ""
+;;   :init (progn (global-ace-isearch-mode +1)
+;;                (setq ace-isearch-input-idle-delay 0.2)))
 
 ;;;; projectile
 (require 'projectile)
@@ -291,23 +313,24 @@
 (diminish 'projectile-mode)
 ;; (add-to-list 'rm-blacklist " Projectile\\*")
 (setq projectile-remember-window-configs t
-      projectile-completion-system 'helm)
+      projectile-completion-system 'helm
+      projectile-enable-caching t)
 (require 'helm-projectile)
 (helm-projectile-on)
-(setq projectile-switch-project-action 'helm-projectile)
-(setq projectile-enable-caching t)
+;; (setq projectile-switch-project-action 'helm-projectile)
 
 
 ;;;; auto complete
-(require 'company)
-(global-company-mode)
-(diminish 'company-mode)
+;; (require 'company)
+;; (global-company-mode)
+;; (diminish 'company-mode)
 ;; (add-to-list 'rm-blacklist " company")
 
 ;;;; compile
 (require 'compile)
 (setq compilation-scroll-output 'first-error
       compilation-window-height 10)
+
 
 (defun bury-compile-buffer-if-successful (buffer string)
   "Bury a compilation buffer if succeeded without warnings."
@@ -331,7 +354,7 @@
 
 ;;;; discover-my-major
 (use-package discover-my-major
-  :init (define-key 'help-command (kbd "C-m") 'discover-my-major))
+  :init (bind-key "M-m" 'discover-my-major help-map))
 
 
 ;;;; edit-server
@@ -559,7 +582,8 @@
 (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
 
 (setq haskell-process-type 'ghci ;;'cabal-repl
-      haskell-process-path-ghci "ghci-ng"
+      ;; haskell-process-path-ghci "ghci-ng"
+      haskell-process-path-ghci "ghci"
       haskell-process-args-cabal-repl '(;"--with-ghc=ghci-ng" 
                                         "--ghc-option=-ferror-spans")
       haskell-process-log t
@@ -570,6 +594,8 @@
       haskell-process-suggest-hoogle-imports t
       haskell-process-suggest-remove-import-lines t
       haskell-process-use-presentation-mode t)
+
+;; (customize-set-variable 'haskell-process-type 'cabal-repl)
 
 ;; (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
@@ -787,6 +813,41 @@ See URL `https://github.com/ucsd-progsys/liquidhaskell'."
 ;; Sometimes I change tasks I'm clocking quickly - this removes clocked tasks with 0:00 duration
 (setq org-clock-out-remove-zero-time-clocks t)
 
+(require 'ox-latex)
+(setq org-latex-pdf-process '("latexmk -pdf %f"))
+(add-to-list 'org-latex-classes
+      '("sigplanconf"
+         "\\documentclass{sigplanconf}\n[PACKAGES]\n[EXTRA]"
+         ("\\section{%s}" . "\\section*{%s}")
+         ("\\subsection{%s}" . "\\subsection*{%s}")
+         ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+         ("\\paragraph{%s}" . "\\paragraph*{%s}")
+         ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+(require 'ox-bibtex)
+(org-add-link-type 
+ "cite" 'ebib
+ (lambda (path desc format)
+   (cond
+    ((eq format 'html)
+     (format "(<cite>%s</cite>)" path))
+    ((eq format 'latex)
+     (if (or (not desc) (equal 0 (search "cite:" desc)))
+         (format "\\cite{%s}" path)
+       (format "\\cite[%s][%s]{%s}"
+               (cadr (split-string desc ";"))
+               (car (split-string desc ";"))  path))))))
+(setq org-latex-listings nil)
+;; (add-to-list 'org-latex-packages-alist '("" "listings"))
+;; (add-to-list 'org-latex-packages-alist '("" "color"))
+;; (add-to-list 'org-latex-packages-alist '("" "minted"))
+;;; Nicolas Goaziou, http://article.gmane.org/gmane.emacs.orgmode/67692
+(defun org-latex-ignore-heading-filter-headline (headline backend info)
+  "Strip headline from HEADLINE. Ignore BACKEND and INFO."
+  (when (and (org-export-derived-backend-p backend 'latex)
+             (string-match "\\`.*ignoreheading.*\n" headline))
+    (replace-match "" nil nil headline)))
+(add-to-list 'org-export-filter-headline-functions
+             'org-latex-ignore-heading-filter-headline)
 
 ;;;; prog-mode
 ;; (defun my/local-comment-auto-fill ()
@@ -1096,8 +1157,8 @@ See URL `https://github.com/ucsd-progsys/liquidhaskell'."
       gnus-agent t
       gnus-agent-directory "~/.cache/gnus/agent/"
 
-      gnus-use-cache nil
-      gnus-cache-directory "~/.cache/gnus/"
+      ;; gnus-use-cache nil
+      ;; gnus-cache-directory "~/.cache/gnus/"
       ;; gnus-cache-enter-articles '(read unread ticked dormant)
       ;; gnus-cache-remove-articles nil
 
@@ -1154,7 +1215,7 @@ Return a notification id if any, or t on success."
         ((header "to" "gridaphobe@gmail\\.com")
          (address "gridaphobe@gmail.com")
          ("X-Message-SMTP-Method" "smtp smtp.gmail.com 587"))
-        ((header "to" "eseidel@.*\\.ucsd\\.edu")
+        ((header "to" "@.*\\.ucsd\\.edu")
          (address "eseidel@cs.ucsd.edu")
          ("X-Message-SMTP-Method" "smtp smtp.gmail.com 587"))
         ;((header "to" "eseidel@galois\\.com")
