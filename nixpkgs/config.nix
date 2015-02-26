@@ -2,21 +2,22 @@
   allowBroken = true;
   allowUnfree = true;
 
-  haskellPackageOverrides = self: super: {
-    liquid-fixpoint = self.callPackage ../Source/liquid/fixpoint {
+  haskellPackageOverrides = with pkgs.haskell-ng.lib; self: super: {
+    liquid-fixpoint = dontCheck (self.callPackage ../Source/liquid/fixpoint {
       inherit (pkgs) ocaml;
-    };
+    });
     liquidhaskell  = self.callPackage ../Source/liquid/haskell {};
     target         = self.callPackage ../Source/liquid/check {};
 
     ghci-ng        = self.callPackage ../Source/ghci-ng {
     };
 
-    Chart = pkgs.haskell-ng.lib.doJailbreak super.Chart;
-    Chart-diagrams = pkgs.haskell-ng.lib.doJailbreak super.Chart-diagrams;
-    diagrams-postscript = pkgs.haskell-ng.lib.doJailbreak super.diagrams-postscript;
-    
-    shake = pkgs.haskell-ng.lib.dontCheck super.shake;
+    Chart = doJailbreak super.Chart;
+    Chart-diagrams = doJailbreak super.Chart-diagrams;
+    diagrams-postscript = doJailbreak super.diagrams-postscript;
+
+    enclosed-exceptions = dontCheck super.enclosed-exceptions;
+    shake = dontCheck super.shake;
 
     # ivory           = self.callPackage ../Source/ivory/ivory {};
     # ivory-artifact   = self.callPackage ../Source/ivory/ivory-artifact {};
@@ -111,7 +112,7 @@
       cabal2nix
       cabal-install
       ghc-core
-      ghc-mod
+      # ghc-mod
       ghci-ng
       # hakyll
       haskell-docs
@@ -119,20 +120,22 @@
       #hdevtools
       #hlint
       hscolour
-      structured-haskell-mode
+      # structured-haskell-mode
       stylish-haskell
       pandoc
       pandoc-citeproc
       pandoc-types
       shake
       SafeSemaphore
+      scotty
 
       ad
       data-reify
       lens
       trifecta
+      binary-bits
 
-      cartel
+      #cartel
       doctest
       hackage-db
       hspec
@@ -153,6 +156,7 @@
       criterion
       tasty
       tasty-hunit
+      tasty-quickcheck
       tasty-rerun
 
       liquid-fixpoint
@@ -249,19 +253,20 @@
 
     emacsEnv = pkgs.buildEnv {
       name = "emacs-env";
-      paths = [
+      paths = with emacsMelpa; [
         emacs
 
         aspell
         aspellDicts.en
 
-        ace-isearch
+        ac-haskell-process
         ace-jump-mode
-        ag-el
+        ag
         auctex
+        auto-complete
         change-inner
         circe
-        company-mode
+        company
         evil
         evil-god-state
         evil-surround
@@ -269,25 +274,23 @@
         expand-region
         flycheck
         flycheck-pos-tip
-        # ghc-mod-el
         gnus
         god-mode
         haskell-mode
         helm
+        helm-swoop
+        hi2
         idris-mode
         magit
         markdown-mode
         org-plus-contrib
-        pkg-info-el
         projectile
         smart-mode-line
         smartparens
-        # structured-haskell-mode-el
         switch-window
         undo-tree
         use-package
         volatile-highlights
-        weechat-el
         wgrep
       ];
     };
@@ -296,65 +299,65 @@
     notmuch = pkgs.notmuch.override { talloc = (talloc.override { libcap = null; }); };
 
     emacs                      = pkgs.emacs24Macport;
-    melpa                      = callPackage ./emacs/melpa.nix {};
+  #   melpa                      = callPackage ./emacs/melpa.nix {};
 
-    ace-isearch                = callPackage ./emacs/ace-isearch.nix {};
-    ace-jump-mode              = callPackage ./emacs/ace-jump-mode.nix {};
-    ag-el                      = callPackage ./emacs/ag.nix {};
-    async                      = callPackage ./emacs/async.nix {};
-    auctex                     = callPackage ./emacs/auctex.nix {};
-    bind-key                   = callPackage ./emacs/bind-key.nix {};
-    change-inner               = callPackage ./emacs/change-inner.nix {};
-    circe                      = callPackage ./emacs/circe.nix {};
-    lcs                        = callPackage ./emacs/lcs.nix {};
-    lui                        = callPackage ./emacs/lui.nix {};
-    shorten                    = callPackage ./emacs/shorten.nix {};
-    tracking                   = callPackage ./emacs/tracking.nix {};
-    company-mode               = callPackage ./emacs/company-mode.nix {};
-    dash-el                    = callPackage ./emacs/dash.nix {};
-    diminish                   = callPackage ./emacs/diminish.nix {};
-    evil                       = callPackage ./emacs/evil.nix {};
-    evil-god-state             = callPackage ./emacs/evil-god-state.nix {};
-    evil-surround              = callPackage ./emacs/evil-surround.nix {};
-    flycheck                   = callPackage ./emacs/flycheck.nix {};
-    flycheck-pos-tip           = callPackage ./emacs/flycheck-pos-tip.nix {};
-    epl                        = callPackage ./emacs/epl.nix {};
-    exec-path-from-shell       = callPackage ./emacs/exec-path-from-shell.nix {};
-    expand-region              = callPackage ./emacs/expand-region.nix {};
-    ghc-mod-el                 = callPackage ./emacs/ghc-mod.nix { 
-      ghcMod                   = haskellPackages.ghcMod; 
-    };
-    git-commit-mode            = callPackage ./emacs/git-commit-mode.nix {};
-    git-rebase-mode            = callPackage ./emacs/git-rebase-mode.nix {};
-    gitattributes-mode         = callPackage ./emacs/gitattributes-mode.nix {};
-    gitconfig-mode             = callPackage ./emacs/gitconfig-mode.nix {};
-    gitignore-mode             = callPackage ./emacs/gitignore-mode.nix {};
-    gnus                       = callPackage ./emacs/gnus.nix {};
-    god-mode                   = callPackage ./emacs/god-mode.nix {};
-    goto-chg                   = callPackage ./emacs/goto-chg.nix {};
-    haskell-mode               = callPackage ./emacs/haskell-mode.nix {};
-    helm                       = callPackage ./emacs/helm.nix {};
-    helm-swoop                 = callPackage ./emacs/helm-swoop.nix {};
-    idris-mode                 = callPackage ./emacs/idris-mode.nix {};
-    magit                      = callPackage ./emacs/magit.nix {};
-    markdown-mode              = callPackage ./emacs/markdown-mode.nix {};
-    # mu4eMaildirsExtension    = callPackage ./emacs/mu4e-maildirs-extension.nix { mu = mu; };
-    rich-minority              = callPackage ./emacs/rich-minority.nix {};
-    org-plus-contrib           = callPackage ./emacs/org-plus-contrib.nix {};
-    popup-el                   = callPackage ./emacs/popup.nix {};
-    projectile                 = callPackage ./emacs/projectile.nix {};
-    pkg-info-el                = callPackage ./emacs/pkg-info.nix {};
-    s-el                       = callPackage ./emacs/s-el.nix {};
-    smart-mode-line            = callPackage ./emacs/smart-mode-line.nix {};
-    smartparens                = callPackage ./emacs/smartparens.nix {};
-    # structured-haskell-mode-el = callPackage ./emacs/structured-haskell-mode.nix {
-    #   structuredHaskellMode    = haskellngPackages.structuredHaskellMode;
-    # };
-    switch-window              = callPackage ./emacs/switch-window.nix {};
-    undo-tree                  = callPackage ./emacs/undo-tree.nix {};
-    use-package                = callPackage ./emacs/use-package.nix {};
-    volatile-highlights        = callPackage ./emacs/volatile-highlights.nix {};
-    weechat-el                 = callPackage ./emacs/weechat-el.nix {};
-    wgrep                      = callPackage ./emacs/wgrep.nix {};
+  #   ace-isearch                = callPackage ./emacs/ace-isearch.nix {};
+  #   ace-jump-mode              = callPackage ./emacs/ace-jump-mode.nix {};
+  #   ag-el                      = callPackage ./emacs/ag.nix {};
+  #   async                      = callPackage ./emacs/async.nix {};
+  #   auctex                     = callPackage ./emacs/auctex.nix {};
+  #   bind-key                   = callPackage ./emacs/bind-key.nix {};
+  #   change-inner               = callPackage ./emacs/change-inner.nix {};
+  #   circe                      = callPackage ./emacs/circe.nix {};
+  #   lcs                        = callPackage ./emacs/lcs.nix {};
+  #   lui                        = callPackage ./emacs/lui.nix {};
+  #   shorten                    = callPackage ./emacs/shorten.nix {};
+  #   tracking                   = callPackage ./emacs/tracking.nix {};
+  #   company-mode               = callPackage ./emacs/company-mode.nix {};
+  #   dash-el                    = callPackage ./emacs/dash.nix {};
+  #   diminish                   = callPackage ./emacs/diminish.nix {};
+  #   evil                       = callPackage ./emacs/evil.nix {};
+  #   evil-god-state             = callPackage ./emacs/evil-god-state.nix {};
+  #   evil-surround              = callPackage ./emacs/evil-surround.nix {};
+  #   flycheck                   = callPackage ./emacs/flycheck.nix {};
+  #   flycheck-pos-tip           = callPackage ./emacs/flycheck-pos-tip.nix {};
+  #   epl                        = callPackage ./emacs/epl.nix {};
+  #   exec-path-from-shell       = callPackage ./emacs/exec-path-from-shell.nix {};
+  #   expand-region              = callPackage ./emacs/expand-region.nix {};
+  #   ghc-mod-el                 = callPackage ./emacs/ghc-mod.nix { 
+  #     ghcMod                   = haskellPackages.ghcMod; 
+  #   };
+  #   git-commit-mode            = callPackage ./emacs/git-commit-mode.nix {};
+  #   git-rebase-mode            = callPackage ./emacs/git-rebase-mode.nix {};
+  #   gitattributes-mode         = callPackage ./emacs/gitattributes-mode.nix {};
+  #   gitconfig-mode             = callPackage ./emacs/gitconfig-mode.nix {};
+  #   gitignore-mode             = callPackage ./emacs/gitignore-mode.nix {};
+  #   gnus                       = callPackage ./emacs/gnus.nix {};
+  #   god-mode                   = callPackage ./emacs/god-mode.nix {};
+  #   goto-chg                   = callPackage ./emacs/goto-chg.nix {};
+  #   haskell-mode               = callPackage ./emacs/haskell-mode.nix {};
+  #   helm                       = callPackage ./emacs/helm.nix {};
+  #   helm-swoop                 = callPackage ./emacs/helm-swoop.nix {};
+  #   idris-mode                 = callPackage ./emacs/idris-mode.nix {};
+  #   magit                      = callPackage ./emacs/magit.nix {};
+  #   markdown-mode              = callPackage ./emacs/markdown-mode.nix {};
+  #   # mu4eMaildirsExtension    = callPackage ./emacs/mu4e-maildirs-extension.nix { mu = mu; };
+  #   rich-minority              = callPackage ./emacs/rich-minority.nix {};
+  #   org-plus-contrib           = callPackage ./emacs/org-plus-contrib.nix {};
+  #   popup-el                   = callPackage ./emacs/popup.nix {};
+  #   projectile                 = callPackage ./emacs/projectile.nix {};
+  #   pkg-info-el                = callPackage ./emacs/pkg-info.nix {};
+  #   s-el                       = callPackage ./emacs/s-el.nix {};
+  #   smart-mode-line            = callPackage ./emacs/smart-mode-line.nix {};
+  #   smartparens                = callPackage ./emacs/smartparens.nix {};
+  #   # structured-haskell-mode-el = callPackage ./emacs/structured-haskell-mode.nix {
+  #   #   structuredHaskellMode    = haskellngPackages.structuredHaskellMode;
+  #   # };
+  #   switch-window              = callPackage ./emacs/switch-window.nix {};
+  #   undo-tree                  = callPackage ./emacs/undo-tree.nix {};
+  #   use-package                = callPackage ./emacs/use-package.nix {};
+  #   volatile-highlights        = callPackage ./emacs/volatile-highlights.nix {};
+  #   weechat-el                 = callPackage ./emacs/weechat-el.nix {};
+  #   wgrep                      = callPackage ./emacs/wgrep.nix {};
   };
 }

@@ -45,7 +45,7 @@ Slave  :seidel-local:trash
 Channel seidel-other
 Master :seidel-remote:INBOX/
 Slave  :seidel-local:
-Patterns * !INBOX !%Archive !%Chats !%Drafts !%"Junk Mail" !%"Sent Items" !%Trash
+Patterns * !%Archive !%Chats !%Drafts !%"Junk Mail" !%"Sent Items" !%Trash !%Notes
 
 Group seidel
 Channels seidel-inbox seidel-archive seidel-drafts seidel-junk seidel-sent seidel-trash seidel-other

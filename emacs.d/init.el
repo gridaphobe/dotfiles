@@ -206,6 +206,8 @@
              "^#\w+")
 (add-to-list 'clean-buffer-list-kill-never-buffer-names
              "192.241.212.224:5000")
+(add-to-list 'clean-buffer-list-kill-never-buffer-names
+             "seidel.io:5000")
 
 ;; saner regex syntax
 (require 're-builder)
@@ -234,6 +236,29 @@
 (csetq ediff-split-window-function 'split-window-horizontally)
 (csetq ediff-diff-options "-w")
 
+
+;;;; Rectangle-aware commands
+(eval-when-compile (require 'rect))
+(defun my/kill-region (beg end &optional region)
+  "Kill text between BEG and END.
+
+Use `kill-rectangle' if `rectangle-mark-mode' is set."
+  (interactive (list (mark) (point) 'region))
+  (if rectangle-mark-mode
+      (kill-rectangle beg end)
+    (kill-region beg end region)))
+(bind-key "C-w" 'my/kill-region)
+
+(defun my/copy-region (beg end &optional region)
+  "Copy text between BEG and END.
+
+Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
+  (interactive (list (mark) (point) 'region))
+  (if rectangle-mark-mode
+      (copy-rectangle-as-kill beg end)
+    (kill-ring-save beg end region)))
+(bind-key "M-w" 'my/copy-region)
+
 ;;;; subword-mode
 (global-subword-mode 1)
 (diminish 'subword-mode)
@@ -249,8 +274,10 @@
 
 (setq-default sp-autoskip-closing-pair 'always)
 (setq sp-hybrid-kill-entire-symbol nil)
+(electric-pair-mode)
+
 ;; (show-smartparens-global-mode 1)
-(add-hook 'prog-mode-hook 'turn-on-smartparens-strict-mode)
+;; (add-hook 'prog-mode-hook 'turn-on-smartparens-mode)
 ;; (add-hook 'prog-mode-hook 'turn-on-show-smartparens-mode)
 ;; (smartparens-global-strict-mode 1)
 ;; (add-to-list 'rm-blacklist " SP/s")
@@ -321,6 +348,11 @@
 
 
 ;;;; auto complete
+(require 'auto-complete)
+(ac-config-default)
+(setq ac-auto-start nil)
+(diminish 'auto-complete-mode)
+(ac-set-trigger-key "TAB")
 ;; (require 'company)
 ;; (global-company-mode)
 ;; (diminish 'company-mode)
@@ -406,78 +438,78 @@
 
 
 ;;;; evil
-(require 'evil)
-(evil-mode 1)
-;; prevent esc-key from translating to meta-key in terminal mode
-(setq evil-esc-delay 0)
-(setq evil-search-module 'evil-search
-      evil-cross-lines t
-      evil-move-cursor-back nil)
-(add-to-list 'evil-emacs-state-modes 'special-mode)
-(evil-ex-define-cmd "e[dit]" 'helm-find-files)
-(evil-ex-define-cmd "b[uffer]" 'helm-buffers-list)
-(bind-key "[escape]" 'keyboard-escape-quit evil-normal-state-map)
-(bind-key "[escape]" 'keyboard-escape-quit evil-visual-state-map)
-(bind-key "<escape>" 'keyboard-escape-quit)
-(bind-key "\"" 'ace-jump-mode evil-normal-state-map)
+;; (require 'evil)
+;; (evil-mode 1)
+;; ;; prevent esc-key from translating to meta-key in terminal mode
+;; (setq evil-esc-delay 0)
+;; (setq evil-search-module 'evil-search
+;;       evil-cross-lines t
+;;       evil-move-cursor-back nil)
+;; (add-to-list 'evil-emacs-state-modes 'special-mode)
+;; (evil-ex-define-cmd "e[dit]" 'helm-find-files)
+;; (evil-ex-define-cmd "b[uffer]" 'helm-buffers-list)
+;; (bind-key "[escape]" 'keyboard-escape-quit evil-normal-state-map)
+;; (bind-key "[escape]" 'keyboard-escape-quit evil-visual-state-map)
+;; (bind-key "<escape>" 'keyboard-escape-quit)
+;; (bind-key "\"" 'ace-jump-mode evil-normal-state-map)
 
-;; Make movement keys work like they should
-(bind-key "<remap> <evil-next-line>"     
-          'evil-next-visual-line     
-          evil-normal-state-map)
-(bind-key "<remap> <evil-previous-line>" 
-          'evil-previous-visual-line 
-          evil-normal-state-map)
-(bind-key "<remap> <evil-next-line>"     
-          'evil-next-visual-line     
-          evil-motion-state-map)
-(bind-key "<remap> <evil-previous-line>" 
-          'evil-previous-visual-line 
-          evil-motion-state-map)
+;; ;; Make movement keys work like they should
+;; (bind-key "<remap> <evil-next-line>"     
+;;           'evil-next-visual-line     
+;;           evil-normal-state-map)
+;; (bind-key "<remap> <evil-previous-line>" 
+;;           'evil-previous-visual-line 
+;;           evil-normal-state-map)
+;; (bind-key "<remap> <evil-next-line>"     
+;;           'evil-next-visual-line     
+;;           evil-motion-state-map)
+;; (bind-key "<remap> <evil-previous-line>" 
+;;           'evil-previous-visual-line 
+;;           evil-motion-state-map)
 
-(defun evil-undefine ()
-  (interactive)
-  (let (evil-mode-map-alist)
-    (call-interactively (key-binding (this-command-keys)))))
+;; (defun evil-undefine ()
+;;   (interactive)
+;;   (let (evil-mode-map-alist)
+;;     (call-interactively (key-binding (this-command-keys)))))
 
-(bind-key "C-e" 'evil-end-of-line    evil-normal-state-map)
-(bind-key "C-e" 'end-of-line         evil-insert-state-map)
-(bind-key "C-e" 'evil-end-of-line    evil-visual-state-map)
-(bind-key "C-e" 'evil-end-of-line    evil-motion-state-map)
-(bind-key "C-f" 'evil-forward-char   evil-normal-state-map)
-(bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
-(bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
-(bind-key "C-b" 'evil-backward-char  evil-normal-state-map)
-(bind-key "C-b" 'evil-backward-char  evil-insert-state-map)
-(bind-key "C-b" 'evil-backward-char  evil-visual-state-map)
-(bind-key "C-d" 'evil-delete-char    evil-normal-state-map)
-(bind-key "C-d" 'evil-delete-char    evil-insert-state-map)
-(bind-key "C-d" 'evil-delete-char    evil-visual-state-map)
-(bind-key "C-n" 'evil-next-line      evil-normal-state-map)
-(bind-key "C-n" 'evil-next-line      evil-insert-state-map)
-(bind-key "C-n" 'evil-next-line      evil-visual-state-map)
-(bind-key "C-p" 'evil-previous-line  evil-normal-state-map)
-(bind-key "C-p" 'evil-previous-line  evil-insert-state-map)
-(bind-key "C-p" 'evil-previous-line  evil-visual-state-map)
-(bind-key "C-w" 'evil-delete         evil-normal-state-map)
-(bind-key "C-w" 'evil-delete         evil-insert-state-map)
-(bind-key "C-w" 'evil-delete         evil-visual-state-map)
-(bind-key "C-y" 'yank                evil-normal-state-map)
-(bind-key "C-y" 'yank                evil-insert-state-map)
-(bind-key "C-y" 'yank                evil-visual-state-map)
-(bind-key "C-k" 'kill-line           evil-normal-state-map)
-(bind-key "C-k" 'kill-line           evil-insert-state-map)
-(bind-key "C-k" 'kill-line           evil-visual-state-map)
-(bind-key "C-r" 'isearch-backward    evil-normal-state-map)
-(bind-key "C-r" 'isearch-backward    evil-insert-state-map)
-(bind-key "C-r" 'isearch-backward    evil-visual-state-map)
-(bind-key "Q"   'call-last-kbd-macro evil-normal-state-map)
-(bind-key "Q"   'call-last-kbd-macro evil-visual-state-map)
-(bind-key "TAB" 'evil-undefine       evil-normal-state-map)
-(bind-key "RET" 'evil-undefine       evil-insert-state-map)
+;; (bind-key "C-e" 'evil-end-of-line    evil-normal-state-map)
+;; (bind-key "C-e" 'end-of-line         evil-insert-state-map)
+;; (bind-key "C-e" 'evil-end-of-line    evil-visual-state-map)
+;; (bind-key "C-e" 'evil-end-of-line    evil-motion-state-map)
+;; (bind-key "C-f" 'evil-forward-char   evil-normal-state-map)
+;; (bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
+;; (bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
+;; (bind-key "C-b" 'evil-backward-char  evil-normal-state-map)
+;; (bind-key "C-b" 'evil-backward-char  evil-insert-state-map)
+;; (bind-key "C-b" 'evil-backward-char  evil-visual-state-map)
+;; (bind-key "C-d" 'evil-delete-char    evil-normal-state-map)
+;; (bind-key "C-d" 'evil-delete-char    evil-insert-state-map)
+;; (bind-key "C-d" 'evil-delete-char    evil-visual-state-map)
+;; (bind-key "C-n" 'evil-next-line      evil-normal-state-map)
+;; (bind-key "C-n" 'evil-next-line      evil-insert-state-map)
+;; (bind-key "C-n" 'evil-next-line      evil-visual-state-map)
+;; (bind-key "C-p" 'evil-previous-line  evil-normal-state-map)
+;; (bind-key "C-p" 'evil-previous-line  evil-insert-state-map)
+;; (bind-key "C-p" 'evil-previous-line  evil-visual-state-map)
+;; (bind-key "C-w" 'evil-delete         evil-normal-state-map)
+;; (bind-key "C-w" 'evil-delete         evil-insert-state-map)
+;; (bind-key "C-w" 'evil-delete         evil-visual-state-map)
+;; (bind-key "C-y" 'yank                evil-normal-state-map)
+;; (bind-key "C-y" 'yank                evil-insert-state-map)
+;; (bind-key "C-y" 'yank                evil-visual-state-map)
+;; (bind-key "C-k" 'kill-line           evil-normal-state-map)
+;; (bind-key "C-k" 'kill-line           evil-insert-state-map)
+;; (bind-key "C-k" 'kill-line           evil-visual-state-map)
+;; (bind-key "C-r" 'isearch-backward    evil-normal-state-map)
+;; (bind-key "C-r" 'isearch-backward    evil-insert-state-map)
+;; (bind-key "C-r" 'isearch-backward    evil-visual-state-map)
+;; (bind-key "Q"   'call-last-kbd-macro evil-normal-state-map)
+;; (bind-key "Q"   'call-last-kbd-macro evil-visual-state-map)
+;; (bind-key "TAB" 'evil-undefine       evil-normal-state-map)
+;; (bind-key "RET" 'evil-undefine       evil-insert-state-map)
 
-(use-package evil-surround
-  :init (global-evil-surround-mode 1))
+;; (use-package evil-surround
+;;   :init (global-evil-surround-mode 1))
 
 ;;(defadvice switch-to-buffer (before evil-back-to-initial-state activate)
 ;;  (evil-change-state
@@ -534,18 +566,26 @@
 ;;;; god-mode
 (require 'god-mode)
 ;;(god-mode)
-;;(bind-key "<escape>" 'god-local-mode)
-;;(bind-key "i" 'god-local-mode god-local-mode-map)
-;;(bind-key "." 'repeat god-local-mode-map)
-;;
-;;(add-to-list 'god-exempt-major-modes 'weechat-mode)
-;;
-;;(defun god-toggle-on-overwrite ()
-;;  "Toggle god-mode on command `overwrite-mode'."
-;;  (if (bound-and-true-p overwrite-mode)
-;;      (god-local-mode-pause)
-;;    (god-local-mode-resume)))
-;;(add-hook 'overwrite-mode-hook 'god-toggle-on-overwrite)
+(setq-default cursor-type 'bar)
+(add-hook 'god-local-mode-hook
+          (defun my/god-toggle-cursor-type ()
+            (setq cursor-type (if god-local-mode
+                                  'box
+                                'bar))))
+
+(bind-key "<escape>" 'god-local-mode)
+(bind-key "C-z" 'god-local-mode)
+(bind-key "i" 'god-local-mode god-local-mode-map)
+(bind-key "." 'repeat god-local-mode-map)
+
+(add-to-list 'god-exempt-major-modes 'weechat-mode)
+
+(defun god-toggle-on-overwrite ()
+ "Toggle god-mode on command `overwrite-mode'."
+ (if (bound-and-true-p overwrite-mode)
+     (god-local-mode-pause)
+   (god-local-mode-resume)))
+(add-hook 'overwrite-mode-hook 'god-toggle-on-overwrite)
 
 (global-set-key (kbd "C-x C-1") 'delete-other-windows)
 (global-set-key (kbd "C-x C-2") 'split-window-below)
@@ -554,11 +594,11 @@
 
 
 ;; (require 'evil-god-state)
-(load "~/Source/evil-god-state/evil-god-state.el")
-(evil-define-key 'normal global-map "," 'evil-execute-in-god-state)
-(evil-define-key 'visual global-map "," 'evil-execute-in-god-state)
-(add-hook 'evil-god-state-entry-hook (lambda () (diminish 'god-local-mode)))
-(add-hook 'evil-god-state-exit-hook (lambda () (diminish-undo 'god-local-mode)))
+;; ;; (load "~/Source/evil-god-state/evil-god-state.el")
+;; (evil-define-key 'normal global-map "," 'evil-execute-in-god-state)
+;; (evil-define-key 'visual global-map "," 'evil-execute-in-god-state)
+;; (add-hook 'evil-god-state-entry-hook (lambda () (diminish 'god-local-mode)))
+;; (add-hook 'evil-god-state-exit-hook (lambda () (diminish-undo 'god-local-mode)))
 
 ;;;; haskell
 (require 'haskell-mode)
@@ -577,7 +617,7 @@
 (bind-key "C-c C-i" 'haskell-process-do-info   haskell-mode-map)
 (bind-key "C-c C-." 'haskell-mode-goto-loc haskell-mode-map)
 (bind-key "C-c C-?" 'haskell-mode-find-uses haskell-mode-map)
-(add-to-list 'evil-emacs-state-modes 'haskell-presentation-mode)
+;; (add-to-list 'evil-emacs-state-modes 'haskell-presentation-mode)
 
 (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
 
@@ -593,62 +633,74 @@
       haskell-process-auto-import-loaded-modules t
       haskell-process-suggest-hoogle-imports t
       haskell-process-suggest-remove-import-lines t
-      haskell-process-use-presentation-mode t)
+      haskell-process-use-presentation-mode nil)
 
+(add-hook 'interactive-haskell-mode-hook 'ac-haskell-process-setup)
+(add-hook 'haskell-interactive-mode-hook 'ac-haskell-process-setup)
+
+(add-to-list 'ac-modes 'haskell-interactive-mode)
+;; (add-hook 'auto-complete-mode-hook 'set-auto-complete-as-completion-at-point-function)
+;; (add-hook 'haskell-interactive-mode-hook 'set-auto-complete-as-completion-at-point-function)
+;; (add-hook 'haskell-mode-hook 'set-auto-complete-as-completion-at-point-function)
+(bind-key "C-c C-d" 'ac-haskell-process-popup-doc haskell-mode-map)
 ;; (customize-set-variable 'haskell-process-type 'cabal-repl)
 
 ;; (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+;; (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+(require 'hi2)
+(setq hi2-show-indentations nil)
+(add-hook 'haskell-mode-hook 'turn-on-hi2)
 
-;; (load "~/.nix-profile/share/x86_64-osx-ghc-7.8.3/liquidhaskell-0.2.1.0/syntax/flycheck-liquid.el")
-;; (load "~/.nix-profile/share/x86_64-osx-ghc-7.8.3/liquidhaskell-0.2.1.0/syntax/liquid-tip.el")
+
+;; (load "~/.nix-profile/share/x86_64-osx-ghc-7.8.4/liquidhaskell-0.2.1.0/syntax/flycheck-liquid.el")
+;; (load "~/.nix-profile/share/x86_64-osx-ghc-7.8.4/liquidhaskell-0.2.1.0/syntax/liquid-tip.el")
 ;; (add-hook 'flycheck-after-syntax-check-hook 
 ;;           (defun my-liquid-tip ()
 ;;             (liquid-tip-update 'flycheck)))
 ;; (bind-key "C-c C-s C-l" 'liquid-tip-show haskell-mode-map)
 
-(flycheck-define-checker haskell-liquid
-  "A Haskell refinement type checker using liquidhaskell.
+;; (flycheck-define-checker haskell-liquid
+;;   "A Haskell refinement type checker using liquidhaskell.
 
-See URL `https://github.com/ucsd-progsys/liquidhaskell'."
-  :command
-  ("liquid" source-inplace)
-  ;; ("~/bin/Checker.hs" source-inplace)
-  :error-patterns
-  (
-   (error line-start " " (file-name) ":" line ":" column ":"
-          (message
-	   (one-or-more " ") (one-or-more not-newline)
-	   (zero-or-more "\n"
-			 (one-or-more " ")
-			 (zero-or-more not-newline)))
-          line-end)
+;; See URL `https://github.com/ucsd-progsys/liquidhaskell'."
+;;   :command
+;;   ("liquid" source-inplace)
+;;   ;; ("~/bin/Checker.hs" source-inplace)
+;;   :error-patterns
+;;   (
+;;    (error line-start " " (file-name) ":" line ":" column ":"
+;;           (message
+;; 	   (one-or-more " ") (one-or-more not-newline)
+;; 	   (zero-or-more "\n"
+;; 			 (one-or-more " ")
+;; 			 (zero-or-more not-newline)))
+;;           line-end)
 
-   (error line-start " " (file-name) ":" line ":" column "-" (one-or-more digit) ":"
-	  (message
-	   (one-or-more " ") (one-or-more not-newline)
-	   (zero-or-more "\n"
-			 (one-or-more " ")
-			 (zero-or-more not-newline)))
-          line-end)
+;;    (error line-start " " (file-name) ":" line ":" column "-" (one-or-more digit) ":"
+;; 	  (message
+;; 	   (one-or-more " ") (one-or-more not-newline)
+;; 	   (zero-or-more "\n"
+;; 			 (one-or-more " ")
+;; 			 (zero-or-more not-newline)))
+;;           line-end)
 
-   (error line-start " " (file-name) ":(" line "," column ")-(" (one-or-more digit) "," (one-or-more digit) "):"
-	  (message
-	   (one-or-more " ") (one-or-more not-newline)
-	   (zero-or-more "\n"
-			 (one-or-more " ")
-			 (zero-or-more not-newline)))
-          line-end)
-   )
-  :error-filter
-  (lambda (errors)
-    (-> errors
-      flycheck-dedent-error-messages
-      flycheck-sanitize-errors))
-  :modes (haskell-mode literate-haskell-mode)
-  ;:next-checkers ((warnings-only . haskell-hlint))
-  )
-(add-to-list 'flycheck-checkers 'haskell-liquid t)
+;;    (error line-start " " (file-name) ":(" line "," column ")-(" (one-or-more digit) "," (one-or-more digit) "):"
+;; 	  (message
+;; 	   (one-or-more " ") (one-or-more not-newline)
+;; 	   (zero-or-more "\n"
+;; 			 (one-or-more " ")
+;; 			 (zero-or-more not-newline)))
+;;           line-end)
+;;    )
+;;   :error-filter
+;;   (lambda (errors)
+;;     (-> errors
+;;       flycheck-dedent-error-messages
+;;       flycheck-sanitize-errors))
+;;   :modes (haskell-mode literate-haskell-mode)
+;;   ;:next-checkers ((warnings-only . haskell-hlint))
+;;   )
+;; (add-to-list 'flycheck-checkers 'haskell-liquid t)
 ;; (require 'ghc)
 ;; (add-hook 'haskell-mode-hook (lambda () (ghc-init)))
 
@@ -823,19 +875,19 @@ See URL `https://github.com/ucsd-progsys/liquidhaskell'."
          ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
          ("\\paragraph{%s}" . "\\paragraph*{%s}")
          ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-(require 'ox-bibtex)
-(org-add-link-type 
- "cite" 'ebib
- (lambda (path desc format)
-   (cond
-    ((eq format 'html)
-     (format "(<cite>%s</cite>)" path))
-    ((eq format 'latex)
-     (if (or (not desc) (equal 0 (search "cite:" desc)))
-         (format "\\cite{%s}" path)
-       (format "\\cite[%s][%s]{%s}"
-               (cadr (split-string desc ";"))
-               (car (split-string desc ";"))  path))))))
+;; (require 'ox-bibtex)
+;; (org-add-link-type 
+;;  "cite" 'ebib
+;;  (lambda (path desc format)
+;;    (cond
+;;     ((eq format 'html)
+;;      (format "(<cite>%s</cite>)" path))
+;;     ((eq format 'latex)
+;;      (if (or (not desc) (equal 0 (search "cite:" desc)))
+;;          (format "\\cite{%s}" path)
+;;        (format "\\cite[%s][%s]{%s}"
+;;                (cadr (split-string desc ";"))
+;;                (car (split-string desc ";"))  path))))))
 (setq org-latex-listings nil)
 ;; (add-to-list 'org-latex-packages-alist '("" "listings"))
 ;; (add-to-list 'org-latex-packages-alist '("" "color"))
@@ -1171,8 +1223,8 @@ See URL `https://github.com/ucsd-progsys/liquidhaskell'."
       gnus-thread-sort-functions '(gnus-thread-sort-by-most-recent-date)
       gnus-thread-hide-subtree t
 )
-(add-to-list 'evil-emacs-state-modes 'gnus-category-mode)
-(add-to-list 'evil-emacs-state-modes 'gnus-custom-mode)
+;; (add-to-list 'evil-emacs-state-modes 'gnus-category-mode)
+;; (add-to-list 'evil-emacs-state-modes 'gnus-custom-mode)
 ;; http://groups.google.com/group/gnu.emacs.gnus/browse_thread/thread/a673a74356e7141f
 (when window-system
   (setq gnus-sum-thread-tree-indent "  ")
@@ -1239,24 +1291,27 @@ Return a notification id if any, or t on success."
 ;;       '((nnmaildir )))
 
 ;;;; irc
-(require 'weechat)
-(setq weechat-color-list '(unspecified "black" "dim gray" "dark red" "red"
-                                       "dark green" "green" "brown"
-                                       "orange" "dark blue" "blue"
-                                       "dark magenta" "magenta" "dark cyan"
-                                       "royal blue" "dark gray" "gray")
-      weechat-host-default "seidel.io"
-      weechat-port-default 40900
-      weechat-mode-default 'plain
-      )
-(add-to-list 'weechat-notification-handler-functions
-             (defun my/weechat-notify (type sender text date buffer-ptr)
-               (when (eq type :highlight)
-                 (my/terminal-notifier "IRC Mention"
-                                       sender
-                                       text))))
-(add-hook 'weechat-mode-hook 'turn-on-visual-line-mode)
-;; (add-to-list 'evil-emacs-state-modes 'weechat-mode)
+(require 'circe)
+
+(when (require 'private nil t)
+  (setq circe-network-options
+        '(("seidel.io"
+           :user "gridaphobe/freenode"
+           :pass irc-pass
+           :service 5000
+           :tls t
+           :nick "gridaphobe"
+           :nickserv-password irc-nick-pass
+           ))))
+
+(setq lui-max-buffer-size 30000
+      circe-reduce-lurker-spam t)
+
+
+;;;; wgrep
+(use-package wgrep
+  :init (setq wgrep-auto-save-buffer t
+              wgrep-enable-key "r"))
 
 
 ;;;; pretty symbols
@@ -1294,8 +1349,8 @@ Return a notification id if any, or t on success."
 ;; FIXME: why is this being set to nil?!
 ;; (setq mu4e-mu-binary (executable-find "mu"))
 
-(add-to-list 'load-path "~/Downloads/idris-mode-master")
-(require 'idris-mode)
+;; (add-to-list 'load-path "~/Downloads/idris-mode-master")
+;; (require 'idris-mode)
 
 (message "Emacs is ready to do thy bidding, Master %s!" (getenv "USER"))
 

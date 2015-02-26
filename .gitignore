@@ -16,3 +16,8 @@ xmonad
 /emacs.d/eshell/
 /emacs.d/helm-adaptive-history
 /emacs.d/tramp
+/emacs.d/ac-comphist.dat
+/emacs.d/places
+/emacs.d/projectile.cache
+/emacs.d/recentf
+/emacs.d/url/
