@@ -33,11 +33,10 @@
 ;; No splash screen please... jeez
 (setq inhibit-startup-screen t)
 
-(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/")
-
 (require 'package)
-(setq package-archives nil
-      package-user-dir "~/.nix-profile/share/emacs/site-lisp/elpa")
+(setq package-archives nil)
+(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/")
+(add-to-list 'package-directory-list "~/.nix-profile/share/emacs/site-lisp/elpa")
 (package-initialize)
 
 (require 'use-package)
@@ -106,6 +105,7 @@
               dired-omit-files))
 
 (setq ring-bell-function 'ignore)
+(setq enable-recursive-minibuffers t)
 
 (electric-indent-mode -1)
 (electric-layout-mode -1)
@@ -134,7 +134,7 @@
 ;; (setq debug-on-error t)
 (setq gc-cons-threshold (* 20 (expt 2 20))) ; gc after 20MB
 
-(setq-default fill-column 80)
+(setq-default fill-column 72)
 
 ;; Death to the tabs!  However, tabs historically indent to the next
 ;; 8-character offset; specifying anything else will cause *mass*
@@ -704,24 +704,24 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (require 'ghc)
 ;; (add-hook 'haskell-mode-hook (lambda () (ghc-init)))
 
-;; (require 'shm)
-;; (require 'shm-case-split)
-;; ;; (require 'shm-reformat)
-;; ;; (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
-;; (add-hook 'haskell-mode-hook 'structured-haskell-mode)
-;; ;; (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
-;; (add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
-;; ;; (remove-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-;; (setq shm-colon-enabled t
-;;       shm-indent-point-after-adding-where-clause t
-;;       shm-lambda-indent-style 'leftmost-parent
-;;       shm-use-hdevtools nil
-;;       shm-use-presentation-mode t)
-;; (custom-set-faces
-;;  '(shm-quarantine-face ((t (:inherit font-lock-error))))
-;;  '(shm-current-face ((t (:background "#efefef")))))
-;; (bind-key "C-c C-p" 'shm/expand-pattern shm-map)
-;; (bind-key "C-c C-s" 'shm/case-split shm-map)
+(require 'shm)
+(require 'shm-case-split)
+;; (require 'shm-reformat)
+(add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
+(add-hook 'haskell-mode-hook 'structured-haskell-mode)
+(add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
+(add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
+;; (remove-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+(setq shm-colon-enabled t
+      shm-indent-point-after-adding-where-clause t
+      shm-lambda-indent-style 'leftmost-parent
+      shm-use-hdevtools nil
+      shm-use-presentation-mode t)
+(custom-set-faces
+ '(shm-quarantine-face ((t (:inherit font-lock-error))))
+ '(shm-current-face ((t (:background "#efefef")))))
+(bind-key "C-c C-p" 'shm/expand-pattern shm-map)
+(bind-key "C-c C-s" 'shm/case-split shm-map)
 
 ;; (let ((map shm-map))
 ;;   (when (require 'shm-case-split nil 'noerror)
@@ -998,7 +998,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;; note - this should be after volatile-highlights is required
 ;; add the ability to copy and cut the current line, without marking it
-(defadvice kill-ring-save (before slick-copy activate compile)
+(defadvice my/copy-region (before slick-copy activate compile)
   "When called interactively with no active region, copy a single line instead."
   (interactive
    (if mark-active (list (region-beginning) (region-end))
@@ -1006,7 +1006,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
      (list (line-beginning-position)
            (line-beginning-position 2)))))
 
-(defadvice kill-region (before slick-kill activate compile)
+(defadvice my/kill-region (before slick-kill activate compile)
   "When called interactively with no active region, kill a single line instead."
   (interactive
    (if mark-active (list (region-beginning) (region-end))
@@ -1037,7 +1037,6 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (bind-key "C-h A" 'apropos)
 (bind-key "M-/" 'hippie-expand)
 (bind-key "C-x C-b" 'ibuffer)
-(windmove-default-keybindings)
 (winner-mode 1)
 
 ;; Activate occur easily inside isearch
@@ -1293,15 +1292,15 @@ Return a notification id if any, or t on success."
 ;;;; irc
 (require 'circe)
 
-(when (require 'private nil t)
+(when (load-file "~/.emacs.d/private.el") ;;(require 'private nil t)
   (setq circe-network-options
-        '(("seidel.io"
+        `(("seidel.io"
            :user "gridaphobe/freenode"
-           :pass irc-pass
+           :pass ,irc-pass
            :service 5000
            :tls t
            :nick "gridaphobe"
-           :nickserv-password irc-nick-pass
+           :nickserv-password ,irc-nick-pass
            ))))
 
 (setq lui-max-buffer-size 30000
@@ -1329,8 +1328,8 @@ Return a notification id if any, or t on success."
 (line-number-mode 1)
 (column-number-mode 1)
 (size-indication-mode 1)
-;; (setq display-time-format "%a %m-%d %R")
-;; (display-time-mode 1)
+(setq display-time-format "%a %m-%d %R")
+(display-time-mode 1)
 (global-hl-line-mode 1)
 
 (xterm-mouse-mode 1)

@@ -51,7 +51,7 @@
       shellHook = "exec fish";
     });
 
-    shellEnv = pkgs.buildEnv {
+    shell-env = pkgs.buildEnv {
       name = "shell-env";
       paths = [
         # acl2
@@ -59,14 +59,18 @@
         autoconf
         automake
         bashInteractive
-        #cacert
+        cacert
+        cmake
         coreutils
         curl
         cvc4
+        darcs
         diffutils
         dovecot22
+        file
         findutils
         fish
+        ghostscript
         gitAndTools.gitFull
         gitAndTools.hub
         gnugrep
@@ -75,52 +79,64 @@
         gnupg
         gnused
         gnutar
+        #graphviz
+        imagemagick
         isync
         leafnode
-        #mu
+        mu
         # (mutt.override { withSidebar = true;})
         nix-prefetch-scripts
-        #notmuch
+        nix-repl
+        # notmuch
+        ocaml
+        patch
         patchutils
         pkgconfig
         rlwrap
-        # rubyPackages.terminal-notifier
-        # sbcl
+        sbcl
         silver-searcher
         sloccount
         subversion
+        terminal-notifier
         tmux
         tree
         #weechat
         wget
+        xz
         z3
         zsh
       ];
     };
 
-    # cvc4 = callPackage ./cvc4.nix {};
-    # xapian = callPackage ./xapian.nix {};
-    # z3 = callPackage ./z3.nix {};
+    haskell-env = (haskellngPackages.ghcWithPackages cabalPackages).overrideDerivation (drv: { 
+      name = "haskell-env";
+      postBuild = ''
+        ${drv.postBuild}
+        $out/bin/ghc-pkg expose ghc
+      '';
+    });
 
-    haskellEnv = (haskellngPackages.ghcWithPackages cabalPackages).overrideDerivation 
-     (drv: { postBuild = ''
-      ${drv.postBuild}
-      $out/bin/ghc-pkg expose ghc
-    '';});
+    hoogle-local = lib.overrideDerivation (withHoogle haskell-env) (drv: {
+      name = "hoogle-with-packages";
+    });
+
+    withHoogle = haskellEnv: with haskellngPackages;
+      import <nixpkgs/pkgs/development/libraries/haskell/hoogle/local.nix> {
+        inherit stdenv hoogle rehoo ghc;
+        packages = haskellEnv.paths;
+      };
 
     cabalPackages = hp: with hp; [
       cabal2nix
       cabal-install
       ghc-core
-      # ghc-mod
       ghci-ng
-      # hakyll
+      hakyll
       haskell-docs
       hasktags
-      #hdevtools
-      #hlint
+      hlint
       hscolour
-      # structured-haskell-mode
+      structured-haskell-mode
       stylish-haskell
       pandoc
       pandoc-citeproc
@@ -185,8 +201,6 @@
       wl-pprint
     ];
 
-    # hoogleLocal = haskellngPackages.hoogleLocal;
-
     haskellFilterSource = paths: src: builtins.filterSource (path: type:
         let baseName = baseNameOf path; in
         !( type == "unknown"
@@ -223,7 +237,7 @@
     # haskellPackages_ghcHEAD_profiling = haskellPackages_wrapper packages_ghcHEAD.profiling;
 
 
-    vimEnv = pkgs.buildEnv {
+    vim-env = pkgs.buildEnv {
       name = "vim-env";
       paths = with vimPlugins; [
         macvim
@@ -251,9 +265,9 @@
       ];
     };
 
-    emacsEnv = pkgs.buildEnv {
+    emacs-env = pkgs.buildEnv {
       name = "emacs-env";
-      paths = with emacsMelpa; [
+      paths = with emacsPackagesNgGen emacs; [
         emacs
 
         aspell
@@ -267,9 +281,9 @@
         change-inner
         circe
         company
-        evil
-        evil-god-state
-        evil-surround
+        # evil
+        # evil-god-state
+        # evil-surround
         exec-path-from-shell
         expand-region
         flycheck
@@ -279,7 +293,7 @@
         haskell-mode
         helm
         helm-swoop
-        hi2
+        # hi2
         idris-mode
         magit
         markdown-mode
@@ -288,6 +302,7 @@
         smart-mode-line
         smartparens
         switch-window
+        structured-haskell-mode
         undo-tree
         use-package
         volatile-highlights
@@ -298,66 +313,6 @@
     mu = pkgs.mu.override { libsoup = (libsoup.override { gnomeSupport = false; }); };
     notmuch = pkgs.notmuch.override { talloc = (talloc.override { libcap = null; }); };
 
-    emacs                      = pkgs.emacs24Macport;
-  #   melpa                      = callPackage ./emacs/melpa.nix {};
-
-  #   ace-isearch                = callPackage ./emacs/ace-isearch.nix {};
-  #   ace-jump-mode              = callPackage ./emacs/ace-jump-mode.nix {};
-  #   ag-el                      = callPackage ./emacs/ag.nix {};
-  #   async                      = callPackage ./emacs/async.nix {};
-  #   auctex                     = callPackage ./emacs/auctex.nix {};
-  #   bind-key                   = callPackage ./emacs/bind-key.nix {};
-  #   change-inner               = callPackage ./emacs/change-inner.nix {};
-  #   circe                      = callPackage ./emacs/circe.nix {};
-  #   lcs                        = callPackage ./emacs/lcs.nix {};
-  #   lui                        = callPackage ./emacs/lui.nix {};
-  #   shorten                    = callPackage ./emacs/shorten.nix {};
-  #   tracking                   = callPackage ./emacs/tracking.nix {};
-  #   company-mode               = callPackage ./emacs/company-mode.nix {};
-  #   dash-el                    = callPackage ./emacs/dash.nix {};
-  #   diminish                   = callPackage ./emacs/diminish.nix {};
-  #   evil                       = callPackage ./emacs/evil.nix {};
-  #   evil-god-state             = callPackage ./emacs/evil-god-state.nix {};
-  #   evil-surround              = callPackage ./emacs/evil-surround.nix {};
-  #   flycheck                   = callPackage ./emacs/flycheck.nix {};
-  #   flycheck-pos-tip           = callPackage ./emacs/flycheck-pos-tip.nix {};
-  #   epl                        = callPackage ./emacs/epl.nix {};
-  #   exec-path-from-shell       = callPackage ./emacs/exec-path-from-shell.nix {};
-  #   expand-region              = callPackage ./emacs/expand-region.nix {};
-  #   ghc-mod-el                 = callPackage ./emacs/ghc-mod.nix { 
-  #     ghcMod                   = haskellPackages.ghcMod; 
-  #   };
-  #   git-commit-mode            = callPackage ./emacs/git-commit-mode.nix {};
-  #   git-rebase-mode            = callPackage ./emacs/git-rebase-mode.nix {};
-  #   gitattributes-mode         = callPackage ./emacs/gitattributes-mode.nix {};
-  #   gitconfig-mode             = callPackage ./emacs/gitconfig-mode.nix {};
-  #   gitignore-mode             = callPackage ./emacs/gitignore-mode.nix {};
-  #   gnus                       = callPackage ./emacs/gnus.nix {};
-  #   god-mode                   = callPackage ./emacs/god-mode.nix {};
-  #   goto-chg                   = callPackage ./emacs/goto-chg.nix {};
-  #   haskell-mode               = callPackage ./emacs/haskell-mode.nix {};
-  #   helm                       = callPackage ./emacs/helm.nix {};
-  #   helm-swoop                 = callPackage ./emacs/helm-swoop.nix {};
-  #   idris-mode                 = callPackage ./emacs/idris-mode.nix {};
-  #   magit                      = callPackage ./emacs/magit.nix {};
-  #   markdown-mode              = callPackage ./emacs/markdown-mode.nix {};
-  #   # mu4eMaildirsExtension    = callPackage ./emacs/mu4e-maildirs-extension.nix { mu = mu; };
-  #   rich-minority              = callPackage ./emacs/rich-minority.nix {};
-  #   org-plus-contrib           = callPackage ./emacs/org-plus-contrib.nix {};
-  #   popup-el                   = callPackage ./emacs/popup.nix {};
-  #   projectile                 = callPackage ./emacs/projectile.nix {};
-  #   pkg-info-el                = callPackage ./emacs/pkg-info.nix {};
-  #   s-el                       = callPackage ./emacs/s-el.nix {};
-  #   smart-mode-line            = callPackage ./emacs/smart-mode-line.nix {};
-  #   smartparens                = callPackage ./emacs/smartparens.nix {};
-  #   # structured-haskell-mode-el = callPackage ./emacs/structured-haskell-mode.nix {
-  #   #   structuredHaskellMode    = haskellngPackages.structuredHaskellMode;
-  #   # };
-  #   switch-window              = callPackage ./emacs/switch-window.nix {};
-  #   undo-tree                  = callPackage ./emacs/undo-tree.nix {};
-  #   use-package                = callPackage ./emacs/use-package.nix {};
-  #   volatile-highlights        = callPackage ./emacs/volatile-highlights.nix {};
-  #   weechat-el                 = callPackage ./emacs/weechat-el.nix {};
-  #   wgrep                      = callPackage ./emacs/wgrep.nix {};
+    emacs = pkgs.emacs24Macport;
   };
 }
