@@ -144,6 +144,7 @@
       shake
       SafeSemaphore
       scotty
+      mtl-compat
 
       ad
       data-reify
@@ -166,6 +167,7 @@
       toml
 
       ghc-syb-utils
+      th-lift
 
       QuickCheck
       smallcheck
@@ -180,7 +182,7 @@
       optparse-applicative
       target
 
-      OpenGL
+      #OpenGL
       #GLFW
       # ivory
       # ivory-artifact
@@ -293,7 +295,7 @@
         haskell-mode
         helm
         helm-swoop
-        # hi2
+        hi2
         idris-mode
         magit
         markdown-mode

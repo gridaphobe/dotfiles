@@ -348,14 +348,14 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 
 ;;;; auto complete
-(require 'auto-complete)
-(ac-config-default)
-(setq ac-auto-start nil)
-(diminish 'auto-complete-mode)
-(ac-set-trigger-key "TAB")
-;; (require 'company)
-;; (global-company-mode)
-;; (diminish 'company-mode)
+;; (require 'auto-complete)
+;; (ac-config-default)
+;; (setq ac-auto-start nil)
+;; (diminish 'auto-complete-mode)
+;; (ac-set-trigger-key "TAB")
+(require 'company)
+(global-company-mode)
+(diminish 'company-mode)
 ;; (add-to-list 'rm-blacklist " company")
 
 ;;;; compile
@@ -622,9 +622,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
 
 (setq haskell-process-type 'ghci ;;'cabal-repl
-      ;; haskell-process-path-ghci "ghci-ng"
-      haskell-process-path-ghci "ghci"
-      haskell-process-args-cabal-repl '(;"--with-ghc=ghci-ng" 
+      haskell-process-path-ghci "ghci-ng"
+      ;; haskell-process-path-ghci "ghci"
+      haskell-process-args-cabal-repl '("--with-ghc=ghci-ng" 
                                         "--ghc-option=-ferror-spans")
       haskell-process-log t
       haskell-align-imports-pad-after-name t
@@ -635,159 +635,40 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
       haskell-process-suggest-remove-import-lines t
       haskell-process-use-presentation-mode nil)
 
-(add-hook 'interactive-haskell-mode-hook 'ac-haskell-process-setup)
-(add-hook 'haskell-interactive-mode-hook 'ac-haskell-process-setup)
-
-(add-to-list 'ac-modes 'haskell-interactive-mode)
-;; (add-hook 'auto-complete-mode-hook 'set-auto-complete-as-completion-at-point-function)
-;; (add-hook 'haskell-interactive-mode-hook 'set-auto-complete-as-completion-at-point-function)
-;; (add-hook 'haskell-mode-hook 'set-auto-complete-as-completion-at-point-function)
-(bind-key "C-c C-d" 'ac-haskell-process-popup-doc haskell-mode-map)
+;;(add-hook 'interactive-haskell-mode-hook 'ac-haskell-process-setup)
+;;(add-hook 'haskell-interactive-mode-hook 'ac-haskell-process-setup)
+;;
+;;(add-to-list 'ac-modes 'haskell-interactive-mode)
+;;(add-hook 'auto-complete-mode-hook 'set-auto-complete-as-completion-at-point-function)
+;;(add-hook 'haskell-interactive-mode-hook 'set-auto-complete-as-completion-at-point-function)
+;;(add-hook 'haskell-mode-hook 'set-auto-complete-as-completion-at-point-function)
+;;(bind-key "C-c C-d" 'ac-haskell-process-popup-doc haskell-mode-map)
 ;; (customize-set-variable 'haskell-process-type 'cabal-repl)
 
-;; (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 ;; (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 (require 'hi2)
 (setq hi2-show-indentations nil)
 (add-hook 'haskell-mode-hook 'turn-on-hi2)
 
-
-;; (load "~/.nix-profile/share/x86_64-osx-ghc-7.8.4/liquidhaskell-0.2.1.0/syntax/flycheck-liquid.el")
-;; (load "~/.nix-profile/share/x86_64-osx-ghc-7.8.4/liquidhaskell-0.2.1.0/syntax/liquid-tip.el")
-;; (add-hook 'flycheck-after-syntax-check-hook 
-;;           (defun my-liquid-tip ()
-;;             (liquid-tip-update 'flycheck)))
-;; (bind-key "C-c C-s C-l" 'liquid-tip-show haskell-mode-map)
-
-;; (flycheck-define-checker haskell-liquid
-;;   "A Haskell refinement type checker using liquidhaskell.
-
-;; See URL `https://github.com/ucsd-progsys/liquidhaskell'."
-;;   :command
-;;   ("liquid" source-inplace)
-;;   ;; ("~/bin/Checker.hs" source-inplace)
-;;   :error-patterns
-;;   (
-;;    (error line-start " " (file-name) ":" line ":" column ":"
-;;           (message
-;; 	   (one-or-more " ") (one-or-more not-newline)
-;; 	   (zero-or-more "\n"
-;; 			 (one-or-more " ")
-;; 			 (zero-or-more not-newline)))
-;;           line-end)
-
-;;    (error line-start " " (file-name) ":" line ":" column "-" (one-or-more digit) ":"
-;; 	  (message
-;; 	   (one-or-more " ") (one-or-more not-newline)
-;; 	   (zero-or-more "\n"
-;; 			 (one-or-more " ")
-;; 			 (zero-or-more not-newline)))
-;;           line-end)
-
-;;    (error line-start " " (file-name) ":(" line "," column ")-(" (one-or-more digit) "," (one-or-more digit) "):"
-;; 	  (message
-;; 	   (one-or-more " ") (one-or-more not-newline)
-;; 	   (zero-or-more "\n"
-;; 			 (one-or-more " ")
-;; 			 (zero-or-more not-newline)))
-;;           line-end)
-;;    )
-;;   :error-filter
-;;   (lambda (errors)
-;;     (-> errors
-;;       flycheck-dedent-error-messages
-;;       flycheck-sanitize-errors))
-;;   :modes (haskell-mode literate-haskell-mode)
-;;   ;:next-checkers ((warnings-only . haskell-hlint))
-;;   )
-;; (add-to-list 'flycheck-checkers 'haskell-liquid t)
-;; (require 'ghc)
-;; (add-hook 'haskell-mode-hook (lambda () (ghc-init)))
-
-(require 'shm)
-(require 'shm-case-split)
-;; (require 'shm-reformat)
-(add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
-(add-hook 'haskell-mode-hook 'structured-haskell-mode)
-(add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
-(add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
-;; (remove-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-(setq shm-colon-enabled t
-      shm-indent-point-after-adding-where-clause t
-      shm-lambda-indent-style 'leftmost-parent
-      shm-use-hdevtools nil
-      shm-use-presentation-mode t)
-(custom-set-faces
- '(shm-quarantine-face ((t (:inherit font-lock-error))))
- '(shm-current-face ((t (:background "#efefef")))))
-(bind-key "C-c C-p" 'shm/expand-pattern shm-map)
-(bind-key "C-c C-s" 'shm/case-split shm-map)
-
-;; (let ((map shm-map))
-;;   (when (require 'shm-case-split nil 'noerror)
-;;     (define-key map (kbd "C-c S") 'shm/case-split))
-;;   (define-key map (kbd "C-k") nil)
-;;   (define-key map (kbd "C-j") nil)
-;;   (evil-define-key 'normal map (kbd "D") 'shm/kill-line)
-;;   (evil-define-key 'normal map (kbd "R") 'shm/raise)
-;;   (evil-define-key 'normal map (kbd "P") 'shm/yank)
-
-;;   (define-key map (kbd "C-j") nil)
-;;   (evil-define-key 'insert map (kbd "RET") 'shm/newline-indent)
-;;   (evil-define-key 'normal map (kbd "RET") 'shm/newline-indent)
-;;   (evil-define-key 'insert map (kbd "M-RET") 'evil-ret)
-;;   (define-key map (kbd "C-k") nil)
-
-;;   (evil-define-key 'normal map
-;;     (kbd "M-k") 'sp-splice-sexp-killing-backward
-;;     (kbd "M-j") 'sp-splice-sexp-killing-forward
-;;     (kbd "M-l") 'sp-forward-slurp-sexp
-;;     (kbd "M-h") 'sp-forward-barf-sexp
-;;     (kbd "M-H") 'sp-backward-slurp-sexp
-;;     (kbd "M-L") 'sp-backward-barf-sexp
-;;     (kbd "s") 'sp-splice-sexp
-;;     (kbd "S") 'shm/split-list
-;;     (kbd "M-R") 'sp-raise-sexp
-;;     (kbd "J") 'sp-join-sexp
-;;     (kbd ")") 'shm/forward-node
-;;     (kbd "(") 'shm/backward-node
-;;     (kbd "M-(") 'sp-backward-up-sexp
-;;     (kbd "M-)") 'sp-down-sexp
-;;     (kbd "C-(") 'sp-backward-down-sexp
-;;     (kbd "C-)") 'sp-up-sexp)
-
-;;   (evil-define-key 'operator map
-;;     (kbd ")") 'shm/forward-node
-;;     (kbd "(") 'shm/backward-node
-;;     (kbd "M-(") 'sp-backward-up-sexp
-;;     (kbd "M-)") 'sp-down-sexp
-;;     (kbd "C-(") 'sp-backward-down-sexp
-;;     (kbd "C-)") 'sp-up-sexp)
-
-;;   (evil-define-key 'motion map
-;;     (kbd ")") 'shm/forward-node
-;;     (kbd "(") 'shm/backward-node
-;;     (kbd "M-(") 'sp-backward-up-sexp
-;;     (kbd "M-)") 'sp-down-sexp
-;;     (kbd "C-(") 'sp-backward-down-sexp
-;;     (kbd "C-)") 'sp-up-sexp)
-
-;;   (evil-define-key 'insert map
-;;     (kbd "M-k") 'sp-splice-sexp-killing-backward
-;;     (kbd "M-j") 'sp-splice-sexp-killing-forward
-;;     (kbd "M-l") 'sp-forward-slurp-sexp
-;;     (kbd "M-h") 'sp-forward-barf-sexp
-;;     (kbd "M-H") 'sp-backward-slurp-sexp
-;;     (kbd "M-L") 'sp-backward-barf-sexp)
-
-;;   (evil-define-key 'emacs map
-;;     (kbd "M-k") 'sp-splice-sexp-killing-backward
-;;     (kbd "M-j") 'sp-splice-sexp-killing-forward
-;;     (kbd "M-l") 'sp-forward-slurp-sexp
-;;     (kbd "M-h") 'sp-forward-barf-sexp
-;;     (kbd "M-H") 'sp-backward-slurp-sexp
-;;     (kbd "M-L") 'sp-backward-barf-sexp))
-
+;; (require 'shm)
+;; (require 'shm-case-split)
+;; ;; (require 'shm-reformat)
+;; (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
+;; (add-hook 'haskell-mode-hook 'structured-haskell-mode)
+;; (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
+;; (add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
+;; ;; (remove-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+;; (setq shm-colon-enabled t
+;;       shm-indent-point-after-adding-where-clause t
+;;       shm-lambda-indent-style 'leftmost-parent
+;;       shm-use-hdevtools nil
+;;       shm-use-presentation-mode t)
+;; (custom-set-faces
+;;  '(shm-quarantine-face ((t (:inherit font-lock-error))))
+;;  '(shm-current-face ((t (:background "#efefef")))))
+;; (bind-key "C-c C-p" 'shm/expand-pattern shm-map)
+;; (bind-key "C-c C-s" 'shm/case-split shm-map)
 
 ;;;; javascript
 ;; (use-package js3-mode)
@@ -1054,56 +935,56 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
       user-mail-address "eric@seidel.io")
 
 ;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
-;; (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
-;; (require 'mu4e)
-;; (setq mu4e-maildir "~/.mail"
-;;      mu4e-drafts-folder "/seidel.io/INBOX.Drafts"
-;;      mu4e-refile-folder "/seidel.io/INBOX.Archive"
-;;      mu4e-sent-folder "/seidel.io/INBOX.Sent Items"
-;;      mu4e-trash-folder "/seidel.io/INBOX.Trash"
-;;      mu4e-attachment-dir "~/Downloads"
-;;      mu4e-user-mail-address-list '("gridaphobe@gmail.com"
-;;                                    "eseidel@galois.com"
-;;                                    "eric@eseidel.org"
-;;                                    "eric@seidel.io"
-;;                                    "eric9@mac.com"
-;;                                    "eric9@me.com"
-;;                                    "eric9@icloud.com"
-;;                                    "eseidel@cs.ucsd.edu"
-;;                                    "eseidel@ucsd.edu"
-;;                                    "eseidel@eng.ucsd.edu"
-;;                                    "eseidel01@ccny.cuny.edu"
-;;                                    "eric@fluidinfo.com"
-;;                                    "seidel@apple.com")
-;;      mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-;;                        "Starred Messages"
-;;                        ?s)
-;;                       ("flag:unread AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-;;                        "Unread Messages"
-;;                        ?u)
-;;                       ("to:*.ucsd.edu AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-;;                        "UCSD"
-;;                        ?w))
-;;      mu4e-sent-messages-behavior 'delete
-;;      mu4e-auto-retrieve-keys t
-;;      mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
-;;                             ("tag message" . mu4e-action-retag-message))
-;;      mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
-;;                          ("view as pdf" . mu4e-action-view-as-pdf)
-;;                          ("tag message" . mu4e-action-retag-message))
-;;      mu4e-completing-read-function 'completing-read
-;;      mu4e-change-filenames-when-moving t
-;;      mu4e-compose-dont-reply-to-self t
-;;      mu4e-compose-signature-auto-include nil
-;;      mu4e-headers-skip-duplicates nil
-;;      mu4e-headers-include-related nil
-;;      mu4e-headers-results-limit 100
-;;      mu4e-hide-index-messages nil
-;;      mu4e-use-fancy-chars nil
-;;      mu4e-debug nil
-;;      mu4e-get-mail-command "true" ;"mbsync -a"
-;;      mu4e-update-interval nil ; (* 5 60)
-;;      )
+(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
+(require 'mu4e)
+(setq mu4e-maildir "~/.mail"
+     mu4e-drafts-folder "/seidel.io/eric/.drafts"
+     mu4e-refile-folder "/seidel.io/eric/.archive"
+     mu4e-sent-folder "/seidel.io/eric/.sent"
+     mu4e-trash-folder "/seidel.io/eric/.trash"
+     mu4e-attachment-dir "~/Downloads"
+     mu4e-user-mail-address-list '("gridaphobe@gmail.com"
+                                   "eseidel@galois.com"
+                                   "eric@eseidel.org"
+                                   "eric@seidel.io"
+                                   "eric9@mac.com"
+                                   "eric9@me.com"
+                                   "eric9@icloud.com"
+                                   "eseidel@cs.ucsd.edu"
+                                   "eseidel@ucsd.edu"
+                                   "eseidel@eng.ucsd.edu"
+                                   "eseidel01@ccny.cuny.edu"
+                                   "eric@fluidinfo.com"
+                                   "seidel@apple.com")
+     ;; mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+     ;;                   "Starred Messages"
+     ;;                   ?s)
+     ;;                  ("flag:unread AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+     ;;                   "Unread Messages"
+     ;;                   ?u)
+     ;;                  ("to:*.ucsd.edu AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+     ;;                   "UCSD"
+     ;;                   ?w))
+     mu4e-sent-messages-behavior 'delete
+     mu4e-auto-retrieve-keys t
+     mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
+                            ("tag message" . mu4e-action-retag-message))
+     mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
+                         ("view as pdf" . mu4e-action-view-as-pdf)
+                         ("tag message" . mu4e-action-retag-message))
+     mu4e-completing-read-function 'completing-read
+     mu4e-change-filenames-when-moving t
+     mu4e-compose-dont-reply-to-self t
+     mu4e-compose-signature-auto-include nil
+     mu4e-headers-skip-duplicates t
+     mu4e-headers-include-related t
+     mu4e-headers-results-limit 100
+     mu4e-hide-index-messages nil
+     mu4e-use-fancy-chars nil
+     mu4e-debug nil
+     mu4e-get-mail-command "true" ;"mbsync -a"
+     mu4e-update-interval nil ; (* 5 60)
+     )
 
 ;; (setq mu4e-html2text-command
 ;;      #'(lambda () 

@@ -15,7 +15,14 @@ export NIX_PATH=nixpkgs="$HOME/Source/nixpkgs"
 # export LDFLAGS="$LDFLAGS -L$HOME/.nix-profile/lib"
 # export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/.nix-profile/lib"
 # export DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$HOME/.nix-profile/lib"
+export NIX_GHC="$HOME/.nix-profile/bin/ghc"
+export NIX_GHCPKG="$HOME/.nix-profile/bin/ghc-pkg"
+export NIX_GHC_DOCDIR="$HOME/.nix-profile/share/doc/ghc/html"
+export NIX_GHC_LIBDIR="$HOME/.nix-profile/lib/ghc-$($NIX_GHC --numeric-version)"
 
-if [[ -r "$HOME/.nix-profile/bin/ghc" ]]; then
-  eval "$(grep export ~/.nix-profile/bin/ghc)"
-fi
+#if [[ -r "$HOME/.nix-profile/bin/ghc" ]]; then
+#  eval "$(grep export ~/.nix-profile/bin/ghc)"
+#fi
+
+# added by Anaconda 2.1.0 installer
+export PATH="$HOME/anaconda/bin:$PATH"
