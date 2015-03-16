@@ -9,8 +9,7 @@
     liquidhaskell  = self.callPackage ../Source/liquid/haskell {};
     target         = self.callPackage ../Source/liquid/check {};
 
-    ghci-ng        = self.callPackage ../Source/ghci-ng {
-    };
+    ghci-ng        = self.callPackage ../Source/ghci-ng {};
 
     Chart = doJailbreak super.Chart;
     Chart-diagrams = doJailbreak super.Chart-diagrams;
@@ -76,7 +75,7 @@
         gnugrep
         gnumake
         gnupatch
-        gnupg
+        #gnupg
         gnused
         gnutar
         #graphviz
@@ -162,6 +161,7 @@
       Chart-diagrams
       text
       pretty-show
+      sexp-show
       data-timeout
       xml-conduit
       toml
@@ -267,6 +267,20 @@
       ];
     };
 
+    python-env = python.buildEnv.override {
+      extraLibs = with pythonPackages; [ pandas tables ];
+      ignoreCollisions = true;
+    };
+    #python-env = pkgs.buildEnv {
+    #  name = "python-env";
+    #  paths = with pythonPackages; [
+    #    python
+    #    ipython
+    #    pandas
+    #    tables
+    #  ];
+    #};
+
     emacs-env = pkgs.buildEnv {
       name = "emacs-env";
       paths = with emacsPackagesNgGen emacs; [
@@ -299,16 +313,18 @@
         idris-mode
         magit
         markdown-mode
+        monokai-theme
         org-plus-contrib
         projectile
         smart-mode-line
         smartparens
         switch-window
-        structured-haskell-mode
+        # structured-haskell-mode
         undo-tree
         use-package
         volatile-highlights
         wgrep
+        zenburn-theme
       ];
     };
 

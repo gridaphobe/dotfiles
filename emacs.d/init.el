@@ -62,10 +62,10 @@
 
   (set-fontset-font "fontset-default"
                     'unicode
-                    '("Input Mono Narrow" . "iso10646-1"))
+                    '("PT Mono" . "iso10646-1"))
   (set-face-attribute 'default nil
-                      :family "Input Mono Narrow"
-                      :height 120)
+                      :family "PT Mono"
+                      :height 140)
 
   (require 'exec-path-from-shell)
   (setq exec-path-from-shell-variables
@@ -76,9 +76,21 @@
 
   (setq browse-url-browser-function 'browse-url-default-macosx-browser))
 
+;;;; theme
+;; (defadvice load-theme (around disable-other-themes activate)
+;;   (mapc #'disable-theme custom-enabled-themes)
+;;   ad-do-it)
+;; (load-theme 'solarized-light)
+
+(load-theme 'zenburn)
+;;(load-theme 'leuven)
+;; (custom-theme-set-faces 'leuven '(default ((default :background "WhiteSmoke")) t))
+;; (sml/apply-theme 'light)
+
+
 ;;;; smart-mode-line
 (require 'smart-mode-line)
-(setq sml/name-width '(20 . 40))
+;;(setq sml/name-width '(20 . 30))
 
 ;;(defun my-god-mode-indicator ()
 ;;  "Display a custom indicator for `god-mode' in the mode-line."
@@ -304,8 +316,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
       helm-split-window-default-side 'below
       helm-split-window-in-side-p t 
       ;; helm-always-two-windows nil ; t
-      helm-autoresize-max-height 40
-      helm-autoresize-min-height 40
+      helm-autoresize-max-height 30
+      helm-autoresize-min-height 30
       )
 (helm-mode 1)
 (diminish 'helm-mode)
@@ -354,6 +366,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (diminish 'auto-complete-mode)
 ;; (ac-set-trigger-key "TAB")
 (require 'company)
+(setq company-global-modes '(not circe-channel-mode
+                                 circe-query-mode 
+                                 circe-server-mode))
 (global-company-mode)
 (diminish 'company-mode)
 ;; (add-to-list 'rm-blacklist " company")
@@ -935,56 +950,56 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
       user-mail-address "eric@seidel.io")
 
 ;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
-(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
-(require 'mu4e)
-(setq mu4e-maildir "~/.mail"
-     mu4e-drafts-folder "/seidel.io/eric/.drafts"
-     mu4e-refile-folder "/seidel.io/eric/.archive"
-     mu4e-sent-folder "/seidel.io/eric/.sent"
-     mu4e-trash-folder "/seidel.io/eric/.trash"
-     mu4e-attachment-dir "~/Downloads"
-     mu4e-user-mail-address-list '("gridaphobe@gmail.com"
-                                   "eseidel@galois.com"
-                                   "eric@eseidel.org"
-                                   "eric@seidel.io"
-                                   "eric9@mac.com"
-                                   "eric9@me.com"
-                                   "eric9@icloud.com"
-                                   "eseidel@cs.ucsd.edu"
-                                   "eseidel@ucsd.edu"
-                                   "eseidel@eng.ucsd.edu"
-                                   "eseidel01@ccny.cuny.edu"
-                                   "eric@fluidinfo.com"
-                                   "seidel@apple.com")
-     ;; mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-     ;;                   "Starred Messages"
-     ;;                   ?s)
-     ;;                  ("flag:unread AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-     ;;                   "Unread Messages"
-     ;;                   ?u)
-     ;;                  ("to:*.ucsd.edu AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-     ;;                   "UCSD"
-     ;;                   ?w))
-     mu4e-sent-messages-behavior 'delete
-     mu4e-auto-retrieve-keys t
-     mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
-                            ("tag message" . mu4e-action-retag-message))
-     mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
-                         ("view as pdf" . mu4e-action-view-as-pdf)
-                         ("tag message" . mu4e-action-retag-message))
-     mu4e-completing-read-function 'completing-read
-     mu4e-change-filenames-when-moving t
-     mu4e-compose-dont-reply-to-self t
-     mu4e-compose-signature-auto-include nil
-     mu4e-headers-skip-duplicates t
-     mu4e-headers-include-related t
-     mu4e-headers-results-limit 100
-     mu4e-hide-index-messages nil
-     mu4e-use-fancy-chars nil
-     mu4e-debug nil
-     mu4e-get-mail-command "true" ;"mbsync -a"
-     mu4e-update-interval nil ; (* 5 60)
-     )
+;; (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
+;; (require 'mu4e)
+;; (setq mu4e-maildir "~/.mail"
+;;      mu4e-drafts-folder "/seidel.io/eric/.drafts"
+;;      mu4e-refile-folder "/seidel.io/eric/.archive"
+;;      mu4e-sent-folder "/seidel.io/eric/.sent"
+;;      mu4e-trash-folder "/seidel.io/eric/.trash"
+;;      mu4e-attachment-dir "~/Downloads"
+;;      mu4e-user-mail-address-list '("gridaphobe@gmail.com"
+;;                                    "eseidel@galois.com"
+;;                                    "eric@eseidel.org"
+;;                                    "eric@seidel.io"
+;;                                    "eric9@mac.com"
+;;                                    "eric9@me.com"
+;;                                    "eric9@icloud.com"
+;;                                    "eseidel@cs.ucsd.edu"
+;;                                    "eseidel@ucsd.edu"
+;;                                    "eseidel@eng.ucsd.edu"
+;;                                    "eseidel01@ccny.cuny.edu"
+;;                                    "eric@fluidinfo.com"
+;;                                    "seidel@apple.com")
+;;      ;; mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+;;      ;;                   "Starred Messages"
+;;      ;;                   ?s)
+;;      ;;                  ("flag:unread AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+;;      ;;                   "Unread Messages"
+;;      ;;                   ?u)
+;;      ;;                  ("to:*.ucsd.edu AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+;;      ;;                   "UCSD"
+;;      ;;                   ?w))
+;;      mu4e-sent-messages-behavior 'delete
+;;      mu4e-auto-retrieve-keys t
+;;      mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
+;;                             ("tag message" . mu4e-action-retag-message))
+;;      mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
+;;                          ("view as pdf" . mu4e-action-view-as-pdf)
+;;                          ("tag message" . mu4e-action-retag-message))
+;;      mu4e-completing-read-function 'completing-read
+;;      mu4e-change-filenames-when-moving t
+;;      mu4e-compose-dont-reply-to-self t
+;;      mu4e-compose-signature-auto-include nil
+;;      mu4e-headers-skip-duplicates t
+;;      mu4e-headers-include-related t
+;;      mu4e-headers-results-limit 100
+;;      mu4e-hide-index-messages nil
+;;      mu4e-use-fancy-chars nil
+;;      mu4e-debug nil
+;;      mu4e-get-mail-command "true" ;"mbsync -a"
+;;      mu4e-update-interval nil ; (* 5 60)
+;;      )
 
 ;; (setq mu4e-html2text-command
 ;;      #'(lambda () 
@@ -1214,16 +1229,6 @@ Return a notification id if any, or t on success."
 (global-hl-line-mode 1)
 
 (xterm-mouse-mode 1)
-
-;;;; theme
-;; (defadvice load-theme (around disable-other-themes activate)
-;;   (mapc #'disable-theme custom-enabled-themes)
-;;   ad-do-it)
-;; (load-theme 'solarized-light)
-
-(load-theme 'leuven)
-;; (custom-theme-set-faces 'leuven '(default ((default :background "WhiteSmoke")) t))
-;; (sml/apply-theme 'light)
 
 
 ;; FIXME: why is this being set to nil?!
