@@ -10,7 +10,7 @@
     #target         = self.callPackage ../Source/liquid/check {};
     target          = dontCheck super.target;
 
-    # ghci-ng        = self.callPackage ../Source/ghci-ng {};
+    ghci-ng        = self.callPackage ../Source/ghci-ng {};
 
     Chart = doJailbreak super.Chart;
     Chart-diagrams = doJailbreak super.Chart-diagrams;
@@ -130,7 +130,7 @@
       cabal2nix
       cabal-install
       ghc-core
-      #ghci-ng
+      ghci-ng
       hakyll
       #haskell-docs
       hasktags
@@ -319,6 +319,7 @@
         projectile
         smart-mode-line
         smartparens
+        smex
         swiper
         switch-window
         # structured-haskell-mode

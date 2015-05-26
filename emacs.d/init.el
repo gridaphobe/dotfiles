@@ -303,6 +303,12 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :bind ("M-j" . ace-jump-char-mode))
 
 ;;;; helm
+
+(require 'smex)
+(smex-initialize)
+(bind-key "M-x" 'smex)
+(bind-key "M-X" 'smex-major-mode-commands)
+
 (ivy-mode 1)
 (diminish 'ivy-mode)
 (bind-key "C-s" 'swiper)
