@@ -303,42 +303,47 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :bind ("M-j" . ace-jump-char-mode))
 
 ;;;; helm
-(require 'helm-config)
-(require 'helm)
-(require 'helm-files)
-(require 'ido)
-(setq helm-buffers-fuzzy-matching t
-      ido-use-virtual-buffers t
-      helm-ff-auto-update-initial-value t
-      helm-ff-file-name-history-use-recentf t
-      helm-ff-skip-boring-files t
-      helm-quick-update t                   ; do not display invisible candidates
-      helm-split-window-default-side 'below
-      helm-split-window-in-side-p t 
-      ;; helm-always-two-windows nil ; t
-      helm-autoresize-max-height 30
-      helm-autoresize-min-height 30
-      )
-(helm-mode 1)
-(diminish 'helm-mode)
-;; (add-to-list 'rm-blacklist " Helm")
-(helm-adaptive-mode 1)
-(helm-autoresize-mode 1)
+(ivy-mode 1)
+(diminish 'ivy-mode)
+(bind-key "C-s" 'swiper)
+(bind-key "C-r" 'swiper)
 
-(bind-key "C-x b" 'helm-mini)
-(bind-key "C-c i" 'helm-semantic-or-imenu)
-(bind-key "<tab>" 'helm-execute-persistent-action helm-map) ; rebind tab to do persistent action
-(bind-key "C-i"   'helm-execute-persistent-action helm-map) ; make TAB work in terminal
-(bind-key "C-z"   'helm-select-action             helm-map) ; list actions using C-z
+;; (require 'helm-config)
+;; (require 'helm)
+;; (require 'helm-files)
+;; (require 'ido)
+;; (setq helm-buffers-fuzzy-matching t
+;;       ido-use-virtual-buffers t
+;;       helm-ff-auto-update-initial-value t
+;;       helm-ff-file-name-history-use-recentf t
+;;       helm-ff-skip-boring-files t
+;;       helm-quick-update t                   ; do not display invisible candidates
+;;       helm-split-window-default-side 'below
+;;       helm-split-window-in-side-p t 
+;;       ;; helm-always-two-windows nil ; t
+;;       helm-autoresize-max-height 30
+;;       helm-autoresize-min-height 30
+;;       )
+;; (helm-mode 1)
+;; (diminish 'helm-mode)
+;; ;; (add-to-list 'rm-blacklist " Helm")
+;; (helm-adaptive-mode 1)
+;; (helm-autoresize-mode 1)
 
-(bind-key "<return>" 'helm-grep-mode-jump-other-window          helm-grep-mode-map)
-(bind-key "n"        'helm-grep-mode-jump-other-window-forward  helm-grep-mode-map)
-(bind-key "p"        'helm-grep-mode-jump-other-window-backward helm-grep-mode-map)
+;; (bind-key "C-x b" 'helm-mini)
+;; (bind-key "C-c i" 'helm-semantic-or-imenu)
+;; (bind-key "<tab>" 'helm-execute-persistent-action helm-map) ; rebind tab to do persistent action
+;; (bind-key "C-i"   'helm-execute-persistent-action helm-map) ; make TAB work in terminal
+;; (bind-key "C-z"   'helm-select-action             helm-map) ; list actions using C-z
 
-(use-package helm-swoop
-  :init (setq helm-multi-swoop-edit-save t))
-(bind-key "M-i" 'helm-swoop-from-isearch isearch-mode-map)
-(bind-key "M-i" 'helm-multi-swoop-all-from-helm-swoop helm-swoop-map)
+;; (bind-key "<return>" 'helm-grep-mode-jump-other-window          helm-grep-mode-map)
+;; (bind-key "n"        'helm-grep-mode-jump-other-window-forward  helm-grep-mode-map)
+;; (bind-key "p"        'helm-grep-mode-jump-other-window-backward helm-grep-mode-map)
+
+;; (use-package helm-swoop
+;;   :init (setq helm-multi-swoop-edit-save t))
+;; (bind-key "M-i" 'helm-swoop-from-isearch isearch-mode-map)
+;; (bind-key "M-i" 'helm-multi-swoop-all-from-helm-swoop helm-swoop-map)
 
 ;;;; ace-isearch
 ;; (use-package ace-isearch
@@ -352,10 +357,11 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (diminish 'projectile-mode)
 ;; (add-to-list 'rm-blacklist " Projectile\\*")
 (setq projectile-remember-window-configs t
-      projectile-completion-system 'helm
-      projectile-enable-caching t)
-(require 'helm-projectile)
-(helm-projectile-on)
+      ;;projectile-completion-system 'helm
+      ;;projectile-enable-caching t
+      )
+;; (require 'helm-projectile)
+;; (helm-projectile-on)
 ;; (setq projectile-switch-project-action 'helm-projectile)
 
 
@@ -715,6 +721,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; magit
 (require 'magit)
+(setq magit-last-seen-setup-instructions "1.4.0")
 (diminish 'magit-auto-revert-mode)
 ;; (add-to-list 'rm-blacklist " MRev")
 (defalias 'magit 'magit-status)
@@ -890,7 +897,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;;; volatile-highlights
 (use-package volatile-highlights
   :diminish ""
-  :init (volatile-highlights-mode 1))
+  :config (volatile-highlights-mode 1))
 
 ;; note - this should be after volatile-highlights is required
 ;; add the ability to copy and cut the current line, without marking it
@@ -1020,13 +1027,13 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;                "eseidel@galois.com")
 ;;               (t "gridaphobe@gmail.com")))))))
 
-(setq message-send-mail-function 'smtpmail-send-it
-     smtpmail-stream-type 'starttls
-     smtpmail-default-smtp-server "smtp.gmail.com"
-     smtpmail-smtp-server "smtp.gmail.com"
-     smtpmail-smtp-service 587)
-;; don't keep message buffers around
-(setq message-kill-buffer-on-exit t)
+;; (setq message-send-mail-function 'smtpmail-send-it
+;;      smtpmail-stream-type 'starttls
+;;      smtpmail-default-smtp-server "smtp.gmail.com"
+;;      smtpmail-smtp-server "smtp.gmail.com"
+;;      smtpmail-smtp-service 587)
+;; ;; don't keep message buffers around
+;; (setq message-kill-buffer-on-exit t)
 
 (defun my/terminal-notifier (title subtitle message)
  (call-process "terminal-notifier" nil nil nil
@@ -1066,141 +1073,141 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (mu4e-maildirs-extension)
 
 
-(require 'gnus)
-(setq ;gnus-select-method '(nntp "news.gmane.org")
-      gnus-select-method '(nnimap "seidel"
-                                  (nnimap-address "localhost")
-                                  (nnimap-server-port 8143)
-                                  (nnimap-user "eric@seidel.io")
-                                  (nnimap-authenticator login)
-                                  (nnimap-stream network))
-      ;gnus-secondary-select-methods '((nnimap "seidel"
-      ;                                        (nnimap-address "localhost")
-      ;                                        (nnimap-server-port 8143)
-      ;                                        (nnimap-user "eric@seidel.io")
-      ;                                        (nnimap-authenticator login)
-      ;                                        (nnimap-stream network)
-      ;                                        )
-      ;                                (nnimap "galois"
-      ;                                        (nnimap-address "localhost")
-      ;                                        (nnimap-server-port 8143)
-      ;                                        (nnimap-user "eseidel@galois.com")
-      ;                                        (nnimap-authenticator login)
-      ;                                        (nnimap-stream network)
-      ;                                        )
-      ;                                )
-      gnus-asynchronous t
+;; (require 'gnus)
+;; (setq ;gnus-select-method '(nntp "news.gmane.org")
+;;       gnus-select-method '(nnimap "seidel"
+;;                                   (nnimap-address "localhost")
+;;                                   (nnimap-server-port 8143)
+;;                                   (nnimap-user "eric@seidel.io")
+;;                                   (nnimap-authenticator login)
+;;                                   (nnimap-stream network))
+;;       ;gnus-secondary-select-methods '((nnimap "seidel"
+;;       ;                                        (nnimap-address "localhost")
+;;       ;                                        (nnimap-server-port 8143)
+;;       ;                                        (nnimap-user "eric@seidel.io")
+;;       ;                                        (nnimap-authenticator login)
+;;       ;                                        (nnimap-stream network)
+;;       ;                                        )
+;;       ;                                (nnimap "galois"
+;;       ;                                        (nnimap-address "localhost")
+;;       ;                                        (nnimap-server-port 8143)
+;;       ;                                        (nnimap-user "eseidel@galois.com")
+;;       ;                                        (nnimap-authenticator login)
+;;       ;                                        (nnimap-stream network)
+;;       ;                                        )
+;;       ;                                )
+;;       gnus-asynchronous t
       
-      gnus-message-archive-group nil
-      ;; gnus-sum-thread-tree-false-root      ""
-      ;; gnus-sum-thread-tree-single-indent   ""
-      ;; gnus-sum-thread-tree-root            ""
-      ;; gnus-sum-thread-tree-vertical        "|"
-      ;; gnus-sum-thread-tree-leaf-with-other "+-> "
-      ;; gnus-sum-thread-tree-single-leaf     "\\-> "
-      ;; gnus-sum-thread-tree-indent          " "
+;;       gnus-message-archive-group nil
+;;       ;; gnus-sum-thread-tree-false-root      ""
+;;       ;; gnus-sum-thread-tree-single-indent   ""
+;;       ;; gnus-sum-thread-tree-root            ""
+;;       ;; gnus-sum-thread-tree-vertical        "|"
+;;       ;; gnus-sum-thread-tree-leaf-with-other "+-> "
+;;       ;; gnus-sum-thread-tree-single-leaf     "\\-> "
+;;       ;; gnus-sum-thread-tree-indent          " "
 
-      nndraft-directory "~/.cache/gnus/drafts/"
-      gnus-agent t
-      gnus-agent-directory "~/.cache/gnus/agent/"
+;;       nndraft-directory "~/.cache/gnus/drafts/"
+;;       gnus-agent t
+;;       gnus-agent-directory "~/.cache/gnus/agent/"
 
-      ;; gnus-use-cache nil
-      ;; gnus-cache-directory "~/.cache/gnus/"
-      ;; gnus-cache-enter-articles '(read unread ticked dormant)
-      ;; gnus-cache-remove-articles nil
+;;       ;; gnus-use-cache nil
+;;       ;; gnus-cache-directory "~/.cache/gnus/"
+;;       ;; gnus-cache-enter-articles '(read unread ticked dormant)
+;;       ;; gnus-cache-remove-articles nil
 
-      gnus-read-newsrc-file nil
-      gnus-save-newsrc-file nil
+;;       gnus-read-newsrc-file nil
+;;       gnus-save-newsrc-file nil
 
-      gnus-read-active-file 'some
+;;       gnus-read-active-file 'some
 
-      gnus-article-sort-functions '(gnus-article-sort-by-most-recent-date)
-      gnus-thread-sort-functions '(gnus-thread-sort-by-most-recent-date)
-      gnus-thread-hide-subtree t
-)
-;; (add-to-list 'evil-emacs-state-modes 'gnus-category-mode)
-;; (add-to-list 'evil-emacs-state-modes 'gnus-custom-mode)
-;; http://groups.google.com/group/gnu.emacs.gnus/browse_thread/thread/a673a74356e7141f
-(when window-system
-  (setq gnus-sum-thread-tree-indent "  ")
-  (setq gnus-sum-thread-tree-root "")
-  (setq gnus-sum-thread-tree-false-root "")
-  (setq gnus-sum-thread-tree-single-indent "")
-  (setq gnus-sum-thread-tree-vertical        "│")
-  (setq gnus-sum-thread-tree-leaf-with-other "├─> ")
-  (setq gnus-sum-thread-tree-single-leaf     "└─> "))
-(setq gnus-summary-line-format
-      (concat
-       "%0{%U%R%z%}"
-       "%3{│%}" "%1{%d%}" "%3{│%}" ;; date
-       "  "
-       "%4{%-20,20f%}"               ;; name
-       "  "
-       "%3{│%}"
-       " "
-       "%1{%B%}"
-       "%s\n"))
-(setq gnus-summary-display-arrow t)
+;;       gnus-article-sort-functions '(gnus-article-sort-by-most-recent-date)
+;;       gnus-thread-sort-functions '(gnus-thread-sort-by-most-recent-date)
+;;       gnus-thread-hide-subtree t
+;; )
+;; ;; (add-to-list 'evil-emacs-state-modes 'gnus-category-mode)
+;; ;; (add-to-list 'evil-emacs-state-modes 'gnus-custom-mode)
+;; ;; http://groups.google.com/group/gnu.emacs.gnus/browse_thread/thread/a673a74356e7141f
+;; (when window-system
+;;   (setq gnus-sum-thread-tree-indent "  ")
+;;   (setq gnus-sum-thread-tree-root "")
+;;   (setq gnus-sum-thread-tree-false-root "")
+;;   (setq gnus-sum-thread-tree-single-indent "")
+;;   (setq gnus-sum-thread-tree-vertical        "│")
+;;   (setq gnus-sum-thread-tree-leaf-with-other "├─> ")
+;;   (setq gnus-sum-thread-tree-single-leaf     "└─> "))
+;; (setq gnus-summary-line-format
+;;       (concat
+;;        "%0{%U%R%z%}"
+;;        "%3{│%}" "%1{%d%}" "%3{│%}" ;; date
+;;        "  "
+;;        "%4{%-20,20f%}"               ;; name
+;;        "  "
+;;        "%3{│%}"
+;;        " "
+;;        "%1{%B%}"
+;;        "%s\n"))
+;; (setq gnus-summary-display-arrow t)
 
-(gnus-demon-add-handler 'gnus-demon-scan-news 5 nil) ; this does a call to gnus-group-get-new-news
+;; (gnus-demon-add-handler 'gnus-demon-scan-news 5 nil) ; this does a call to gnus-group-get-new-news
 
-(require 'gnus-notifications)
-(defun gnus-notifications-notify (from subject photo-file)
-  "Send a notification about a new mail.
-Return a notification id if any, or t on success."
-  (my/terminal-notifier "Gnus - New Message" from subject)
-  t
-  )
-(add-hook 'gnus-after-getting-new-news-hook 'gnus-notifications)
-;; (require 'gnus-alias)
-(setq gnus-posting-styles
-      '(;
-        (".*"
-         (address "eric@seidel.io")
-         ("X-Message-SMTP-Method" "smtp mail.messagingengine.com 587")
-         )
-        ((header "to" "gridaphobe@gmail\\.com")
-         (address "gridaphobe@gmail.com")
-         ("X-Message-SMTP-Method" "smtp smtp.gmail.com 587"))
-        ((header "to" "@.*\\.ucsd\\.edu")
-         (address "eseidel@cs.ucsd.edu")
-         ("X-Message-SMTP-Method" "smtp smtp.gmail.com 587"))
-        ;((header "to" "eseidel@galois\\.com")
-        ; (address "eseidel@galois.com")
-        ; ("X-Message-SMTP-Method" "smtp relay.galois.com 587"))
-        ))
-;; (defadvice smtpmail-via-smtp (around set-smtp-server-from-header activate)
-;;   (let ((smtpmail-smtp-server (or 
-;;                                (save-restriction
-;;                                  (message-narrow-to-headers)
-;;                                  (mail-fetch-field "X-SMTP-Server"))
-;;                                smtpmail-smtp-server)))
-;;     (message-remove-header "X-SMTP-Server")
-;;     ad-do-it
-;;     ))
+;; (require 'gnus-notifications)
+;; (defun gnus-notifications-notify (from subject photo-file)
+;;   "Send a notification about a new mail.
+;; Return a notification id if any, or t on success."
+;;   (my/terminal-notifier "Gnus - New Message" from subject)
+;;   t
+;;   )
+;; (add-hook 'gnus-after-getting-new-news-hook 'gnus-notifications)
+;; ;; (require 'gnus-alias)
+;; (setq gnus-posting-styles
+;;       '(;
+;;         (".*"
+;;          (address "eric@seidel.io")
+;;          ("X-Message-SMTP-Method" "smtp mail.messagingengine.com 587")
+;;          )
+;;         ((header "to" "gridaphobe@gmail\\.com")
+;;          (address "gridaphobe@gmail.com")
+;;          ("X-Message-SMTP-Method" "smtp smtp.gmail.com 587"))
+;;         ((header "to" "@.*\\.ucsd\\.edu")
+;;          (address "eseidel@cs.ucsd.edu")
+;;          ("X-Message-SMTP-Method" "smtp smtp.gmail.com 587"))
+;;         ;((header "to" "eseidel@galois\\.com")
+;;         ; (address "eseidel@galois.com")
+;;         ; ("X-Message-SMTP-Method" "smtp relay.galois.com 587"))
+;;         ))
+;; ;; (defadvice smtpmail-via-smtp (around set-smtp-server-from-header activate)
+;; ;;   (let ((smtpmail-smtp-server (or 
+;; ;;                                (save-restriction
+;; ;;                                  (message-narrow-to-headers)
+;; ;;                                  (mail-fetch-field "X-SMTP-Server"))
+;; ;;                                smtpmail-smtp-server)))
+;; ;;     (message-remove-header "X-SMTP-Server")
+;; ;;     ad-do-it
+;; ;;     ))
 
 
-;; (setq gnus-select-method
-;;       '(nnimap (st)))
-;; (setq gnus-secondary-select-methods
-;;       '((nnmaildir )))
+;; ;; (setq gnus-select-method
+;; ;;       '(nnimap (st)))
+;; ;; (setq gnus-secondary-select-methods
+;; ;;       '((nnmaildir )))
 
 ;;;; irc
-(require 'circe)
+;; (require 'circe)
 
-(when (load-file "~/.emacs.d/private.el") ;;(require 'private nil t)
-  (setq circe-network-options
-        `(("seidel.io"
-           :user "gridaphobe/freenode"
-           :pass ,irc-pass
-           :service 5000
-           :tls t
-           :nick "gridaphobe"
-           :nickserv-password ,irc-nick-pass
-           ))))
+;; (when (load-file "~/.emacs.d/private.el") ;;(require 'private nil t)
+;;   (setq circe-network-options
+;;         `(("seidel.io"
+;;            :user "gridaphobe/freenode"
+;;            :pass ,irc-pass
+;;            :service 5000
+;;            :tls t
+;;            :nick "gridaphobe"
+;;            :nickserv-password ,irc-nick-pass
+;;            ))))
 
-(setq lui-max-buffer-size 30000
-      circe-reduce-lurker-spam t)
+;; (setq lui-max-buffer-size 30000
+;;       circe-reduce-lurker-spam t)
 
 
 ;;;; wgrep

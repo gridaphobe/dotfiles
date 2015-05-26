@@ -3,13 +3,14 @@
   allowUnfree = true;
 
   haskellPackageOverrides = with pkgs.haskell-ng.lib; self: super: {
-    liquid-fixpoint = dontCheck (self.callPackage ../Source/liquid/fixpoint {
-      inherit (pkgs) ocaml;
-    });
-    liquidhaskell  = self.callPackage ../Source/liquid/haskell {};
-    target         = self.callPackage ../Source/liquid/check {};
+    #liquid-fixpoint = dontCheck (self.callPackage ../Source/liquid/fixpoint {
+    #  inherit (pkgs) ocaml;
+    #});
+    #liquidhaskell  = self.callPackage ../Source/liquid/haskell {};
+    #target         = self.callPackage ../Source/liquid/check {};
+    target          = dontCheck super.target;
 
-    ghci-ng        = self.callPackage ../Source/ghci-ng {};
+    # ghci-ng        = self.callPackage ../Source/ghci-ng {};
 
     Chart = doJailbreak super.Chart;
     Chart-diagrams = doJailbreak super.Chart-diagrams;
@@ -54,11 +55,11 @@
       name = "shell-env";
       paths = [
         # acl2
-        arcanist
+        #arcanist
         autoconf
         automake
         bashInteractive
-        cacert
+        #cacert
         cmake
         coreutils
         curl
@@ -129,9 +130,9 @@
       cabal2nix
       cabal-install
       ghc-core
-      ghci-ng
+      #ghci-ng
       hakyll
-      haskell-docs
+      #haskell-docs
       hasktags
       hlint
       hscolour
@@ -157,14 +158,14 @@
       hspec
       prettyclass
       regex-posix
-      Chart
-      Chart-diagrams
+      #Chart
+      #Chart-diagrams
       text
       pretty-show
       sexp-show
       data-timeout
       xml-conduit
-      toml
+      #toml
 
       ghc-syb-utils
       th-lift
@@ -318,6 +319,7 @@
         projectile
         smart-mode-line
         smartparens
+        swiper
         switch-window
         # structured-haskell-mode
         undo-tree
