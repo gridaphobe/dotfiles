@@ -62,9 +62,9 @@
 
   (set-fontset-font "fontset-default"
                     'unicode
-                    '("PT Mono" . "iso10646-1"))
+                    '("Fantasque Sans Mono" . "iso10646-1"))
   (set-face-attribute 'default nil
-                      :family "PT Mono"
+                      :family "Fantasque Sans Mono"
                       :height 140)
 
   (require 'exec-path-from-shell)
@@ -82,15 +82,14 @@
 ;;   ad-do-it)
 ;; (load-theme 'solarized-light)
 
-(load-theme 'zenburn)
-;;(load-theme 'leuven)
-;; (custom-theme-set-faces 'leuven '(default ((default :background "WhiteSmoke")) t))
-;; (sml/apply-theme 'light)
+;;(load-theme 'zenburn)
+(load-theme 'leuven)
+(custom-theme-set-faces 'leuven '(default ((default :background "WhiteSmoke")) t))
 
 
 ;;;; smart-mode-line
 (require 'smart-mode-line)
-;;(setq sml/name-width '(20 . 30))
+(setq sml/name-width '(20 . 30))
 
 ;;(defun my-god-mode-indicator ()
 ;;  "Display a custom indicator for `god-mode' in the mode-line."
@@ -99,6 +98,7 @@
 ;;             '((:eval (my-god-mode-indicator))))
 ;;(diminish 'god-local-mode)
 (sml/setup)
+(sml/apply-theme 'light)
 
 (add-to-list 'completion-ignored-extensions ".hi")
 (add-to-list 'completion-ignored-extensions ".hdevtools.sock")
@@ -646,9 +646,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (bind-key "C-c C-?" 'haskell-mode-find-uses haskell-mode-map)
 ;; (add-to-list 'evil-emacs-state-modes 'haskell-presentation-mode)
 
-(add-hook 'haskell-mode-hook 'interactive-haskell-mode)
-
-(setq haskell-process-type 'ghci ;;'cabal-repl
+(setq haskell-process-type 'cabal-repl
       haskell-process-path-ghci "ghci-ng"
       ;; haskell-process-path-ghci "ghci"
       haskell-process-args-cabal-repl '("--with-ghc=ghci-ng" 
@@ -673,6 +671,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (customize-set-variable 'haskell-process-type 'cabal-repl)
 
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+(add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
 ;; (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 (require 'hi2)
 (setq hi2-show-indentations nil)
@@ -1237,7 +1236,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (line-number-mode 1)
 (column-number-mode 1)
 (size-indication-mode 1)
-(setq display-time-format "%a %m-%d %R")
+(setq display-time-format "%R"
+      display-time-default-load-average nil)
 (display-time-mode 1)
 (global-hl-line-mode 1)
 

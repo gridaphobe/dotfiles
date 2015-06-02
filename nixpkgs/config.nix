@@ -8,6 +8,7 @@
     #});
     #liquidhaskell  = self.callPackage ../Source/liquid/haskell {};
     #target         = self.callPackage ../Source/liquid/check {};
+    liquidhaskell   = dontCheck super.liquidhaskell;
     target          = dontCheck super.target;
 
     ghci-ng        = self.callPackage ../Source/ghci-ng {};
@@ -131,6 +132,7 @@
       cabal-install
       ghc-core
       ghci-ng
+      graphmod
       hakyll
       #haskell-docs
       hasktags
