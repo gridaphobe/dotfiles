@@ -307,24 +307,27 @@
         expand-region
         flycheck
         flycheck-pos-tip
-        gnus
+        # gnus
         god-mode
         haskell-mode
         helm
+        helm-projectile
         helm-swoop
-        hi2
+        #hi2
+        ibuffer-vc
         idris-mode
         magit
         markdown-mode
         monokai-theme
         org-plus-contrib
+        persp-projectile
         projectile
         smart-mode-line
         smartparens
         smex
         swiper
         switch-window
-        # structured-haskell-mode
+        structured-haskell-mode
         undo-tree
         use-package
         volatile-highlights

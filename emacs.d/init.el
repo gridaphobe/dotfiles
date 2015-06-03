@@ -126,6 +126,13 @@
 
 (setq-default major-mode 'text-mode)
 
+(require 'ibuffer-vc)
+(add-hook 'ibuffer-hook
+  (lambda ()
+    (ibuffer-vc-set-filter-groups-by-vc-root)
+    (unless (eq ibuffer-sorting-mode 'alphabetic)
+      (ibuffer-do-sort-by-alphabetic))))
+
 ;; nice scrolling
 (setq scroll-margin 0
       scroll-conservatively 10000
@@ -314,6 +321,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (bind-key "C-s" 'swiper)
 (bind-key "C-r" 'swiper)
 
+(bind-key "C-c i" 'imenu)
+
 ;; (require 'helm-config)
 ;; (require 'helm)
 ;; (require 'helm-files)
@@ -359,10 +368,13 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; projectile
 (require 'projectile)
+(require 'perspective)
+(persp-mode)
+(require 'persp-projectile)
 (projectile-global-mode)
 (diminish 'projectile-mode)
 ;; (add-to-list 'rm-blacklist " Projectile\\*")
-(setq projectile-remember-window-configs t
+(setq projectile-completion-system 'ido
       ;;projectile-completion-system 'helm
       ;;projectile-enable-caching t
       )
@@ -672,10 +684,10 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
-;; (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-(require 'hi2)
-(setq hi2-show-indentations nil)
-(add-hook 'haskell-mode-hook 'turn-on-hi2)
+(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+;; (require 'hi2)
+;; (setq hi2-show-indentations nil)
+;; (add-hook 'haskell-mode-hook 'turn-on-hi2)
 
 ;; (require 'shm)
 ;; (require 'shm-case-split)
