@@ -3,15 +3,22 @@
   allowUnfree = true;
 
   haskellPackageOverrides = with pkgs.haskell-ng.lib; self: super: {
-    #liquid-fixpoint = dontCheck (self.callPackage ../Source/liquid/fixpoint {
-    #  inherit (pkgs) ocaml;
-    #});
-    #liquidhaskell  = self.callPackage ../Source/liquid/haskell {};
-    #target         = self.callPackage ../Source/liquid/check {};
-    liquidhaskell   = dontCheck super.liquidhaskell;
-    target          = dontCheck super.target;
+    liquid-fixpoint = dontCheck (self.callPackage ../Source/liquid/fixpoint {
+      inherit (pkgs) ocaml ;
+    });
+    liquidhaskell  = dontCheck (self.callPackage ../Source/liquid/haskell {});
+    target         = dontCheck (self.callPackage ../Source/liquid/check {});
 
-    ghci-ng        = self.callPackage ../Source/ghci-ng {};
+    ghci-ng         = overrideCabal super.ghci-ng (attrs: {
+      # use chrisdone's fork of ghci-ng
+      src = pkgs.fetchgit {
+        url    = "git://github.com/chrisdone/ghci-ng.git";
+        rev    = "738f66f3d1f1a3b7ba574fb9c83da793179a42c3";
+        sha256 = "2fc633deaaa2e6e16ddb4faae00e82f522a7e5cb7c00fe1783f6d157b5177f0e";
+      };
+      version = "0.0.0";
+      buildDepends = attrs.buildDepends ++ [ super.syb ];
+    });
 
     Chart = doJailbreak super.Chart;
     Chart-diagrams = doJailbreak super.Chart-diagrams;
@@ -117,15 +124,15 @@
       '';
     });
 
-    hoogle-local = lib.overrideDerivation (withHoogle haskell-env) (drv: {
-      name = "hoogle-with-packages";
-    });
+    # hoogle-local = lib.overrideDerivation (withHoogle haskell-env) (drv: {
+    #   name = "hoogle-with-packages";
+    # });
 
-    withHoogle = haskellEnv: with haskellngPackages;
-      import <nixpkgs/pkgs/development/libraries/haskell/hoogle/local.nix> {
-        inherit stdenv hoogle rehoo ghc;
-        packages = haskellEnv.paths;
-      };
+    # withHoogle = haskellEnv: with haskellngPackages;
+    #   import <nixpkgs/pkgs/development/libraries/haskell/hoogle/local.nix> {
+    #     inherit stdenv hoogle rehoo ghc;
+    #     packages = haskellEnv.paths;
+    #   };
 
     cabalPackages = hp: with hp; [
       cabal2nix
@@ -136,6 +143,9 @@
       hakyll
       #haskell-docs
       hasktags
+      codex
+      hoogle
+      hoogle-index
       hlint
       hscolour
       structured-haskell-mode
