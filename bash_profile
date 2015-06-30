@@ -5,6 +5,8 @@
 
 if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then . "$HOME/.nix-profile/etc/profile.d/nix.sh"; fi # added by Nix installer
 
+export PATH="$HOME/Source/arcanist/bin:$PATH" # until i can build php in nixpkgs again..
+
 export NIX_CONF_DIR="$HOME/.config/nix"
 export NIX_REMOTE_SYSTEMS="$HOME/.config/nix/remote-systems.conf"
 #export NIX_BUILD_HOOK="$HOME/.nix-profile/libexec/nix/build-remote.pl"
@@ -19,3 +21,7 @@ export NIX_GHC="$HOME/.nix-profile/bin/ghc"
 export NIX_GHCPKG="$HOME/.nix-profile/bin/ghc-pkg"
 export NIX_GHC_DOCDIR="$HOME/.nix-profile/share/doc/ghc/html"
 export NIX_GHC_LIBDIR="$HOME/.nix-profile/lib/ghc-$($NIX_GHC --numeric-version)"
+
+# workaround for nixpkgs#6390
+export NIX_CFLAGS_COMPILE="-idirafter /usr/include"
+export NIX_CFLAGS_LINK="-L /usr/lib"

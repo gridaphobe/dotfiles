@@ -3,11 +3,14 @@
   allowUnfree = true;
 
   haskellPackageOverrides = with pkgs.haskell-ng.lib; self: super: {
+    #liquid-fixpoint = dontCheck super.liquid-fixpoint;
     liquid-fixpoint = dontCheck (self.callPackage ../Source/liquid/fixpoint {
-      inherit (pkgs) ocaml ;
+      inherit (pkgs) ocaml z3;
     });
     liquidhaskell  = dontCheck (self.callPackage ../Source/liquid/haskell {});
-    target         = dontCheck (self.callPackage ../Source/liquid/check {});
+    target         = dontCheck (self.callPackage ../Source/liquid/check {
+      inherit (pkgs) z3;
+    });
 
     ghci-ng         = overrideCabal super.ghci-ng (attrs: {
       # use chrisdone's fork of ghci-ng
@@ -20,6 +23,22 @@
       buildDepends = attrs.buildDepends ++ [ super.syb ];
     });
 
+    ghc-mod       = overrideCabal super.ghc-mod (attrs: {
+      # use HEAD
+      src = pkgs.fetchgit {
+        url    = "git://github.com/kazu-yamamoto/ghc-mod.git";
+        rev    = "bfa0b965ee3497f5f41d261072dc6bae0af00a06";
+        sha256 = "89f7da0794553afa72bdef995805775425d096fae38dab65ad0ae4b00aafd0a4";
+      };
+      version = "0.0.0";
+      buildDepends = attrs.buildDepends ++ [ super.cabal-helper super.cereal ];
+    });
+
+    ide-backend-client = doJailbreak (self.callPackage ./ide-backend-client.nix {});
+
+    stack-prism = dontHaddock super.stack-prism;
+
+    wai-cors = dontCheck super.wai-cors;
     Chart = doJailbreak super.Chart;
     Chart-diagrams = doJailbreak super.Chart-diagrams;
     diagrams-postscript = doJailbreak super.diagrams-postscript;
@@ -138,7 +157,9 @@
       cabal2nix
       cabal-install
       ghc-core
+      ghc-mod
       ghci-ng
+      ghcid
       graphmod
       hakyll
       #haskell-docs
@@ -146,6 +167,7 @@
       codex
       hoogle
       hoogle-index
+      hint
       hlint
       hscolour
       structured-haskell-mode
@@ -156,13 +178,19 @@
       shake
       SafeSemaphore
       scotty
+      wai-middleware-static
+      wai-cors
       mtl-compat
+      ide-backend
+      ide-backend-client
+      ide-backend-server
 
       ad
       data-reify
       lens
       trifecta
       binary-bits
+      clay
 
       #cartel
       doctest
@@ -184,6 +212,7 @@
 
       QuickCheck
       smallcheck
+      smartcheck
       criterion
       tasty
       tasty-hunit
@@ -193,6 +222,7 @@
       liquid-fixpoint
       liquidhaskell
       optparse-applicative
+      z3
       target
 
       #OpenGL
@@ -273,10 +303,10 @@
         surround
         syntastic
         tmux-navigator
-        vimproc
+        #vimproc
         #vimrsi
         #vimsensible
-        vimshell
+        #vimshell
       ];
     };
 
@@ -338,6 +368,7 @@
         swiper
         switch-window
         structured-haskell-mode
+        tuareg
         undo-tree
         use-package
         volatile-highlights

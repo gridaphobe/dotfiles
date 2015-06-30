@@ -181,6 +181,7 @@
 
 ;; revert buffers automatically when underlying files are changed externally
 (global-auto-revert-mode 1)
+(setq auto-revert-verbose nil)
 
 ;; auto-save when switching buffers
 (defadvice switch-to-buffer (before save-buffer-now activate)
@@ -660,34 +661,36 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 (setq haskell-process-type 'cabal-repl
       haskell-process-path-ghci "ghci-ng"
+      haskell-process-args-ghci '("-ferror-spans" "-idist/build:dist/build/autogen")
       ;; haskell-process-path-ghci "ghci"
       haskell-process-args-cabal-repl '("--with-ghc=ghci-ng" 
                                         "--ghc-option=-ferror-spans")
       haskell-process-log t
       haskell-align-imports-pad-after-name t
-      ;; haskell-font-lock-symbols t
-      haskell-stylish-on-save nil
+      haskell-ask-also-kill-buffers nil
+      haskell-completing-read-function 'completing-read
+      haskell-interactive-popup-errors nil
+      haskell-interactive-types-for-show-ambiguous t
       haskell-process-auto-import-loaded-modules t
-      haskell-process-suggest-hoogle-imports t
+      haskell-process-reload-with-fbytecode t
+      haskell-process-suggest-add-package t
+      haskell-process-suggest-hoogle-imports nil
+      haskell-process-suggest-language-pragmas t
       haskell-process-suggest-remove-import-lines t
-      haskell-process-use-presentation-mode nil)
+      haskell-process-suggest-overloaded-strings t
+      haskell-process-suggest-restart t
+      haskell-process-use-presentation-mode nil
+      haskell-stylish-on-save nil
+      haskell-tags-on-save t
+      )
 
-;;(add-hook 'interactive-haskell-mode-hook 'ac-haskell-process-setup)
-;;(add-hook 'haskell-interactive-mode-hook 'ac-haskell-process-setup)
-;;
-;;(add-to-list 'ac-modes 'haskell-interactive-mode)
-;;(add-hook 'auto-complete-mode-hook 'set-auto-complete-as-completion-at-point-function)
-;;(add-hook 'haskell-interactive-mode-hook 'set-auto-complete-as-completion-at-point-function)
-;;(add-hook 'haskell-mode-hook 'set-auto-complete-as-completion-at-point-function)
-;;(bind-key "C-c C-d" 'ac-haskell-process-popup-doc haskell-mode-map)
-;; (customize-set-variable 'haskell-process-type 'cabal-repl)
-
-(add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
+(add-hook 'haskell-mode-hook 'eldoc-mode)
+(add-hook 'haskell-mode-hook 'interactive-haskell-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
-(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-;; (require 'hi2)
-;; (setq hi2-show-indentations nil)
-;; (add-hook 'haskell-mode-hook 'turn-on-hi2)
+(add-hook 'haskell-mode-hook 
+          (lambda () 
+            (turn-on-haskell-indentation) 
+            (diminish 'haskell-indentation-mode)))
 
 ;; (require 'shm)
 ;; (require 'shm-case-split)
@@ -696,12 +699,16 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (add-hook 'haskell-mode-hook 'structured-haskell-mode)
 ;; (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
 ;; (add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
-;; ;; (remove-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+;; (remove-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
 ;; (setq shm-colon-enabled t
 ;;       shm-indent-point-after-adding-where-clause t
 ;;       shm-lambda-indent-style 'leftmost-parent
 ;;       shm-use-hdevtools nil
-;;       shm-use-presentation-mode t)
+;;       shm-use-presentation-mode nil
+;;       shm-auto-insert-skeletons t
+;;       shm-indent-point-after-adding-where-clause t
+;;       shm-type-info-fallback-to-ghci t
+;;       )
 ;; (custom-set-faces
 ;;  '(shm-quarantine-face ((t (:inherit font-lock-error))))
 ;;  '(shm-current-face ((t (:background "#efefef")))))
