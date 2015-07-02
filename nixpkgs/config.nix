@@ -2,7 +2,7 @@
   allowBroken = true;
   allowUnfree = true;
 
-  haskellPackageOverrides = with pkgs.haskell-ng.lib; self: super: {
+  haskellPackageOverrides = with pkgs.haskell.lib; self: super: {
     #liquid-fixpoint = dontCheck super.liquid-fixpoint;
     liquid-fixpoint = dontCheck (self.callPackage ../Source/liquid/fixpoint {
       inherit (pkgs) ocaml z3;
@@ -65,10 +65,6 @@
     # tower-statemachine = self.callPackage ../Source/tower/tower-statemachine {};
 
     # ghc-srcspan-plugin = self.callPackage ../Source/ghc-srcspan-plugin {};
-
-    #hoogleLocal = self.hoogleLocal.override {
-    #  packages  = super.cabalPackages self;
-    #};
   };
 
   packageOverrides = pkgs: with pkgs; rec {
@@ -135,7 +131,7 @@
       ];
     };
 
-    haskell-env = (haskellngPackages.ghcWithPackages cabalPackages).overrideDerivation (drv: { 
+    haskell-env = (haskellPackages.ghcWithPackages cabalPackages).overrideDerivation (drv: {
       name = "haskell-env";
       postBuild = ''
         ${drv.postBuild}
@@ -143,18 +139,22 @@
       '';
     });
 
-    # hoogle-local = lib.overrideDerivation (withHoogle haskell-env) (drv: {
+    hoogle = lib.overrideDerivation (haskell.lib.withHoogle haskell-env) (drv: {
+      name = "hoogle";
+    });
+
+    # hoogle-local = lib.overrideDerivation hoogleLocal (drv: {
     #   name = "hoogle-with-packages";
     # });
 
-    # withHoogle = haskellEnv: with haskellngPackages;
-    #   import <nixpkgs/pkgs/development/libraries/haskell/hoogle/local.nix> {
+    # hoogleLocal = with haskellPackages;
+    #   import <nixpkgs/pkgs/development/haskell-modules/hoogle.nix> {
     #     inherit stdenv hoogle rehoo ghc;
-    #     packages = haskellEnv.paths;
+    #     packages = [ ghc ] ++ cabalPackages haskellPackages;
     #   };
 
     cabalPackages = hp: with hp; [
-      cabal2nix
+      #cabal2nix
       cabal-install
       ghc-core
       ghc-mod
@@ -165,8 +165,8 @@
       #haskell-docs
       hasktags
       codex
-      hoogle
-      hoogle-index
+      #hoogle
+      #hoogle-index
       hint
       hlint
       hscolour
@@ -181,9 +181,9 @@
       wai-middleware-static
       wai-cors
       mtl-compat
-      ide-backend
-      ide-backend-client
-      ide-backend-server
+      #ide-backend
+      #ide-backend-client
+      #ide-backend-server
 
       ad
       data-reify
