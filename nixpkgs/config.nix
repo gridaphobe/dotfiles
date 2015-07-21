@@ -34,6 +34,8 @@
       buildDepends = attrs.buildDepends ++ [ super.cabal-helper super.cereal ];
     });
 
+    lens = dontCheck super.lens;
+
     ide-backend-client = doJailbreak (self.callPackage ./ide-backend-client.nix {});
 
     stack-prism = dontHaddock super.stack-prism;
@@ -102,13 +104,14 @@
         #gnupg
         gnused
         gnutar
+        gnutls
         #graphviz
         imagemagick
         isync
         leafnode
         mu
         # (mutt.override { withSidebar = true;})
-        nix-prefetch-scripts
+        #nix-prefetch-scripts
         nix-repl
         # notmuch
         ocaml
@@ -191,6 +194,7 @@
       trifecta
       binary-bits
       clay
+      present
 
       #cartel
       doctest
@@ -212,7 +216,7 @@
 
       QuickCheck
       smallcheck
-      smartcheck
+      #smartcheck
       criterion
       tasty
       tasty-hunit

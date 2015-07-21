@@ -26,7 +26,7 @@
   (load custom-file))
 
 ;; Turn off mouse interface early in startup to avoid momentary display
-(when (and (fboundp 'menu-bar-mode) (not on-mac)) (menu-bar-mode -1))
+(when (and (fboundp 'menu-bar-mode) (not (and on-mac window-system))) (menu-bar-mode -1))
 (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 
@@ -672,7 +672,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
       haskell-interactive-popup-errors nil
       haskell-interactive-types-for-show-ambiguous t
       haskell-process-auto-import-loaded-modules t
-      haskell-process-reload-with-fbytecode t
+      ;;haskell-process-reload-with-fbytecode t
       haskell-process-suggest-add-package t
       haskell-process-suggest-hoogle-imports nil
       haskell-process-suggest-language-pragmas t
