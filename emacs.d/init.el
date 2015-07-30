@@ -303,8 +303,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (add-to-list 'rm-blacklist " SP/s")
 
 ;;;; rainbow-mode
-(use-package rainbow-mode
-  :diminish "")
+;; (use-package rainbow-mode
+;;   :diminish "")
 
 ;;;; ace-jump-mode
 (use-package ace-jump-mode
@@ -425,8 +425,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 
 ;;;; discover-my-major
-(use-package discover-my-major
-  :init (bind-key "M-m" 'discover-my-major help-map))
+;; (use-package discover-my-major
+;;   :init (bind-key "M-m" 'discover-my-major help-map))
 
 
 ;;;; edit-server
@@ -589,8 +589,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :bind (("M-n" . flycheck-next-error)
          ("M-p" . flycheck-previous-error))
   :config (setq flycheck-check-syntax-automatically '(mode-enabled save)))
-(use-package flycheck-pos-tip
-  :init (setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
+;; (use-package flycheck-pos-tip
+;;   :init (setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
 
 
 ;;;; flyspell
@@ -746,7 +746,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;;; magit
 (require 'magit)
 (setq magit-last-seen-setup-instructions "1.4.0")
-(diminish 'magit-auto-revert-mode)
+;; (diminish 'magit-auto-revert-mode)
 ;; (add-to-list 'rm-blacklist " MRev")
 (defalias 'magit 'magit-status)
 (defadvice magit-status (around magit-fullscreen activate)
