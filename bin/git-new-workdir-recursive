@@ -1,0 +1,65 @@
+#!/bin/sh
+# What: git-new-workdir [1] with submodule support.
+#
+# How: in addition to creating a work directory for the parent repository, it
+# also recursively creates work directories for all (initialised and updated)
+# submodules.
+#
+# Usage:
+#   * Make sure `git-new-workdir` is on your path
+#   * Run `./git-new-workdir-recursive <repository> <new_workdir> [<branch>]`
+#
+# Bugs:
+#   * it unsets `core.worktree` for each submodule in the original repo. Certain
+#   scripts (e.g. vim-fugitive) will become unusable in the submodules of the
+#   original repository, but work fine in the new work directories.
+#
+# Author: Thomas Miedema
+# Homepage: https://github.com/thomie/git-new-workdir-recursive
+#
+# [1] https://github.com/git/git/blob/master/contrib/workdir/git-new-workdir
+set -e
+
+if test -d "$2" && test $(ls -a1 "$2" | wc -l) -gt 2; then
+  # Don't recreate a workdir over an existing directory, unless it's empty
+  echo "Skipping '$2' (not empty)"
+elif test -d "$1" && test $(ls -a1 "$1" | wc -l) -eq 2; then
+  # git-new-workdir should check if what is pointed to ($1) has a .git
+  # directory. Instead, it will also proceed if one of the ancestors of $1 has
+  # a .git directory. So when $1 is an initialized but unupdated submodule,
+  # git-new-workdir will link files from the parent repo .git directory (very
+  # wrong). So here we make sure $1 is not empty.
+  echo "Skipping '$2' ('$1' is empty)"
+else
+  # Removing empty destination is needed for git-new-workdir < 2.3, which
+  # doesn't have the following commit yet:
+  # https://github.com/git/git/commit/e32afab7b0376a7b07601a87cd5c6841ff2a811a
+  test -d "$2" && rmdir "$2"
+
+  echo "Creating '$2' <- '$1'"
+  git new-workdir "$@" || exit $?
+  # Remove non-existing `remotes`, `rr-cache` and `svn` links.
+  (cd "$2/.git" && find . -maxdepth 1 -type l -xtype l -exec rm {} \;)
+fi
+
+# Only create workdirectories for initialized submodules that don't have
+# update=none set.
+
+# For all submodules...
+echo "$(cd "$1" && git ls-files --stage | grep '^160000 ' | cut -f2)" | while read i; do
+  # ...that are initialised...
+  if (cd "$1" && git config "submodule.$i.url" > /dev/null); then
+    # ...and don't have update=none.
+    if $(cd "$1" && test "$(git config "submodule.$i.update")" != "none"); then
+      # When core.worktree starts with '../', we assume the user didn't set it
+      # manually. Since git-new-workdir fails if it set, we unset it here.
+      # Note that certain scripts (e.g. vim-fugitive) will become unusable in
+      # the original repository, but work fine in the workdirs.
+      # See: http://comments.gmane.org/gmane.comp.version-control.git/196019
+      (cd "$1/$i" &&
+       if test "$(git config core.worktree | sed -e 's/^\(\.\.\/\)*//')" = "$i";
+       then git config --unset core.worktree; fi)
+      "$0" "$1/$i" "$2/$i"
+    fi
+  fi
+done
