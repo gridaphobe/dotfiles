@@ -690,7 +690,10 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (add-hook 'haskell-mode-hook 
           (lambda () 
             (turn-on-haskell-indentation) 
-            (diminish 'haskell-indentation-mode)))
+            (diminish 'haskell-indentation-mode)
+            (flycheck-haskell-setup)))
+
+
 
 ;; (require 'shm)
 ;; (require 'shm-case-split)

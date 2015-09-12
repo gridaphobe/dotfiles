@@ -1,16 +1,23 @@
-{ pkgs }: {
+{ pkgs }:
+{
   allowBroken = true;
   allowUnfree = true;
 
   haskellPackageOverrides = with pkgs.haskell.lib; self: super: {
     #liquid-fixpoint = dontCheck super.liquid-fixpoint;
-    liquid-fixpoint = dontCheck (self.callPackage ../Source/liquid/fixpoint {
-      inherit (pkgs) ocaml z3;
-    });
-    liquidhaskell  = dontCheck (self.callPackage ../Source/liquid/haskell {});
-    target         = dontCheck (self.callPackage ../Source/liquid/check {
-      inherit (pkgs) z3;
-    });
+    #liquidhaskell = dontCheck super.liquidhaskell;
+    #target = dontCheck super.target;
+    # liquid-fixpoint = (self.callPackage ../Source/liquid/fixpoint {
+    #   inherit (pkgs) ocaml z3;
+    # });
+    # liquidhaskell  = dontCheck (self.callPackage ../Source/liquid/haskell {});
+    # target         = dontCheck (self.callPackage ../Source/liquid/check {
+    #   inherit (pkgs) z3;
+    # });
+
+    #distributive = dontCheck super.distributive;
+    #comonad = dontCheck super.comonad;
+    #semigroupoids = dontCheck super.semigroupoids;
 
     ghci-ng         = overrideCabal super.ghci-ng (attrs: {
       # use chrisdone's fork of ghci-ng
@@ -20,33 +27,35 @@
         sha256 = "2fc633deaaa2e6e16ddb4faae00e82f522a7e5cb7c00fe1783f6d157b5177f0e";
       };
       version = "0.0.0";
-      buildDepends = attrs.buildDepends ++ [ super.syb ];
+      executableHaskellDepends = attrs.executableHaskellDepends ++ [ super.syb ];
     });
 
-    ghc-mod       = overrideCabal super.ghc-mod (attrs: {
-      # use HEAD
-      src = pkgs.fetchgit {
-        url    = "git://github.com/kazu-yamamoto/ghc-mod.git";
-        rev    = "bfa0b965ee3497f5f41d261072dc6bae0af00a06";
-        sha256 = "89f7da0794553afa72bdef995805775425d096fae38dab65ad0ae4b00aafd0a4";
-      };
-      version = "0.0.0";
-      buildDepends = attrs.buildDepends ++ [ super.cabal-helper super.cereal ];
-    });
+    #ghc-mod       = overrideCabal super.ghc-mod (attrs: {
+    #  # use HEAD
+    #  src = pkgs.fetchgit {
+    #    url    = "git://github.com/kazu-yamamoto/ghc-mod.git";
+    #    rev    = "acbb7211ac3c191a7da66348e9196829051960af";
+    #    sha256 = "0sdjgg2gggaqwifrr5r6c6fxkfa6j6j0h5gh3iwjs2x188r02v7r";
+    #  };
+    #  version = "0.0.0";
+    #  executableHaskellDepends = attrs.executableHaskellDepends ++ [ super.cabal-helper super.cereal ];
+    #});
 
-    lens = dontCheck super.lens;
+    #base-orphans = dontCheck super.base-orphans;
+    #lens = dontCheck super.lens;
+    #mockery = dontCheck super.mockery;
 
-    ide-backend-client = doJailbreak (self.callPackage ./ide-backend-client.nix {});
+    #ide-backend-client = doJailbreak (self.callPackage ./ide-backend-client.nix {});
 
-    stack-prism = dontHaddock super.stack-prism;
+    #stack-prism = dontHaddock super.stack-prism;
 
-    wai-cors = dontCheck super.wai-cors;
-    Chart = doJailbreak super.Chart;
-    Chart-diagrams = doJailbreak super.Chart-diagrams;
-    diagrams-postscript = doJailbreak super.diagrams-postscript;
+    #wai-cors = dontCheck super.wai-cors;
+    #Chart = doJailbreak super.Chart;
+    #Chart-diagrams = doJailbreak super.Chart-diagrams;
+    #diagrams-postscript = doJailbreak super.diagrams-postscript;
 
-    enclosed-exceptions = dontCheck super.enclosed-exceptions;
-    shake = dontCheck super.shake;
+    #enclosed-exceptions = dontCheck super.enclosed-exceptions;
+    #shake = dontCheck super.shake;
 
     # ivory           = self.callPackage ../Source/ivory/ivory {};
     # ivory-artifact   = self.callPackage ../Source/ivory/ivory-artifact {};
@@ -69,7 +78,7 @@
     # ghc-srcspan-plugin = self.callPackage ../Source/ghc-srcspan-plugin {};
   };
 
-  packageOverrides = pkgs: with pkgs; rec {
+  packageOverrides = super: let pkgs = super.pkgs; in with pkgs; rec {
 
     makeShell = p: extras: lib.overrideDerivation p (attrs: {
       buildInputs = [fish gitAndTools.git] ++ extras ++ attrs.buildInputs;
@@ -134,7 +143,7 @@
       ];
     };
 
-    haskell-env = (haskellPackages.ghcWithPackages cabalPackages).overrideDerivation (drv: {
+    haskell-env = (haskellPackages.ghcWithHoogle cabalPackages).overrideDerivation (drv: {
       name = "haskell-env";
       postBuild = ''
         ${drv.postBuild}
@@ -142,9 +151,9 @@
       '';
     });
 
-    hoogle = lib.overrideDerivation (haskell.lib.withHoogle haskell-env) (drv: {
-      name = "hoogle";
-    });
+    # hoogle = lib.overrideDerivation (haskell.lib.withHoogle haskell-env) (drv: {
+    #   name = "hoogle";
+    # });
 
     # hoogle-local = lib.overrideDerivation hoogleLocal (drv: {
     #   name = "hoogle-with-packages";
@@ -160,41 +169,51 @@
       #cabal2nix
       cabal-install
       ghc-core
-      ghc-mod
+      #ghc-mod
       ghci-ng
       ghcid
       graphmod
       hakyll
       #haskell-docs
       hasktags
-      codex
+      # codex
       #hoogle
       #hoogle-index
       hint
       hlint
       hscolour
-      structured-haskell-mode
+      #structured-haskell-mode
       stylish-haskell
       pandoc
       pandoc-citeproc
       pandoc-types
+      #precis
       shake
       SafeSemaphore
       scotty
-      wai-middleware-static
-      wai-cors
+      #wai-middleware-static
+      #wai-cors
       mtl-compat
       #ide-backend
       #ide-backend-client
       #ide-backend-server
+      happy
+      alex
+      cabal-bounds
+      bumper
 
-      ad
+      # ad
+      bifunctors
+      intern
+      text-format
       data-reify
-      lens
-      trifecta
+      # lens
+      # trifecta
       binary-bits
       clay
       present
+      fgl
+      fgl-visualize
 
       #cartel
       doctest
@@ -213,7 +232,12 @@
 
       ghc-syb-utils
       th-lift
+      MonadRandom
+      Diff
+      fingertree
+      lucid
 
+      located-base
       QuickCheck
       smallcheck
       #smartcheck
@@ -225,8 +249,8 @@
 
       liquid-fixpoint
       liquidhaskell
-      optparse-applicative
-      z3
+      # optparse-applicative
+      # z3
       target
 
       #OpenGL
@@ -262,6 +286,30 @@
         || stdenv.lib.hasSuffix ".p_o" path))
       src;
 
+    haskell = super.haskell // {
+      packages = super.haskell.packages // {
+        ghcHEAD = super.haskell.packages.ghcHEAD.override {
+          ghc = ghcHEAD;
+        };
+      };
+    };
+
+    ghcHEAD = lib.overrideDerivation super.haskell.compiler.ghcHEAD (attrs: {
+       src = ~/Source/ghc;
+       postUnpack = ''
+         pushd ghc
+         make clean
+         patchShebangs .
+         ./boot
+         popd
+       '';
+       buildInputs = attrs.buildInputs ++ [ super.git ];
+       #preConfigure = "";
+       #configureFlags = [];
+       NIX_CFLAGS = "-Qunused-arguments";
+       NIX_CFLAGS_COMPILE = "-Qunused-arguments";
+       NIX_CFLAGS_LINK = "-Qunused-arguments";
+    });
 
     # haskellPackages_wrapper = hp: recurseIntoAttrs (hp.override {
     #     extension = this: super: haskellProjects {
@@ -275,8 +323,8 @@
     # haskellPackages_ghc784 = haskellPackages_wrapper pkgs.haskellPackages_ghc784;
     # haskellPackages_ghc784_profiling = haskellPackages_wrapper pkgs.haskellPackages_ghc784_profiling;
 
-    # # Define own GHC HEAD package pointing to local checkout.
-    # packages_ghcHEAD = pkgs.haskell.packages {
+    # Define own GHC HEAD package pointing to local checkout.
+    # pkgs.haskell.packages.ghcHEAD = pkgs.haskell.packages {
     #   ghcPath = ../Source/ghc;
     #   ghcBinary = pkgs.haskellPackages.ghcPlain;
     #   prefFun = pkgs.haskell.ghcHEADPrefs;
@@ -289,7 +337,8 @@
     vim-env = pkgs.buildEnv {
       name = "vim-env";
       paths = with vimPlugins; [
-        macvim
+        #macvim
+        neovim
 
         align
         airline
@@ -300,7 +349,7 @@
         gitgutter
         # gundo
         hasksyn
-        hoogle
+        #hoogle
         idris-vim
         neco-ghc
         stylish-haskell
@@ -350,7 +399,8 @@
         exec-path-from-shell
         expand-region
         flycheck
-        flycheck-pos-tip
+        flycheck-haskell
+        # flycheck-pos-tip
         # gnus
         god-mode
         haskell-mode
@@ -363,6 +413,7 @@
         magit
         markdown-mode
         monokai-theme
+        multiple-cursors
         org-plus-contrib
         persp-projectile
         projectile
@@ -371,7 +422,7 @@
         smex
         swiper
         switch-window
-        structured-haskell-mode
+        #structured-haskell-mode
         tuareg
         undo-tree
         use-package
@@ -381,9 +432,11 @@
       ];
     };
 
-    mu = pkgs.mu.override { libsoup = (libsoup.override { gnomeSupport = false; }); };
-    notmuch = pkgs.notmuch.override { talloc = (talloc.override { libcap = null; }); };
+    # mu = pkgs.mu.override { libsoup = (libsoup.override { gnomeSupport = false; }); };
+    # notmuch = pkgs.notmuch.override { talloc = (talloc.override { libcap = null; }); };
 
-    emacs = pkgs.emacs24Macport;
+    emacs = if pkgs.stdenv.isDarwin
+            then pkgs.emacs24Macport
+            else pkgs.emacs;
   };
 }
