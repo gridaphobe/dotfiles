@@ -3,6 +3,8 @@
   allowBroken = true;
   allowUnfree = true;
 
+  #replaceStdenv = { pkgs }: pkgs.allStdenvs.stdenvDarwinPure;
+
   haskellPackageOverrides = with pkgs.haskell.lib; self: super: {
     #liquid-fixpoint = dontCheck super.liquid-fixpoint;
     #liquidhaskell = dontCheck super.liquidhaskell;
@@ -80,20 +82,20 @@
 
   packageOverrides = super: let pkgs = super.pkgs; in with pkgs; rec {
 
-    makeShell = p: extras: lib.overrideDerivation p (attrs: {
-      buildInputs = [fish gitAndTools.git] ++ extras ++ attrs.buildInputs;
-      shellHook = "exec fish";
-    });
+    # makeShell = p: extras: lib.overrideDerivation p (attrs: {
+    #   buildInputs = [fish gitAndTools.git] ++ extras ++ attrs.buildInputs;
+    #   shellHook = "exec fish";
+    # });
 
     shell-env = pkgs.buildEnv {
       name = "shell-env";
       paths = [
         # acl2
-        #arcanist
+        # arcanist
         autoconf
         automake
         bashInteractive
-        #cacert
+        cacert
         cmake
         coreutils
         curl
@@ -120,7 +122,7 @@
         leafnode
         mu
         # (mutt.override { withSidebar = true;})
-        #nix-prefetch-scripts
+        nix-prefetch-scripts
         nix-repl
         # notmuch
         ocaml
@@ -151,22 +153,8 @@
       '';
     });
 
-    # hoogle = lib.overrideDerivation (haskell.lib.withHoogle haskell-env) (drv: {
-    #   name = "hoogle";
-    # });
-
-    # hoogle-local = lib.overrideDerivation hoogleLocal (drv: {
-    #   name = "hoogle-with-packages";
-    # });
-
-    # hoogleLocal = with haskellPackages;
-    #   import <nixpkgs/pkgs/development/haskell-modules/hoogle.nix> {
-    #     inherit stdenv hoogle rehoo ghc;
-    #     packages = [ ghc ] ++ cabalPackages haskellPackages;
-    #   };
-
     cabalPackages = hp: with hp; [
-      #cabal2nix
+      cabal2nix
       cabal-install
       ghc-core
       #ghc-mod
@@ -177,12 +165,10 @@
       #haskell-docs
       hasktags
       # codex
-      #hoogle
-      #hoogle-index
       hint
       hlint
       hscolour
-      #structured-haskell-mode
+      structured-haskell-mode
       stylish-haskell
       pandoc
       pandoc-citeproc
@@ -201,6 +187,7 @@
       alex
       cabal-bounds
       bumper
+      #hermit
 
       # ad
       bifunctors
@@ -349,7 +336,6 @@
         gitgutter
         # gundo
         hasksyn
-        #hoogle
         idris-vim
         neco-ghc
         stylish-haskell
@@ -377,6 +363,11 @@
     #  ];
     #};
 
+    emacs = if pkgs.stdenv.isDarwin
+            then pkgs.emacs24Macport
+            else pkgs.emacs24;
+    # emacs = pkgs.emacs24-nox;
+
     emacs-env = pkgs.buildEnv {
       name = "emacs-env";
       paths = with emacsPackagesNgGen emacs; [
@@ -385,7 +376,7 @@
         aspell
         aspellDicts.en
 
-        ac-haskell-process
+        # ac-haskell-process
         ace-jump-mode
         ag
         auctex
@@ -393,9 +384,9 @@
         change-inner
         circe
         company
-        # evil
-        # evil-god-state
-        # evil-surround
+        #evil
+        #evil-god-state
+        #evil-surround
         exec-path-from-shell
         expand-region
         flycheck
@@ -407,7 +398,6 @@
         helm
         helm-projectile
         helm-swoop
-        #hi2
         ibuffer-vc
         idris-mode
         magit
@@ -422,8 +412,8 @@
         smex
         swiper
         switch-window
-        #structured-haskell-mode
-        tuareg
+        structured-haskell-mode
+        #tuareg
         undo-tree
         use-package
         volatile-highlights
@@ -435,8 +425,5 @@
     # mu = pkgs.mu.override { libsoup = (libsoup.override { gnomeSupport = false; }); };
     # notmuch = pkgs.notmuch.override { talloc = (talloc.override { libcap = null; }); };
 
-    emacs = if pkgs.stdenv.isDarwin
-            then pkgs.emacs24Macport
-            else pkgs.emacs;
   };
 }
