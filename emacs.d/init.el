@@ -62,9 +62,9 @@
 
   (set-fontset-font "fontset-default"
                     'unicode
-                    '("Fantasque Sans Mono" . "iso10646-1"))
+                    '("Fira Mono" . "iso10646-1"))
   (set-face-attribute 'default nil
-                      :family "Fantasque Sans Mono"
+                      :family "Fira Mono"
                       :height 140)
 
   (require 'exec-path-from-shell)
@@ -255,6 +255,10 @@
 (csetq ediff-window-setup-function 'ediff-setup-windows-plain)
 (csetq ediff-split-window-function 'split-window-horizontally)
 (csetq ediff-diff-options "-w")
+
+
+;;;; ProofGeneral
+;; (load "~/.nix-profile/share/emacs/site-lisp/ProofGeneral/generic/proof-site.el")
 
 
 ;;;; Rectangle-aware commands
@@ -486,8 +490,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;       evil-cross-lines t
 ;;       evil-move-cursor-back nil)
 ;; (add-to-list 'evil-emacs-state-modes 'special-mode)
-;; (evil-ex-define-cmd "e[dit]" 'helm-find-files)
-;; (evil-ex-define-cmd "b[uffer]" 'helm-buffers-list)
+;; ;; (evil-ex-define-cmd "e[dit]" 'helm-find-files)
+;; ;; (evil-ex-define-cmd "b[uffer]" 'helm-buffers-list)
 ;; (bind-key "[escape]" 'keyboard-escape-quit evil-normal-state-map)
 ;; (bind-key "[escape]" 'keyboard-escape-quit evil-visual-state-map)
 ;; (bind-key "<escape>" 'keyboard-escape-quit)
@@ -507,6 +511,12 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;           'evil-previous-visual-line 
 ;;           evil-motion-state-map)
 
+;; (setcdr evil-insert-state-map nil)
+;; (define-key evil-insert-state-map
+;;   (read-kbd-macro evil-toggle-key) 'evil-emacs-state)
+;; (define-key evil-insert-state-map
+;;   [escape] 'evil-normal-state)
+    
 ;; (defun evil-undefine ()
 ;;   (interactive)
 ;;   (let (evil-mode-map-alist)
@@ -606,26 +616,26 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;;; god-mode
 (require 'god-mode)
 ;;(god-mode)
-(setq-default cursor-type 'bar)
-(add-hook 'god-local-mode-hook
-          (defun my/god-toggle-cursor-type ()
-            (setq cursor-type (if god-local-mode
-                                  'box
-                                'bar))))
+;; (setq-default cursor-type 'bar)
+;; (add-hook 'god-local-mode-hook
+;;           (defun my/god-toggle-cursor-type ()
+;;             (setq cursor-type (if god-local-mode
+;;                                   'box
+;;                                 'bar))))
 
-(bind-key "<escape>" 'god-local-mode)
-(bind-key "C-z" 'god-local-mode)
-(bind-key "i" 'god-local-mode god-local-mode-map)
-(bind-key "." 'repeat god-local-mode-map)
+;; (bind-key "<escape>" 'god-local-mode)
+;; (bind-key "C-z" 'god-local-mode)
+;; (bind-key "i" 'god-local-mode god-local-mode-map)
+;; (bind-key "." 'repeat god-local-mode-map)
 
-(add-to-list 'god-exempt-major-modes 'weechat-mode)
+;; (add-to-list 'god-exempt-major-modes 'weechat-mode)
 
-(defun god-toggle-on-overwrite ()
- "Toggle god-mode on command `overwrite-mode'."
- (if (bound-and-true-p overwrite-mode)
-     (god-local-mode-pause)
-   (god-local-mode-resume)))
-(add-hook 'overwrite-mode-hook 'god-toggle-on-overwrite)
+;; (defun god-toggle-on-overwrite ()
+;;  "Toggle god-mode on command `overwrite-mode'."
+;;  (if (bound-and-true-p overwrite-mode)
+;;      (god-local-mode-pause)
+;;    (god-local-mode-resume)))
+;; (add-hook 'overwrite-mode-hook 'god-toggle-on-overwrite)
 
 (global-set-key (kbd "C-x C-1") 'delete-other-windows)
 (global-set-key (kbd "C-x C-2") 'split-window-below)
@@ -832,9 +842,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
              'org-latex-ignore-heading-filter-headline)
 
 ;;;; prog-mode
-;; (defun my/local-comment-auto-fill ()
-;;   (auto-fill-mode 1)
-;;   (set (make-local-variable 'comment-auto-fill-only-comments) t))
+(defun my/local-comment-auto-fill ()
+  (auto-fill-mode 1)
+  (set (make-local-variable 'comment-auto-fill-only-comments) t))
 
 (defun my/add-watchwords ()
   (font-lock-add-keywords
@@ -853,7 +863,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 (defun my/prog-mode-defaults ()
   "Default coding hook, useful with any programming language."
-  ;; (my/local-comment-auto-fill)
+  (my/local-comment-auto-fill)
   ;; (whitespace-mode 1)
   (my/add-watchwords))
 
@@ -1276,3 +1286,6 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 (provide 'init)
 ;;; init.el ends here
+
+;; (load-file (let ((coding-system-for-read 'utf-8))
+;;                 (shell-command-to-string "agda-mode locate")))
