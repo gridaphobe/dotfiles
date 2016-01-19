@@ -635,7 +635,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 
 ;;;; god-mode
-(require 'god-mode)
+;;(require 'god-mode)
 ;;(god-mode)
 ;; (setq-default cursor-type 'bar)
 ;; (add-hook 'god-local-mode-hook
