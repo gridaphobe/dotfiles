@@ -37,7 +37,9 @@
 (setq package-archives nil)
 (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/")
 (add-to-list 'package-directory-list "~/.nix-profile/share/emacs/site-lisp/elpa")
+(load-file "~/.nix-profile/share/emacs/site-lisp/site-start.el")
 (package-initialize)
+
 
 (require 'use-package)
 (require 'bind-key)
@@ -65,7 +67,7 @@
                     '("Fira Mono" . "iso10646-1"))
   (set-face-attribute 'default nil
                       :family "Fira Mono"
-                      :height 140)
+                      :height 120)
 
   (require 'exec-path-from-shell)
   (setq exec-path-from-shell-variables
@@ -126,6 +128,14 @@
 
 (setq-default major-mode 'text-mode)
 
+;; When popping the mark, continue popping until the cursor
+;; actually moves
+(defadvice pop-to-mark-command (around ensure-new-position activate)
+  (let ((p (point)))
+    (dotimes (i 10)
+      (when (= p (point)) ad-do-it))))
+(setq set-mark-command-repeat-pop t)
+
 (require 'ibuffer-vc)
 (add-hook 'ibuffer-hook
   (lambda ()
@@ -181,7 +191,7 @@
 
 ;; revert buffers automatically when underlying files are changed externally
 (global-auto-revert-mode 1)
-(setq auto-revert-verbose nil)
+(setq auto-revert-verbose t)
 
 ;; auto-save when switching buffers
 (defadvice switch-to-buffer (before save-buffer-now activate)
@@ -314,19 +324,31 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (use-package ace-jump-mode
   :bind ("M-j" . ace-jump-char-mode))
 
+;;;; anzu
+(use-package anzu
+  :bind (("M-%" . anzu-query-replace)
+         ("C-M-%" . anzu-query-replace-regexp)))
+
 ;;;; helm
 
-(require 'smex)
-(smex-initialize)
-(bind-key "M-x" 'smex)
-(bind-key "M-X" 'smex-major-mode-commands)
+;; (require 'smex)
+;; (smex-initialize)
+;; (bind-key "M-x" 'smex)
+;; (bind-key "M-X" 'smex-major-mode-commands)
 
 (ivy-mode 1)
+(setq ivy-use-virtual-buffers t)
+
 (diminish 'ivy-mode)
 (bind-key "C-s" 'swiper)
 (bind-key "C-r" 'swiper)
+(bind-key "C-c C-r" 'ivy-resume)
+(bind-key "C-x C-f" 'counsel-find-file)
 
 (bind-key "C-c i" 'imenu)
+(bind-key "M-x" 'counsel-M-x)
+
+(setq counsel-find-file-ignore-regexp "\(?:\`[#.]\)\|\(?:[#~]\'\)")
 
 ;; (require 'helm-config)
 ;; (require 'helm)
@@ -593,7 +615,6 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 
 ;;;; flycheck
-(require 'flycheck)
 (use-package flycheck
   :init (global-flycheck-mode 1)
   :bind (("M-n" . flycheck-next-error)
@@ -672,7 +693,6 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (setq haskell-process-type 'cabal-repl
       haskell-process-path-ghci "ghci-ng"
       haskell-process-args-ghci '("-ferror-spans" "-idist/build:dist/build/autogen")
-      ;; haskell-process-path-ghci "ghci"
       haskell-process-args-cabal-repl '("--with-ghc=ghci-ng" 
                                         "--ghc-option=-ferror-spans")
       haskell-process-log t
@@ -684,7 +704,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
       haskell-process-auto-import-loaded-modules t
       ;;haskell-process-reload-with-fbytecode t
       haskell-process-suggest-add-package t
-      haskell-process-suggest-hoogle-imports nil
+      haskell-process-suggest-hoogle-imports t
       haskell-process-suggest-language-pragmas t
       haskell-process-suggest-remove-import-lines t
       haskell-process-suggest-overloaded-strings t
@@ -697,11 +717,14 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (add-hook 'haskell-mode-hook 'eldoc-mode)
 (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
+
+;; (load "~/.emacs.d/haskell-flycheck.el")
 (add-hook 'haskell-mode-hook 
           (lambda () 
             (turn-on-haskell-indentation) 
             (diminish 'haskell-indentation-mode)
-            (flycheck-haskell-setup)))
+            ;; (flycheck-select-checker 'haskell-process)
+            ))
 
 
 
@@ -727,6 +750,10 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;  '(shm-current-face ((t (:background "#efefef")))))
 ;; (bind-key "C-c C-p" 'shm/expand-pattern shm-map)
 ;; (bind-key "C-c C-s" 'shm/case-split shm-map)
+
+;; (add-to-list 'load-path "~/.nix-profile/share/x86_64-osx-ghc-7.10.2/hindent-4.5.4/elisp")
+;; (require 'hindent)
+;; (add-hook 'haskell-mode-hook #'hindent-mode)
 
 ;;;; javascript
 ;; (use-package js3-mode)
@@ -1110,92 +1137,125 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (mu4e-maildirs-extension)
 
 
-;; (require 'gnus)
-;; (setq ;gnus-select-method '(nntp "news.gmane.org")
-;;       gnus-select-method '(nnimap "seidel"
-;;                                   (nnimap-address "localhost")
-;;                                   (nnimap-server-port 8143)
-;;                                   (nnimap-user "eric@seidel.io")
-;;                                   (nnimap-authenticator login)
-;;                                   (nnimap-stream network))
-;;       ;gnus-secondary-select-methods '((nnimap "seidel"
-;;       ;                                        (nnimap-address "localhost")
-;;       ;                                        (nnimap-server-port 8143)
-;;       ;                                        (nnimap-user "eric@seidel.io")
-;;       ;                                        (nnimap-authenticator login)
-;;       ;                                        (nnimap-stream network)
-;;       ;                                        )
-;;       ;                                (nnimap "galois"
-;;       ;                                        (nnimap-address "localhost")
-;;       ;                                        (nnimap-server-port 8143)
-;;       ;                                        (nnimap-user "eseidel@galois.com")
-;;       ;                                        (nnimap-authenticator login)
-;;       ;                                        (nnimap-stream network)
-;;       ;                                        )
-;;       ;                                )
-;;       gnus-asynchronous t
+(require 'gnus)
+(setq gnus-select-method '(nnimap "local"
+                                  (nnimap-address "localhost")
+                                  (nnimap-server-port 8143)
+                                  (nnimap-user "eric@seidel.io")
+                                  (nnimap-authenticator login)
+                                  (nnimap-stream network))
+      ;;gnus-select-method '(nntp "news.gmane.org")
+      ;; gnus-select-method '(nnimap "seidel"
+      ;;                             (nnimap-address "mail.messagingengine.com")
+      ;;                             ;;(nnimap-server-port 8143)
+      ;;                             (nnimap-user "eric@seidel.io")
+      ;;                             ;;(nnimap-authenticator login)
+      ;;                             (nnimap-stream ssl))
+      ;gnus-secondary-select-methods '((nnimap "seidel"
+      ;                                        (nnimap-address "localhost")
+      ;                                        (nnimap-server-port 8143)
+      ;                                        (nnimap-user "eric@seidel.io")
+      ;                                        (nnimap-authenticator login)
+      ;                                        (nnimap-stream network)
+      ;                                        )
+      ;                                (nnimap "galois"
+      ;                                        (nnimap-address "localhost")
+      ;                                        (nnimap-server-port 8143)
+      ;                                        (nnimap-user "eseidel@galois.com")
+      ;                                        (nnimap-authenticator login)
+      ;                                        (nnimap-stream network)
+      ;                                        )
+      ;                                )
+      gnus-asynchronous t
       
-;;       gnus-message-archive-group nil
-;;       ;; gnus-sum-thread-tree-false-root      ""
-;;       ;; gnus-sum-thread-tree-single-indent   ""
-;;       ;; gnus-sum-thread-tree-root            ""
-;;       ;; gnus-sum-thread-tree-vertical        "|"
-;;       ;; gnus-sum-thread-tree-leaf-with-other "+-> "
-;;       ;; gnus-sum-thread-tree-single-leaf     "\\-> "
-;;       ;; gnus-sum-thread-tree-indent          " "
+      gnus-message-archive-group nil
+      ;; gnus-sum-thread-tree-false-root      ""
+      ;; gnus-sum-thread-tree-single-indent   ""
+      ;; gnus-sum-thread-tree-root            ""
+      ;; gnus-sum-thread-tree-vertical        "|"
+      ;; gnus-sum-thread-tree-leaf-with-other "+-> "
+      ;; gnus-sum-thread-tree-single-leaf     "\\-> "
+      ;; gnus-sum-thread-tree-indent          " "
 
-;;       nndraft-directory "~/.cache/gnus/drafts/"
-;;       gnus-agent t
-;;       gnus-agent-directory "~/.cache/gnus/agent/"
+      nndraft-directory "~/.cache/gnus/drafts/"
+      gnus-agent t
+      gnus-agent-directory "~/.cache/gnus/agent/"
 
-;;       ;; gnus-use-cache nil
-;;       ;; gnus-cache-directory "~/.cache/gnus/"
-;;       ;; gnus-cache-enter-articles '(read unread ticked dormant)
-;;       ;; gnus-cache-remove-articles nil
+      ;; gnus-use-cache nil
+      ;; gnus-cache-directory "~/.cache/gnus/"
+      ;; gnus-cache-enter-articles '(read unread ticked dormant)
+      ;; gnus-cache-remove-articles nil
 
-;;       gnus-read-newsrc-file nil
-;;       gnus-save-newsrc-file nil
+      gnus-read-newsrc-file nil
+      gnus-save-newsrc-file nil
 
-;;       gnus-read-active-file 'some
+      gnus-read-active-file 'some
 
-;;       gnus-article-sort-functions '(gnus-article-sort-by-most-recent-date)
-;;       gnus-thread-sort-functions '(gnus-thread-sort-by-most-recent-date)
-;;       gnus-thread-hide-subtree t
-;; )
+      gnus-article-sort-functions '(gnus-article-sort-by-most-recent-date)
+      gnus-thread-sort-functions '(gnus-thread-sort-by-most-recent-date)
+      gnus-thread-hide-subtree t
+      gnus-thread-ignore-subject nil
+)
+
+(setq gnus-simplify-subject-functions '(rrix/gnus-simplify-phab-headers
+                                        gnus-simplify-subject-re
+                                        gnus-simplify-subject-fuzzy
+                                        gnus-simplify-whitespace
+                                        gnus-simplify-all-whitespace)
+      rrix/gnus-simplify-phab-headers-list '("\\[Differential\\]"
+                                             "\\[Maniphest\\]"
+                                             "\\[Updated.*\\]"
+                                             "\\[Request.*\\]"
+                                             "\\[Commented On.*\\]"
+                                             "\\[Raised Concern.*\\]"
+                                             "\\[Commandeered.*\\]"
+                                             "\\[Accepted.*\\]"
+                                             "\\[Planned.*\\]"
+                                             "\\[Closed.*\\]"
+                                             "\\[Resigned.*\\]"
+                                             "^\ [0-9] "))
+
+(defsubst rrix/gnus-simplify-phab-headers (subject)
+  "Remove Phabricator headers from subject lines."
+  (let ((transformed-subject subject))
+    (dolist (regex rrix/gnus-simplify-phab-headers-list)
+              (setq transformed-subject (replace-regexp-in-string regex "" transformed-subject)))
+    transformed-subject))
+
 ;; ;; (add-to-list 'evil-emacs-state-modes 'gnus-category-mode)
 ;; ;; (add-to-list 'evil-emacs-state-modes 'gnus-custom-mode)
 ;; ;; http://groups.google.com/group/gnu.emacs.gnus/browse_thread/thread/a673a74356e7141f
-;; (when window-system
-;;   (setq gnus-sum-thread-tree-indent "  ")
-;;   (setq gnus-sum-thread-tree-root "")
-;;   (setq gnus-sum-thread-tree-false-root "")
-;;   (setq gnus-sum-thread-tree-single-indent "")
-;;   (setq gnus-sum-thread-tree-vertical        "│")
-;;   (setq gnus-sum-thread-tree-leaf-with-other "├─> ")
-;;   (setq gnus-sum-thread-tree-single-leaf     "└─> "))
-;; (setq gnus-summary-line-format
-;;       (concat
-;;        "%0{%U%R%z%}"
-;;        "%3{│%}" "%1{%d%}" "%3{│%}" ;; date
-;;        "  "
-;;        "%4{%-20,20f%}"               ;; name
-;;        "  "
-;;        "%3{│%}"
-;;        " "
-;;        "%1{%B%}"
-;;        "%s\n"))
-;; (setq gnus-summary-display-arrow t)
+(when window-system
+  (setq gnus-sum-thread-tree-indent " ")
+  (setq gnus-sum-thread-tree-root "")
+  (setq gnus-sum-thread-tree-false-root "")
+  (setq gnus-sum-thread-tree-single-indent "")
+  (setq gnus-sum-thread-tree-vertical        "│")
+  (setq gnus-sum-thread-tree-leaf-with-other "├> ")
+  (setq gnus-sum-thread-tree-single-leaf     "└> "))
+(setq gnus-summary-line-format
+      (concat
+       "%0{%U%R%z%}"
+       "%3{│%}" "%1{%d%}" "%3{│%}" ;; date
+       "  "
+       "%4{%-20,20f%}"               ;; name
+       "  "
+       "%3{│%}"
+       " "
+       "%1{%B%}"
+       "%s\n"))
+(setq gnus-summary-display-arrow t)
 
-;; (gnus-demon-add-handler 'gnus-demon-scan-news 5 nil) ; this does a call to gnus-group-get-new-news
+(gnus-demon-add-handler 'gnus-demon-scan-news 5 nil) ; this does a call to gnus-group-get-new-news
 
-;; (require 'gnus-notifications)
-;; (defun gnus-notifications-notify (from subject photo-file)
-;;   "Send a notification about a new mail.
-;; Return a notification id if any, or t on success."
-;;   (my/terminal-notifier "Gnus - New Message" from subject)
-;;   t
-;;   )
-;; (add-hook 'gnus-after-getting-new-news-hook 'gnus-notifications)
+(require 'gnus-notifications)
+(defun gnus-notifications-notify (from subject photo-file)
+  "Send a notification about a new mail.
+Return a notification id if any, or t on success."
+  (my/terminal-notifier "Gnus - New Message" from subject)
+  t
+  )
+(add-hook 'gnus-after-getting-new-news-hook 'gnus-notifications)
 ;; ;; (require 'gnus-alias)
 ;; (setq gnus-posting-styles
 ;;       '(;

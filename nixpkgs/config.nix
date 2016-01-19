@@ -157,14 +157,15 @@
       cabal2nix
       cabal-install
       ghc-core
-      #ghc-mod
-      ghci-ng
-      ghcid
+      ghc-mod
+      #ghci-ng
+      # ghcid
       graphmod
       hakyll
       #haskell-docs
       hasktags
       # codex
+      hindent
       hint
       hlint
       hscolour
@@ -188,6 +189,7 @@
       cabal-bounds
       bumper
       #hermit
+      annotated-wl-pprint
 
       # ad
       bifunctors
@@ -234,11 +236,11 @@
       tasty-quickcheck
       tasty-rerun
 
-      liquid-fixpoint
-      liquidhaskell
+      # liquid-fixpoint
+      # liquidhaskell
       # optparse-applicative
       # z3
-      target
+      # target
 
       #OpenGL
       #GLFW
@@ -363,23 +365,27 @@
     #  ];
     #};
 
-    emacs = if pkgs.stdenv.isDarwin
-            then pkgs.emacs24Macport
-            else pkgs.emacs24;
+    # emacs = if pkgs.stdenv.isDarwin
+    #         then pkgs.emacs24Macport
+    #         else pkgs.emacs24;
     # emacs = pkgs.emacs24-nox;
 
-    emacs-env = pkgs.buildEnv {
-      name = "emacs-env";
-      paths = with emacsPackagesNgGen emacs; [
-        emacs
+    # emacs-env = pkgs.buildEnv {
+    #   name = "emacs-env";
+    #   paths = with emacsPackagesNgGen emacs; [
+    #     emacs
 
-        aspell
-        aspellDicts.en
+    #     aspell
+    #     aspellDicts.en
 
+    emacs-env = pkgs.emacsWithPackages #.override # {emacs = emacs24;}
+                (with emacsPackagesNgGen emacs24; [
         # ac-haskell-process
-        ace-jump-mode
+        # ace-jump-mode
         ag
+        anzu
         auctex
+        avy
         auto-complete
         change-inner
         circe
@@ -395,9 +401,10 @@
         # gnus
         god-mode
         haskell-mode
-        helm
-        helm-projectile
-        helm-swoop
+        # helm
+        # helm-projectile
+        # helm-swoop
+        hydra
         ibuffer-vc
         idris-mode
         magit
@@ -413,14 +420,13 @@
         swiper
         switch-window
         structured-haskell-mode
-        #tuareg
+        tuareg
         undo-tree
         use-package
         volatile-highlights
         wgrep
         zenburn-theme
-      ];
-    };
+    ]);
 
     # mu = pkgs.mu.override { libsoup = (libsoup.override { gnomeSupport = false; }); };
     # notmuch = pkgs.notmuch.override { talloc = (talloc.override { libcap = null; }); };

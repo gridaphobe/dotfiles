@@ -13,6 +13,7 @@
         up = !sh -c 'git co master && git pull --ff-only upstream master && git push origin master'
         delete-branch = !sh -c 'git branch -d "$0" && git push origin :"$0"'
         puhs = push
+	pull-all = "!f(){ git pull --ff-only \"$@\" && git submodule update --init --recursive; }; f"
 [color]
 	diff = auto
 	status = auto
