@@ -26,7 +26,7 @@ if [[ "$IN_NIX_SHELL" == 1 ]]; then
   return
 fi
 
-path=($HOME/bin /usr/local/bin /usr/local/sbin $path)
+path=($HOME/bin $HOME/.local/bin /usr/local/bin /usr/local/sbin $path)
 
 [[ -r "$HOME/.nix-profile/etc/profile.d/nix.sh" ]] && . "$HOME/.nix-profile/etc/profile.d/nix.sh"
 export NIX_CONF_DIR="$HOME/.config/nix"
