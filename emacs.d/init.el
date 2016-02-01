@@ -76,6 +76,8 @@
         )
   (exec-path-from-shell-initialize)
 
+  (add-to-list 'exec-path "/Applications/Racket/bin")
+
   (setq browse-url-browser-function 'browse-url-default-macosx-browser))
 
 ;;;; theme
@@ -621,8 +623,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :bind (("M-n" . flycheck-next-error)
          ("M-p" . flycheck-previous-error))
   :config (setq flycheck-check-syntax-automatically '(mode-enabled save)))
-;; (use-package flycheck-pos-tip
-;;   :init (setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))
+(use-package flycheck-pos-tip
+  :config (flycheck-pos-tip-mode))
 
 
 ;;;; flyspell
@@ -674,6 +676,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; haskell
 (require 'haskell-mode)
+(require 'haskell-interactive-mode)
 (require 'haskell-process)
 (sp-local-pair '(haskell-mode literate-haskell-mode) 
                "{- " " -}" 
@@ -689,9 +692,12 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (bind-key "C-c C-i" 'haskell-process-do-info   haskell-mode-map)
 (bind-key "C-c C-." 'haskell-mode-goto-loc haskell-mode-map)
 (bind-key "C-c C-?" 'haskell-mode-find-uses haskell-mode-map)
+(bind-key "M-n" 'next-error haskell-mode-map)
+(bind-key "M-p" 'previous-error haskell-mode-map)
+
 ;; (add-to-list 'evil-emacs-state-modes 'haskell-presentation-mode)
 
-(setq haskell-process-type 'cabal-repl
+(setq haskell-process-type 'auto
       haskell-process-path-ghci "ghci-ng"
       haskell-process-args-ghci '("-ferror-spans" "-idist/build:dist/build/autogen")
       haskell-process-args-cabal-repl '("--with-ghc=ghci-ng" 
@@ -718,13 +724,30 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (add-hook 'haskell-mode-hook 'eldoc-mode)
 (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
 (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
+(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+(add-hook 'haskell-mode-hook 'flycheck-haskell-setup)
 
-;; (load "~/.emacs.d/haskell-flycheck.el")
+
+(setq-default flycheck-ghc-args '("-package" "ghc"))
+
+(bind-key "M-n" 'next-error     haskell-interactive-mode-map)
+(bind-key "M-p" 'previous-error haskell-interactive-mode-map)
+
+(require 'hindent)
+(add-hook 'haskell-mode-hook #'hindent-mode)
+(setq hindent-style "gibiansky")
+
+;;(load "~/.emacs.d/haskell-flycheck.el")
 (add-hook 'haskell-mode-hook 
           (lambda () 
-            (turn-on-haskell-indentation) 
+            ;; (turn-on-haskell-indentation)
             (diminish 'haskell-indentation-mode)
-            ;; (flycheck-select-checker 'haskell-process)
+            (diminish 'interactive-haskell-mode)
+            ;; (flycheck-haskell-setup)
+            ;; (bind-key "M-n" 'next-error interactive-haskell-mode-map)
+            ;; (bind-key "M-p" 'previous-error interactive-haskell-mode-map)
+            ;;(flycheck-select-checker 'haskell-process)
+            ;;(flycheck-select-checker 'haskell-ghc-modi-check)
             ))
 
 
@@ -885,13 +908,13 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (which-function-mode 1)
 
 ;; (require-package 'ws-butler)
-;; (ws-butler-global-mode 1)
-;; (diminish 'ws-butler-mode)
-;; (diminish 'highlight-changes-mode)
+(ws-butler-global-mode 1)
+(diminish 'ws-butler-mode)
+(diminish 'highlight-changes-mode)
 
 (defun my/prog-mode-defaults ()
   "Default coding hook, useful with any programming language."
-  (my/local-comment-auto-fill)
+  ;; (my/local-comment-auto-fill)
   ;; (whitespace-mode 1)
   (my/add-watchwords))
 

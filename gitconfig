@@ -14,6 +14,7 @@
         delete-branch = !sh -c 'git branch -d "$0" && git push origin :"$0"'
         puhs = push
 	pull-all = "!f(){ git pull --ff-only \"$@\" && git submodule update --init --recursive; }; f"
+	ff = pull --ff-only
 [color]
 	diff = auto
 	status = auto

@@ -1,6 +1,6 @@
 { pkgs }:
 {
-  allowBroken = true;
+  #allowBroken = true;
   allowUnfree = true;
 
   #replaceStdenv = { pkgs }: pkgs.allStdenvs.stdenvDarwinPure;
@@ -161,10 +161,11 @@
       #ghci-ng
       # ghcid
       graphmod
+      # HaRe
       hakyll
       #haskell-docs
       hasktags
-      # codex
+      codex
       hindent
       hint
       hlint
@@ -390,6 +391,7 @@
         change-inner
         circe
         company
+        company-ghc
         #evil
         #evil-god-state
         #evil-surround
@@ -397,10 +399,12 @@
         expand-region
         flycheck
         flycheck-haskell
-        # flycheck-pos-tip
+        flycheck-pos-tip
         # gnus
+        ghc-mod
         god-mode
         haskell-mode
+        hindent
         # helm
         # helm-projectile
         # helm-swoop
@@ -414,6 +418,7 @@
         org-plus-contrib
         persp-projectile
         projectile
+        racket-mode
         smart-mode-line
         smartparens
         smex
@@ -425,6 +430,7 @@
         use-package
         volatile-highlights
         wgrep
+        ws-butler
         zenburn-theme
     ]);
 
