@@ -17,6 +17,8 @@
     #   inherit (pkgs) z3;
     # });
 
+    aeson = super.aeson_0_10_0_0;
+
     #distributive = dontCheck super.distributive;
     #comonad = dontCheck super.comonad;
     #semigroupoids = dontCheck super.semigroupoids;
@@ -194,6 +196,7 @@
 
       # ad
       bifunctors
+      bound
       intern
       text-format
       data-reify
@@ -366,9 +369,9 @@
     #  ];
     #};
 
-    # emacs = if pkgs.stdenv.isDarwin
-    #         then pkgs.emacs24Macport
-    #         else pkgs.emacs24;
+    emacs = if pkgs.stdenv.isDarwin
+            then pkgs.emacs24Macport
+            else pkgs.emacs24;
     # emacs = pkgs.emacs24-nox;
 
     # emacs-env = pkgs.buildEnv {
@@ -380,7 +383,7 @@
     #     aspellDicts.en
 
     emacs-env = pkgs.emacsWithPackages #.override # {emacs = emacs24;}
-                (with emacsPackagesNgGen emacs24; [
+                (with emacsPackagesNgGen emacs; [
         # ac-haskell-process
         # ace-jump-mode
         ag
@@ -392,6 +395,7 @@
         circe
         company
         company-ghc
+        color-theme-sanityinc-tomorrow
         #evil
         #evil-god-state
         #evil-surround
@@ -413,15 +417,20 @@
         idris-mode
         magit
         markdown-mode
+        material-theme
+        moe-theme
         monokai-theme
+        #mu4e  # comes with mu
         multiple-cursors
         org-plus-contrib
+        org-trello
         persp-projectile
         projectile
         racket-mode
         smart-mode-line
         smartparens
         smex
+        solarized-theme
         swiper
         switch-window
         structured-haskell-mode

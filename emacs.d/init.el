@@ -71,9 +71,8 @@
 
   (require 'exec-path-from-shell)
   (setq exec-path-from-shell-variables
-        '("PATH" "MANPATH" "DYLD_LIBRARY_PATH" "NIX_PATH" 
-          "NIX_GHC" "NIX_GHCPKG" "NIX_GHC_DOCDIR" "NIX_GHC_LIBDIR")
-        )
+        '("PATH" "MANPATH" "DYLD_LIBRARY_PATH" "NIX_PATH"
+          "NIX_GHC" "NIX_GHCPKG" "NIX_GHC_DOCDIR" "NIX_GHC_LIBDIR"))
   (exec-path-from-shell-initialize)
 
   (add-to-list 'exec-path "/Applications/Racket/bin")
@@ -84,25 +83,22 @@
 ;; (defadvice load-theme (around disable-other-themes activate)
 ;;   (mapc #'disable-theme custom-enabled-themes)
 ;;   ad-do-it)
-;; (load-theme 'solarized-light)
 
-;;(load-theme 'zenburn)
-(load-theme 'leuven)
-(custom-theme-set-faces 'leuven '(default ((default :background "WhiteSmoke")) t))
+(load-theme 'solarized-light)
 
+;; (load-theme 'zenburn)
+;; (load-theme 'leuven)
+;; (custom-theme-set-faces 'leuven '(default ((default :background "WhiteSmoke")) t))
+;; (load-theme 'tomorrow-eighties)
 
 ;;;; smart-mode-line
-(require 'smart-mode-line)
-(setq sml/name-width '(20 . 30))
-
-;;(defun my-god-mode-indicator ()
-;;  "Display a custom indicator for `god-mode' in the mode-line."
-;;  (when god-local-mode (propertize " <G> " 'font-lock-face '(:background "#FF9999" :weight bold))))
-;;(add-to-list 'mode-line-position
-;;             '((:eval (my-god-mode-indicator))))
-;;(diminish 'god-local-mode)
-(sml/setup)
-(sml/apply-theme 'light)
+(use-package smart-mode-line
+  :init
+  (setq sml/name-width '(20 . 30))
+  :config
+  (progn
+    (sml/setup)
+    (sml/apply-theme 'light)))
 
 (add-to-list 'completion-ignored-extensions ".hi")
 (add-to-list 'completion-ignored-extensions ".hdevtools.sock")
@@ -114,11 +110,13 @@
 (blink-cursor-mode -1)
 
 (set-default 'tags-case-fold-search nil)
-(require 'dired-x)
-(setq-default dired-omit-files-p t)
-(setq dired-omit-files
-      (concat "\\.dyn_hi$\\|\\.dyn_o$\\|\\.hi$\\|\\.o$\\|"
-              dired-omit-files))
+(use-package dired-x
+  :config
+  (progn
+    (setq-default dired-omit-files-p t)
+    (setq dired-omit-files
+          (concat "\\.dyn_hi$\\|\\.dyn_o$\\|\\.hi$\\|\\.o$\\|"
+                  dired-omit-files))))
 
 (setq ring-bell-function 'ignore)
 (setq enable-recursive-minibuffers t)
@@ -138,12 +136,13 @@
       (when (= p (point)) ad-do-it))))
 (setq set-mark-command-repeat-pop t)
 
-(require 'ibuffer-vc)
-(add-hook 'ibuffer-hook
-  (lambda ()
-    (ibuffer-vc-set-filter-groups-by-vc-root)
-    (unless (eq ibuffer-sorting-mode 'alphabetic)
-      (ibuffer-do-sort-by-alphabetic))))
+(use-package ibuffer-vc
+  :config
+  (add-hook 'ibuffer-hook
+            (lambda ()
+              (ibuffer-vc-set-filter-groups-by-vc-root)
+              (unless (eq ibuffer-sorting-mode 'alphabetic)
+                (ibuffer-do-sort-by-alphabetic)))))
 
 ;; nice scrolling
 (setq scroll-margin 0
@@ -233,18 +232,21 @@
           'executable-make-buffer-file-executable-if-script-p)
 
 ;; kill old buffers
-(require 'midnight)
-(setq midnight-mode t)
-(add-to-list 'clean-buffer-list-kill-never-regexps
-             "^#\w+")
-(add-to-list 'clean-buffer-list-kill-never-buffer-names
-             "192.241.212.224:5000")
-(add-to-list 'clean-buffer-list-kill-never-buffer-names
-             "seidel.io:5000")
+(use-package midnight
+  :config
+  (progn
+    (setq midnight-mode t)
+    (add-to-list 'clean-buffer-list-kill-never-regexps
+                 "^#\w+")
+    (add-to-list 'clean-buffer-list-kill-never-buffer-names
+                 "192.241.212.224:5000")
+    (add-to-list 'clean-buffer-list-kill-never-buffer-names
+                 "seidel.io:5000")))
 
 ;; saner regex syntax
-(require 're-builder)
-(setq reb-re-syntax 'string)
+(use-package re-builder
+  :init
+  (setq reb-re-syntax 'string))
 
 ;; enable narrowing commands
 (put 'narrow-to-region 'disabled nil)
@@ -261,8 +263,9 @@
 ;; remember things between sessions
 (recentf-mode 1)
 (savehist-mode 1)
-(setq-default save-place t)
-(require 'saveplace)
+(use-package saveplace
+  :init
+  (setq-default save-place t))
 
 ;; ediff defaults
 (csetq ediff-window-setup-function 'ediff-setup-windows-plain)
@@ -325,6 +328,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; ace-jump-mode
 (use-package ace-jump-mode
+  :disabled t
   :bind ("M-j" . ace-jump-char-mode))
 
 ;;;; anzu
@@ -339,19 +343,28 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (bind-key "M-x" 'smex)
 ;; (bind-key "M-X" 'smex-major-mode-commands)
 
-(ivy-mode 1)
-(setq ivy-use-virtual-buffers t)
+(use-package ivy
+  :diminish 'ivy-mode
+  :init
+  (setq ivy-use-virtual-buffers t)
+  :config
+  (ivy-mode 1)
+  :bind
+  (("C-c C-r" . ivy-resume)))
 
-(diminish 'ivy-mode)
-(bind-key "C-s" 'swiper)
-(bind-key "C-r" 'swiper)
-(bind-key "C-c C-r" 'ivy-resume)
-(bind-key "C-x C-f" 'counsel-find-file)
+(use-package swiper
+  :bind
+  (("C-s" . swiper)
+   ("C-r" . swiper)))
+
+(use-package counsel
+  :init
+  (setq counsel-find-file-ignore-regexp "\(?:\`[#.]\)\|\(?:[#~]\'\)")
+  :bind
+  (("C-x C-f" . counsel-find-file)
+   ("M-x" . counsel-M-x)))
 
 (bind-key "C-c i" 'imenu)
-(bind-key "M-x" 'counsel-M-x)
-
-(setq counsel-find-file-ignore-regexp "\(?:\`[#.]\)\|\(?:[#~]\'\)")
 
 ;; (require 'helm-config)
 ;; (require 'helm)
@@ -397,17 +410,30 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;                (setq ace-isearch-input-idle-delay 0.2)))
 
 ;;;; projectile
-(require 'projectile)
-(require 'perspective)
-(persp-mode)
-(require 'persp-projectile)
-(projectile-global-mode)
-(diminish 'projectile-mode)
+;; (require 'projectile)
+;; (require 'perspective)
+;; (persp-mode)
+;; (require 'persp-projectile)
+(use-package projectile
+  :diminish 'projectile-mode
+  :init
+  (setq projectile-completion-system 'ivy
+        projectile-globally-ignored-directories
+        '(".idea" ".eunit" ".git" ".hg" ".fslckout" ".bzr" "_darcs" ".tox" ".svn" ".liquid")
+        projectile-globally-ignored-file-suffixes '(".o" ".hi"))
+  :config
+  (progn
+    (projectile-global-mode)
+    (use-package perspective
+      :config
+      (progn
+        (persp-mode)
+        (use-package persp-projectile)))))
+
+;; (projectile-global-mode)
+;; (diminish 'projectile-mode)
 ;; (add-to-list 'rm-blacklist " Projectile\\*")
-(setq projectile-completion-system 'ido
-      ;;projectile-completion-system 'helm
-      ;;projectile-enable-caching t
-      )
+
 ;; (require 'helm-projectile)
 ;; (helm-projectile-on)
 ;; (setq projectile-switch-project-action 'helm-projectile)
@@ -419,34 +445,38 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (setq ac-auto-start nil)
 ;; (diminish 'auto-complete-mode)
 ;; (ac-set-trigger-key "TAB")
-(require 'company)
-(setq company-global-modes '(not circe-channel-mode
-                                 circe-query-mode 
-                                 circe-server-mode))
-(global-company-mode)
-(diminish 'company-mode)
+(use-package company
+  :diminish 'company-mode
+  :init
+  (setq company-global-modes '(not circe-channel-mode
+                                   circe-query-mode
+                                   circe-server-mode))
+  :config
+  (global-company-mode))
 ;; (add-to-list 'rm-blacklist " company")
 
 ;;;; compile
-(require 'compile)
-(setq compilation-scroll-output 'first-error
-      compilation-window-height 10)
+(use-package compile
+  :init
+  (setq compilation-scroll-output 'first-error
+        compilation-window-height 10)
+  :config
+  (progn
+    (defun bury-compile-buffer-if-successful (buffer string)
+      "Bury a compilation BUFFER if STRING has no warnings."
+      (if (and
+           (string-match "compilation" (buffer-name buffer))
+           (string-match "finished" string)
+           (not
+            (with-current-buffer buffer
+              (search-forward "warning" nil t))))
+          (run-with-timer 1 nil
+                          (lambda (buf)
+                            (bury-buffer buf)
+                            (delete-window (get-buffer-window buf)))
+                          buffer)))
 
-
-(defun bury-compile-buffer-if-successful (buffer string)
-  "Bury a compilation buffer if succeeded without warnings."
-  (if (and
-       (string-match "compilation" (buffer-name buffer))
-       (string-match "finished" string)
-       (not
-        (with-current-buffer buffer
-          (search-forward "warning" nil t))))
-      (run-with-timer 1 nil
-                      (lambda (buf)
-                        (bury-buffer buf)
-                        (delete-window (get-buffer-window buf)))
-                      buffer)))
-(add-hook 'compilation-finish-functions 'bury-compile-buffer-if-successful)
+    (add-hook 'compilation-finish-functions #'bury-compile-buffer-if-successful)))
 
 
 ;;;; css-mode
@@ -498,11 +528,13 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
          ("M-o" . change-outer)))
 
 ;;;; undo-tree
-(require 'undo-tree)
-(setq undo-tree-visualizer-relative-timestamps t
-      undo-tree-visualizer-timestamps t)
-(global-undo-tree-mode)
-(diminish 'undo-tree-mode)
+(use-package undo-tree
+  :diminish 'undo-tree-mode
+  :init
+  (setq undo-tree-visualizer-relative-timestamps t
+        undo-tree-visualizer-timestamps t)
+  :config
+  (global-undo-tree-mode))
 ;; (add-to-list 'rm-blacklist " Undo-Tree")
 
 
@@ -619,22 +651,30 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; flycheck
 (use-package flycheck
-  :init (global-flycheck-mode 1)
-  :bind (("M-n" . flycheck-next-error)
-         ("M-p" . flycheck-previous-error))
-  :config (setq flycheck-check-syntax-automatically '(mode-enabled save)))
-(use-package flycheck-pos-tip
-  :config (flycheck-pos-tip-mode))
+  :bind
+  (("M-n" . flycheck-next-error)
+   ("M-p" . flycheck-previous-error))
+  :init
+  (setq flycheck-check-syntax-automatically '(mode-enabled save))
+  :config
+  (progn
+    (global-flycheck-mode 1)
+    (use-package flycheck-pos-tip
+      :config
+      (flycheck-pos-tip-mode))))
 
 
 ;;;; flyspell
-(require 'flyspell)
-(setq ispell-program-name "aspell" ; use aspell instead of ispell
-      ispell-extra-args '("--sug-mode=ultra")
-      flyspell-issue-message-flag nil ; issuing a message for each word is slow
-      )
-(add-hook 'message-mode-hook 'flyspell-mode)
-(add-hook 'text-mode-hook 'flyspell-mode)
+(use-package flyspell
+  :init
+  (setq ispell-program-name "aspell" ; use aspell instead of ispell
+        ispell-extra-args '("--sug-mode=ultra")
+        flyspell-issue-message-flag nil ; issuing a message for each word is slow
+        )
+  :config
+  (progn
+    (add-hook 'message-mode-hook #'flyspell-mode)
+    (add-hook 'text-mode-hook #'flyspell-mode)))
 
 
 ;;;; god-mode
@@ -660,6 +700,13 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;      (god-local-mode-pause)
 ;;    (god-local-mode-resume)))
 ;; (add-hook 'overwrite-mode-hook 'god-toggle-on-overwrite)
+
+;;(defun my-god-mode-indicator ()
+;;  "Display a custom indicator for `god-mode' in the mode-line."
+;;  (when god-local-mode (propertize " <G> " 'font-lock-face '(:background "#FF9999" :weight bold))))
+;;(add-to-list 'mode-line-position
+;;             '((:eval (my-god-mode-indicator))))
+;;(diminish 'god-local-mode)
 
 (global-set-key (kbd "C-x C-1") 'delete-other-windows)
 (global-set-key (kbd "C-x C-2") 'split-window-below)
@@ -698,9 +745,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (add-to-list 'evil-emacs-state-modes 'haskell-presentation-mode)
 
 (setq haskell-process-type 'auto
-      haskell-process-path-ghci "ghci-ng"
+      haskell-process-path-ghci "ghci"
       haskell-process-args-ghci '("-ferror-spans" "-idist/build:dist/build/autogen")
-      haskell-process-args-cabal-repl '("--with-ghc=ghci-ng" 
+      haskell-process-args-cabal-repl '(;"--with-ghc=ghci-ng"
                                         "--ghc-option=-ferror-spans")
       haskell-process-log t
       haskell-align-imports-pad-after-name t
@@ -730,8 +777,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 (setq-default flycheck-ghc-args '("-package" "ghc"))
 
-(bind-key "M-n" 'next-error     haskell-interactive-mode-map)
-(bind-key "M-p" 'previous-error haskell-interactive-mode-map)
+;; (bind-key "M-n" 'next-error     haskell-interactive-mode-map)
+;; (bind-key "M-p" 'previous-error haskell-interactive-mode-map)
 
 (require 'hindent)
 (add-hook 'haskell-mode-hook #'hindent-mode)
@@ -826,71 +873,85 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :init
   (progn
     (add-to-list 'auto-mode-alist '("\\.markdown\\'" . gfm-mode))
-    (add-to-list 'auto-mode-alist '("\\.md\\'" . gfm-mode))
-    ))
+    (add-to-list 'auto-mode-alist '("\\.md\\'" . gfm-mode))))
 
 
 ;;;; nix-mode
-(require 'nix-mode)
+(use-package nix-mode)
 
 
 ;;;; org-mode
-(require 'org)
-(setq org-agenda-files '("~/Dropbox/org/todo.org"
-                         "~/Dropbox/org/galois.org"))
-(setq orc-src-fontify-natively t)
-;; Resume clocking task when emacs is restarted
-(org-clock-persistence-insinuate)
-;; Show lot of clocking history so it's easy to pick items off the C-F11 list
-(setq org-clock-history-length 23)
-;; Resume clocking task on clock-in if the clock is open
-(setq org-clock-in-resume t)
-;; Save the running clock and all clock history when exiting Emacs, load it on startup
-(setq org-clock-persist t)
-;; Do not prompt to resume an active clock
-(setq org-clock-persist-query-resume nil)
-;; Enable auto clock resolution for finding open clocks
-(setq org-clock-auto-clock-resolution (quote when-no-clock-is-running))
-;; Include current clocking task in clock reports
-(setq org-clock-report-include-clocking-task t)
-;; Sometimes I change tasks I'm clocking quickly - this removes clocked tasks with 0:00 duration
-(setq org-clock-out-remove-zero-time-clocks t)
+(use-package org
+  :bind
+  (("C-c a"   . org-agenda)
+   ("C-c c"   . org-capture)
+   ("C-c s l" . org-store-link))
 
-(require 'ox-latex)
-(setq org-latex-pdf-process '("latexmk -pdf %f"))
-(add-to-list 'org-latex-classes
-      '("sigplanconf"
-         "\\documentclass{sigplanconf}\n[PACKAGES]\n[EXTRA]"
-         ("\\section{%s}" . "\\section*{%s}")
-         ("\\subsection{%s}" . "\\subsection*{%s}")
-         ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-         ("\\paragraph{%s}" . "\\paragraph*{%s}")
-         ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-;; (require 'ox-bibtex)
-;; (org-add-link-type 
-;;  "cite" 'ebib
-;;  (lambda (path desc format)
-;;    (cond
-;;     ((eq format 'html)
-;;      (format "(<cite>%s</cite>)" path))
-;;     ((eq format 'latex)
-;;      (if (or (not desc) (equal 0 (search "cite:" desc)))
-;;          (format "\\cite{%s}" path)
-;;        (format "\\cite[%s][%s]{%s}"
-;;                (cadr (split-string desc ";"))
-;;                (car (split-string desc ";"))  path))))))
-(setq org-latex-listings nil)
-;; (add-to-list 'org-latex-packages-alist '("" "listings"))
-;; (add-to-list 'org-latex-packages-alist '("" "color"))
-;; (add-to-list 'org-latex-packages-alist '("" "minted"))
-;;; Nicolas Goaziou, http://article.gmane.org/gmane.emacs.orgmode/67692
-(defun org-latex-ignore-heading-filter-headline (headline backend info)
-  "Strip headline from HEADLINE. Ignore BACKEND and INFO."
-  (when (and (org-export-derived-backend-p backend 'latex)
-             (string-match "\\`.*ignoreheading.*\n" headline))
-    (replace-match "" nil nil headline)))
-(add-to-list 'org-export-filter-headline-functions
-             'org-latex-ignore-heading-filter-headline)
+  :init
+  (progn
+    (setq org-agenda-files '("~/Dropbox/org/ucsd.org"
+                                        ; "~/Dropbox/org/galois.org"
+                             ))
+    (setq orc-src-fontify-natively t)
+    ;; Resume clocking task when emacs is restarted
+    (org-clock-persistence-insinuate)
+    ;; Show lot of clocking history so it's easy to pick items off the C-F11 list
+    (setq org-clock-history-length 23)
+    ;; Resume clocking task on clock-in if the clock is open
+    (setq org-clock-in-resume t)
+    ;; Save the running clock and all clock history when exiting Emacs, load it on startup
+    (setq org-clock-persist t)
+    ;; Do not prompt to resume an active clock
+    (setq org-clock-persist-query-resume nil)
+    ;; Enable auto clock resolution for finding open clocks
+    (setq org-clock-auto-clock-resolution (quote when-no-clock-is-running))
+    ;; Include current clocking task in clock reports
+    (setq org-clock-report-include-clocking-task t)
+    ;; Sometimes I change tasks I'm clocking quickly - this removes clocked tasks with 0:00 duration
+    (setq org-clock-out-remove-zero-time-clocks t)
+
+    (setq org-log-done 'note))
+
+  :config
+  (progn
+    (use-package ox-latex
+      :config
+      (progn
+        (setq org-latex-pdf-process '("latexmk -pdf %f"))
+        (add-to-list 'org-latex-classes
+                     '("sigplanconf"
+                       "\\documentclass{sigplanconf}\n[PACKAGES]\n[EXTRA]"
+                       ("\\section{%s}" . "\\section*{%s}")
+                       ("\\subsection{%s}" . "\\subsection*{%s}")
+                       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                       ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+        ;; (require 'ox-bibtex)
+        ;; (org-add-link-type
+        ;;  "cite" 'ebib
+        ;;  (lambda (path desc format)
+        ;;    (cond
+        ;;     ((eq format 'html)
+        ;;      (format "(<cite>%s</cite>)" path))
+        ;;     ((eq format 'latex)
+        ;;      (if (or (not desc) (equal 0 (search "cite:" desc)))
+        ;;          (format "\\cite{%s}" path)
+        ;;        (format "\\cite[%s][%s]{%s}"
+        ;;                (cadr (split-string desc ";"))
+        ;;                (car (split-string desc ";"))  path))))))
+        (setq org-latex-listings nil)
+        ;; (add-to-list 'org-latex-packages-alist '("" "listings"))
+        ;; (add-to-list 'org-latex-packages-alist '("" "color"))
+        ;; (add-to-list 'org-latex-packages-alist '("" "minted"))
+
+        ;; Nicolas Goaziou, http://article.gmane.org/gmane.emacs.orgmode/67692
+        (defun org-latex-ignore-heading-filter-headline (headline backend info)
+          "Strip headline from HEADLINE. Ignore BACKEND and INFO."
+          (when (and (org-export-derived-backend-p backend 'latex)
+                     (string-match "\\`.*ignoreheading.*\n" headline))
+            (replace-match "" nil nil headline)))
+        (add-to-list 'org-export-filter-headline-functions
+                     'org-latex-ignore-heading-filter-headline)))))
 
 ;;;; prog-mode
 (defun my/local-comment-auto-fill ()
@@ -904,8 +965,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 
 ;; show the name of the current function definition in the modeline
-(require 'which-func)
-(which-function-mode 1)
+(use-package which-func
+  :config
+  (which-function-mode 1))
 
 ;; (require-package 'ws-butler)
 (ws-butler-global-mode 1)
@@ -923,48 +985,52 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 
 ;;;; shells
-(require 'eshell)
-(require 'em-smart)
-(setq eshell-where-to-jump 'begin
-      eshell-review-quick-commands nil
-      eshell-smart-space-goes-to-end t
-      eshell-cmpl-cycle-completions nil
-      eshell-cmpl-ignore-case t
-      eshell-buffer-maximum-lines 30000
-      eshell-output-filter-functions '(eshell-handle-ansi-color
-                                       eshell-handle-control-codes
-                                       eshell-watch-for-password-prompt
-                                       eshell-truncate-buffer))
-;; per-project Eshell
-(defun projectile-eshell ()
-  (interactive)
-  (let ((eshell-buffer-name
-         (concat "*eshell"
-                 (if (projectile-project-name)
-                     (concat "-" (projectile-project-name))
-                   "")
-                 "*")))
-    (eshell)))
+(use-package eshell
+  :bind
+  (("C-x m" . projectile-eshell))
+  :config
+  (progn
+    (use-package em-smart
+      :init
+      (setq eshell-where-to-jump 'begin
+            eshell-review-quick-commands nil
+            eshell-smart-space-goes-to-end t
+            eshell-cmpl-cycle-completions nil
+            eshell-cmpl-ignore-case t
+            eshell-buffer-maximum-lines 30000
+            eshell-output-filter-functions '(eshell-handle-ansi-color
+                                             eshell-handle-control-codes
+                                             eshell-watch-for-password-prompt
+                                             eshell-truncate-buffer)))
 
-(bind-key "C-x m" 'projectile-eshell)
+    ;; per-project Eshell
+    (defun projectile-eshell ()
+      (interactive)
+      (let ((eshell-buffer-name
+             (concat "*eshell"
+                     (if (projectile-project-name)
+                         (concat "-" (projectile-project-name))
+                       "")
+                     "*")))
+        (eshell)))
 
-;; Eshell Hooks
-(defun eshell-settings ()
-  (setq show-trailing-whitespace nil)
-  (eshell-smart-initialize))
+    ;; Eshell Hooks
+    (defun eshell-settings ()
+      (setq show-trailing-whitespace nil)
+      (eshell-smart-initialize))
 
-(add-hook 'eshell-mode-hook 'eshell-settings)
-(add-hook 'eshell-mode-hook 'exec-path-from-shell-initialize)
+    (add-hook 'eshell-mode-hook 'eshell-settings)
+    (add-hook 'eshell-mode-hook 'exec-path-from-shell-initialize)
 
-;; Eshell Commands
-(defun eshell/clear ()
-  (interactive)
-  (let ((inhibit-read-only t))
-    (erase-buffer)))
+    ;; Eshell Commands
+    (defun eshell/clear ()
+      (interactive)
+      (let ((inhibit-read-only t))
+        (erase-buffer)))))
 
-(require 'shell)
-(setq shell-file-name "bash"
-      )
+(use-package shell
+  :init
+  (setq shell-file-name "bash"))
 
 
 ;;;; switch-window
@@ -973,13 +1039,15 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
          ("C-x C-o" . switch-window)))
 
 ;;;; tramp
-(require 'tramp)
-(setq tramp-default-method "ssh")
+(use-package tramp
+  :init
+  (setq tramp-default-method "ssh"))
 
 
 ;;;; uniqify
-(setq uniquify-buffer-name-style 'post-forward-angle-brackets)
-(require 'uniquify)
+(use-package uniquify
+  :init
+  (setq uniquify-buffer-name-style 'post-forward-angle-brackets))
 
 
 ;;;; volatile-highlights
@@ -1045,56 +1113,57 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
       user-mail-address "eric@seidel.io")
 
 ;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
-;; (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
-;; (require 'mu4e)
-;; (setq mu4e-maildir "~/.mail"
-;;      mu4e-drafts-folder "/seidel.io/eric/.drafts"
-;;      mu4e-refile-folder "/seidel.io/eric/.archive"
-;;      mu4e-sent-folder "/seidel.io/eric/.sent"
-;;      mu4e-trash-folder "/seidel.io/eric/.trash"
-;;      mu4e-attachment-dir "~/Downloads"
-;;      mu4e-user-mail-address-list '("gridaphobe@gmail.com"
-;;                                    "eseidel@galois.com"
-;;                                    "eric@eseidel.org"
-;;                                    "eric@seidel.io"
-;;                                    "eric9@mac.com"
-;;                                    "eric9@me.com"
-;;                                    "eric9@icloud.com"
-;;                                    "eseidel@cs.ucsd.edu"
-;;                                    "eseidel@ucsd.edu"
-;;                                    "eseidel@eng.ucsd.edu"
-;;                                    "eseidel01@ccny.cuny.edu"
-;;                                    "eric@fluidinfo.com"
-;;                                    "seidel@apple.com")
-;;      ;; mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-;;      ;;                   "Starred Messages"
-;;      ;;                   ?s)
-;;      ;;                  ("flag:unread AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-;;      ;;                   "Unread Messages"
-;;      ;;                   ?u)
-;;      ;;                  ("to:*.ucsd.edu AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-;;      ;;                   "UCSD"
-;;      ;;                   ?w))
-;;      mu4e-sent-messages-behavior 'delete
-;;      mu4e-auto-retrieve-keys t
-;;      mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
-;;                             ("tag message" . mu4e-action-retag-message))
-;;      mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
-;;                          ("view as pdf" . mu4e-action-view-as-pdf)
-;;                          ("tag message" . mu4e-action-retag-message))
-;;      mu4e-completing-read-function 'completing-read
-;;      mu4e-change-filenames-when-moving t
-;;      mu4e-compose-dont-reply-to-self t
-;;      mu4e-compose-signature-auto-include nil
-;;      mu4e-headers-skip-duplicates t
-;;      mu4e-headers-include-related t
-;;      mu4e-headers-results-limit 100
-;;      mu4e-hide-index-messages nil
-;;      mu4e-use-fancy-chars nil
-;;      mu4e-debug nil
-;;      mu4e-get-mail-command "true" ;"mbsync -a"
-;;      mu4e-update-interval nil ; (* 5 60)
-;;      )
+(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
+(add-to-list 'Info-directory-list "~/.nix-profile/share/info")
+(require 'mu4e)
+(setq mu4e-maildir "~/.mail"
+     mu4e-drafts-folder "/drafts"
+     mu4e-refile-folder "/archive"
+     mu4e-sent-folder "/sent"
+     mu4e-trash-folder "/trash"
+     mu4e-attachment-dir "~/Downloads"
+     mu4e-user-mail-address-list '("gridaphobe@gmail.com"
+                                   "eseidel@galois.com"
+                                   "eric@eseidel.org"
+                                   "eric@seidel.io"
+                                   "eric9@mac.com"
+                                   "eric9@me.com"
+                                   "eric9@icloud.com"
+                                   "eseidel@cs.ucsd.edu"
+                                   "eseidel@ucsd.edu"
+                                   "eseidel@eng.ucsd.edu"
+                                   "eseidel01@ccny.cuny.edu"
+                                   "eric@fluidinfo.com"
+                                   "seidel@apple.com")
+     ;; mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+     ;;                   "Starred Messages"
+     ;;                   ?s)
+     ;;                  ("flag:unread AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+     ;;                   "Unread Messages"
+     ;;                   ?u)
+     ;;                  ("to:*.ucsd.edu AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+     ;;                   "UCSD"
+     ;;                   ?w))
+     mu4e-sent-messages-behavior 'delete
+     mu4e-auto-retrieve-keys t
+     mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
+                            ("tag message" . mu4e-action-retag-message))
+     mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
+                         ("view as pdf" . mu4e-action-view-as-pdf)
+                         ("tag message" . mu4e-action-retag-message))
+     mu4e-completing-read-function 'completing-read
+     mu4e-change-filenames-when-moving t
+     mu4e-compose-dont-reply-to-self t
+     mu4e-compose-signature-auto-include nil
+     mu4e-headers-skip-duplicates t
+     mu4e-headers-include-related t
+     mu4e-headers-results-limit 100
+     mu4e-hide-index-messages nil
+     mu4e-use-fancy-chars t
+     mu4e-debug nil
+     mu4e-get-mail-command "mbsync -aq"
+     mu4e-update-interval (* 5 60)
+     )
 
 ;; (setq mu4e-html2text-command
 ;;      #'(lambda () 
@@ -1161,157 +1230,157 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (mu4e-maildirs-extension)
 
 
-(require 'gnus)
-(setq gnus-select-method '(nnimap "local"
-                                  (nnimap-address "localhost")
-                                  (nnimap-server-port 8143)
-                                  (nnimap-user "eric@seidel.io")
-                                  (nnimap-authenticator login)
-                                  (nnimap-stream network))
-      ;;gnus-select-method '(nntp "news.gmane.org")
-      ;; gnus-select-method '(nnimap "seidel"
-      ;;                             (nnimap-address "mail.messagingengine.com")
-      ;;                             ;;(nnimap-server-port 8143)
-      ;;                             (nnimap-user "eric@seidel.io")
-      ;;                             ;;(nnimap-authenticator login)
-      ;;                             (nnimap-stream ssl))
-      ;gnus-secondary-select-methods '((nnimap "seidel"
-      ;                                        (nnimap-address "localhost")
-      ;                                        (nnimap-server-port 8143)
-      ;                                        (nnimap-user "eric@seidel.io")
-      ;                                        (nnimap-authenticator login)
-      ;                                        (nnimap-stream network)
-      ;                                        )
-      ;                                (nnimap "galois"
-      ;                                        (nnimap-address "localhost")
-      ;                                        (nnimap-server-port 8143)
-      ;                                        (nnimap-user "eseidel@galois.com")
-      ;                                        (nnimap-authenticator login)
-      ;                                        (nnimap-stream network)
-      ;                                        )
-      ;                                )
-      gnus-asynchronous t
+;; (require 'gnus)
+;; (setq gnus-select-method '(nnimap "local"
+;;                                   (nnimap-address "localhost")
+;;                                   (nnimap-server-port 8143)
+;;                                   (nnimap-user "eric@seidel.io")
+;;                                   (nnimap-authenticator login)
+;;                                   (nnimap-stream network))
+;;       ;;gnus-select-method '(nntp "news.gmane.org")
+;;       ;; gnus-select-method '(nnimap "seidel"
+;;       ;;                             (nnimap-address "mail.messagingengine.com")
+;;       ;;                             ;;(nnimap-server-port 8143)
+;;       ;;                             (nnimap-user "eric@seidel.io")
+;;       ;;                             ;;(nnimap-authenticator login)
+;;       ;;                             (nnimap-stream ssl))
+;;       ;gnus-secondary-select-methods '((nnimap "seidel"
+;;       ;                                        (nnimap-address "localhost")
+;;       ;                                        (nnimap-server-port 8143)
+;;       ;                                        (nnimap-user "eric@seidel.io")
+;;       ;                                        (nnimap-authenticator login)
+;;       ;                                        (nnimap-stream network)
+;;       ;                                        )
+;;       ;                                (nnimap "galois"
+;;       ;                                        (nnimap-address "localhost")
+;;       ;                                        (nnimap-server-port 8143)
+;;       ;                                        (nnimap-user "eseidel@galois.com")
+;;       ;                                        (nnimap-authenticator login)
+;;       ;                                        (nnimap-stream network)
+;;       ;                                        )
+;;       ;                                )
+;;       gnus-asynchronous t
       
-      gnus-message-archive-group nil
-      ;; gnus-sum-thread-tree-false-root      ""
-      ;; gnus-sum-thread-tree-single-indent   ""
-      ;; gnus-sum-thread-tree-root            ""
-      ;; gnus-sum-thread-tree-vertical        "|"
-      ;; gnus-sum-thread-tree-leaf-with-other "+-> "
-      ;; gnus-sum-thread-tree-single-leaf     "\\-> "
-      ;; gnus-sum-thread-tree-indent          " "
+;;       gnus-message-archive-group nil
+;;       ;; gnus-sum-thread-tree-false-root      ""
+;;       ;; gnus-sum-thread-tree-single-indent   ""
+;;       ;; gnus-sum-thread-tree-root            ""
+;;       ;; gnus-sum-thread-tree-vertical        "|"
+;;       ;; gnus-sum-thread-tree-leaf-with-other "+-> "
+;;       ;; gnus-sum-thread-tree-single-leaf     "\\-> "
+;;       ;; gnus-sum-thread-tree-indent          " "
 
-      nndraft-directory "~/.cache/gnus/drafts/"
-      gnus-agent t
-      gnus-agent-directory "~/.cache/gnus/agent/"
+;;       nndraft-directory "~/.cache/gnus/drafts/"
+;;       gnus-agent t
+;;       gnus-agent-directory "~/.cache/gnus/agent/"
 
-      ;; gnus-use-cache nil
-      ;; gnus-cache-directory "~/.cache/gnus/"
-      ;; gnus-cache-enter-articles '(read unread ticked dormant)
-      ;; gnus-cache-remove-articles nil
+;;       ;; gnus-use-cache nil
+;;       ;; gnus-cache-directory "~/.cache/gnus/"
+;;       ;; gnus-cache-enter-articles '(read unread ticked dormant)
+;;       ;; gnus-cache-remove-articles nil
 
-      gnus-read-newsrc-file nil
-      gnus-save-newsrc-file nil
+;;       gnus-read-newsrc-file nil
+;;       gnus-save-newsrc-file nil
 
-      gnus-read-active-file 'some
+;;       gnus-read-active-file 'some
 
-      gnus-article-sort-functions '(gnus-article-sort-by-most-recent-date)
-      gnus-thread-sort-functions '(gnus-thread-sort-by-most-recent-date)
-      gnus-thread-hide-subtree t
-      gnus-thread-ignore-subject nil
-)
+;;       gnus-article-sort-functions '(gnus-article-sort-by-most-recent-date)
+;;       gnus-thread-sort-functions '(gnus-thread-sort-by-most-recent-date)
+;;       gnus-thread-hide-subtree t
+;;       gnus-thread-ignore-subject nil
+;; )
 
-(setq gnus-simplify-subject-functions '(rrix/gnus-simplify-phab-headers
-                                        gnus-simplify-subject-re
-                                        gnus-simplify-subject-fuzzy
-                                        gnus-simplify-whitespace
-                                        gnus-simplify-all-whitespace)
-      rrix/gnus-simplify-phab-headers-list '("\\[Differential\\]"
-                                             "\\[Maniphest\\]"
-                                             "\\[Updated.*\\]"
-                                             "\\[Request.*\\]"
-                                             "\\[Commented On.*\\]"
-                                             "\\[Raised Concern.*\\]"
-                                             "\\[Commandeered.*\\]"
-                                             "\\[Accepted.*\\]"
-                                             "\\[Planned.*\\]"
-                                             "\\[Closed.*\\]"
-                                             "\\[Resigned.*\\]"
-                                             "^\ [0-9] "))
+;; (setq gnus-simplify-subject-functions '(rrix/gnus-simplify-phab-headers
+;;                                         gnus-simplify-subject-re
+;;                                         gnus-simplify-subject-fuzzy
+;;                                         gnus-simplify-whitespace
+;;                                         gnus-simplify-all-whitespace)
+;;       rrix/gnus-simplify-phab-headers-list '("\\[Differential\\]"
+;;                                              "\\[Maniphest\\]"
+;;                                              "\\[Updated.*\\]"
+;;                                              "\\[Request.*\\]"
+;;                                              "\\[Commented On.*\\]"
+;;                                              "\\[Raised Concern.*\\]"
+;;                                              "\\[Commandeered.*\\]"
+;;                                              "\\[Accepted.*\\]"
+;;                                              "\\[Planned.*\\]"
+;;                                              "\\[Closed.*\\]"
+;;                                              "\\[Resigned.*\\]"
+;;                                              "^\ [0-9] "))
 
-(defsubst rrix/gnus-simplify-phab-headers (subject)
-  "Remove Phabricator headers from subject lines."
-  (let ((transformed-subject subject))
-    (dolist (regex rrix/gnus-simplify-phab-headers-list)
-              (setq transformed-subject (replace-regexp-in-string regex "" transformed-subject)))
-    transformed-subject))
+;; (defsubst rrix/gnus-simplify-phab-headers (subject)
+;;   "Remove Phabricator headers from subject lines."
+;;   (let ((transformed-subject subject))
+;;     (dolist (regex rrix/gnus-simplify-phab-headers-list)
+;;               (setq transformed-subject (replace-regexp-in-string regex "" transformed-subject)))
+;;     transformed-subject))
 
-;; ;; (add-to-list 'evil-emacs-state-modes 'gnus-category-mode)
-;; ;; (add-to-list 'evil-emacs-state-modes 'gnus-custom-mode)
-;; ;; http://groups.google.com/group/gnu.emacs.gnus/browse_thread/thread/a673a74356e7141f
-(when window-system
-  (setq gnus-sum-thread-tree-indent " ")
-  (setq gnus-sum-thread-tree-root "")
-  (setq gnus-sum-thread-tree-false-root "")
-  (setq gnus-sum-thread-tree-single-indent "")
-  (setq gnus-sum-thread-tree-vertical        "│")
-  (setq gnus-sum-thread-tree-leaf-with-other "├> ")
-  (setq gnus-sum-thread-tree-single-leaf     "└> "))
-(setq gnus-summary-line-format
-      (concat
-       "%0{%U%R%z%}"
-       "%3{│%}" "%1{%d%}" "%3{│%}" ;; date
-       "  "
-       "%4{%-20,20f%}"               ;; name
-       "  "
-       "%3{│%}"
-       " "
-       "%1{%B%}"
-       "%s\n"))
-(setq gnus-summary-display-arrow t)
+;; ;; ;; (add-to-list 'evil-emacs-state-modes 'gnus-category-mode)
+;; ;; ;; (add-to-list 'evil-emacs-state-modes 'gnus-custom-mode)
+;; ;; ;; http://groups.google.com/group/gnu.emacs.gnus/browse_thread/thread/a673a74356e7141f
+;; (when window-system
+;;   (setq gnus-sum-thread-tree-indent " ")
+;;   (setq gnus-sum-thread-tree-root "")
+;;   (setq gnus-sum-thread-tree-false-root "")
+;;   (setq gnus-sum-thread-tree-single-indent "")
+;;   (setq gnus-sum-thread-tree-vertical        "│")
+;;   (setq gnus-sum-thread-tree-leaf-with-other "├> ")
+;;   (setq gnus-sum-thread-tree-single-leaf     "└> "))
+;; (setq gnus-summary-line-format
+;;       (concat
+;;        "%0{%U%R%z%}"
+;;        "%3{│%}" "%1{%d%}" "%3{│%}" ;; date
+;;        "  "
+;;        "%4{%-20,20f%}"               ;; name
+;;        "  "
+;;        "%3{│%}"
+;;        " "
+;;        "%1{%B%}"
+;;        "%s\n"))
+;; (setq gnus-summary-display-arrow t)
 
-(gnus-demon-add-handler 'gnus-demon-scan-news 5 nil) ; this does a call to gnus-group-get-new-news
+;; (gnus-demon-add-handler 'gnus-demon-scan-news 5 nil) ; this does a call to gnus-group-get-new-news
 
-(require 'gnus-notifications)
-(defun gnus-notifications-notify (from subject photo-file)
-  "Send a notification about a new mail.
-Return a notification id if any, or t on success."
-  (my/terminal-notifier "Gnus - New Message" from subject)
-  t
-  )
-(add-hook 'gnus-after-getting-new-news-hook 'gnus-notifications)
-;; ;; (require 'gnus-alias)
-;; (setq gnus-posting-styles
-;;       '(;
-;;         (".*"
-;;          (address "eric@seidel.io")
-;;          ("X-Message-SMTP-Method" "smtp mail.messagingengine.com 587")
-;;          )
-;;         ((header "to" "gridaphobe@gmail\\.com")
-;;          (address "gridaphobe@gmail.com")
-;;          ("X-Message-SMTP-Method" "smtp smtp.gmail.com 587"))
-;;         ((header "to" "@.*\\.ucsd\\.edu")
-;;          (address "eseidel@cs.ucsd.edu")
-;;          ("X-Message-SMTP-Method" "smtp smtp.gmail.com 587"))
-;;         ;((header "to" "eseidel@galois\\.com")
-;;         ; (address "eseidel@galois.com")
-;;         ; ("X-Message-SMTP-Method" "smtp relay.galois.com 587"))
-;;         ))
-;; ;; (defadvice smtpmail-via-smtp (around set-smtp-server-from-header activate)
-;; ;;   (let ((smtpmail-smtp-server (or 
-;; ;;                                (save-restriction
-;; ;;                                  (message-narrow-to-headers)
-;; ;;                                  (mail-fetch-field "X-SMTP-Server"))
-;; ;;                                smtpmail-smtp-server)))
-;; ;;     (message-remove-header "X-SMTP-Server")
-;; ;;     ad-do-it
-;; ;;     ))
+;; (require 'gnus-notifications)
+;; (defun gnus-notifications-notify (from subject photo-file)
+;;   "Send a notification about a new mail.
+;; Return a notification id if any, or t on success."
+;;   (my/terminal-notifier "Gnus - New Message" from subject)
+;;   t
+;;   )
+;; (add-hook 'gnus-after-getting-new-news-hook 'gnus-notifications)
+;; ;; ;; (require 'gnus-alias)
+;; ;; (setq gnus-posting-styles
+;; ;;       '(;
+;; ;;         (".*"
+;; ;;          (address "eric@seidel.io")
+;; ;;          ("X-Message-SMTP-Method" "smtp mail.messagingengine.com 587")
+;; ;;          )
+;; ;;         ((header "to" "gridaphobe@gmail\\.com")
+;; ;;          (address "gridaphobe@gmail.com")
+;; ;;          ("X-Message-SMTP-Method" "smtp smtp.gmail.com 587"))
+;; ;;         ((header "to" "@.*\\.ucsd\\.edu")
+;; ;;          (address "eseidel@cs.ucsd.edu")
+;; ;;          ("X-Message-SMTP-Method" "smtp smtp.gmail.com 587"))
+;; ;;         ;((header "to" "eseidel@galois\\.com")
+;; ;;         ; (address "eseidel@galois.com")
+;; ;;         ; ("X-Message-SMTP-Method" "smtp relay.galois.com 587"))
+;; ;;         ))
+;; ;; ;; (defadvice smtpmail-via-smtp (around set-smtp-server-from-header activate)
+;; ;; ;;   (let ((smtpmail-smtp-server (or
+;; ;; ;;                                (save-restriction
+;; ;; ;;                                  (message-narrow-to-headers)
+;; ;; ;;                                  (mail-fetch-field "X-SMTP-Server"))
+;; ;; ;;                                smtpmail-smtp-server)))
+;; ;; ;;     (message-remove-header "X-SMTP-Server")
+;; ;; ;;     ad-do-it
+;; ;; ;;     ))
 
 
-;; ;; (setq gnus-select-method
-;; ;;       '(nnimap (st)))
-;; ;; (setq gnus-secondary-select-methods
-;; ;;       '((nnmaildir )))
+;; ;; ;; (setq gnus-select-method
+;; ;; ;;       '(nnimap (st)))
+;; ;; ;; (setq gnus-secondary-select-methods
+;; ;; ;;       '((nnmaildir )))
 
 ;;;; irc
 ;; (require 'circe)

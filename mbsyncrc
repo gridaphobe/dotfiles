@@ -1,22 +1,24 @@
 CopyArrivalDate yes
 Create Slave
-Expunge Both
+Expunge Slave
 
 IMAPStore seidel-remote
 Host mail.messagingengine.com
 User eric@seidel.io
 PassCmd "/usr/bin/security find-internet-password -s mail.messagingengine.com -w"
-UseIMAPS yes
-RequireSSL yes
+SSLType IMAPS
 CertificateFile ~/.nix-profile/etc/ca-bundle.crt
+PipelineDepth 2
 
-IMAPStore seidel-local
-Host localhost
-Port 8143
-User eric@seidel.io
-Pass password
-UseIMAPS no
-RequireSSL no
+MaildirStore seidel-local
+Path ~/.mail/
+Inbox ~/.mail/inbox/
+#IMAPStore seidel-local
+#Host localhost
+#Port 8143
+#User eric@seidel.io
+#Pass password
+#SSLType None
 
 Channel seidel-inbox
 Master :seidel-remote:INBOX
@@ -42,10 +44,29 @@ Channel seidel-trash
 Master :seidel-remote:INBOX/Trash
 Slave  :seidel-local:trash
 
-Channel seidel-other
-Master :seidel-remote:INBOX/
-Slave  :seidel-local:
-Patterns * !%Archive !%Chats !%Drafts !%"Junk Mail" !%"Sent Items" !%Trash !%Notes
+Channel seidel-facebook
+Master :seidel-remote:INBOX/facebook
+Slave  :seidel-local:facebook
 
-Group seidel
-Channels seidel-inbox seidel-archive seidel-drafts seidel-junk seidel-sent seidel-trash seidel-other
+Channel seidel-github
+Master :seidel-remote:INBOX/github
+Slave  :seidel-local:github
+
+Channel seidel-haskell
+Master :seidel-remote:INBOX/haskell
+Slave  :seidel-local:haskell
+
+Channel seidel-mu-discuss
+Master :seidel-remote:INBOX/mu-discuss
+Slave  :seidel-local:mu-discuss
+
+Channel seidel-nix-dev
+Master :seidel-remote:INBOX/nix-dev
+Slave  :seidel-local:nix-dev
+
+Channel seidel-piazza
+Master :seidel-remote:INBOX/piazza
+Slave  :seidel-local:piazza
+
+#Group seidel
+#Channels seidel-inbox seidel-archive seidel-drafts seidel-junk seidel-sent seidel-trash seidel-other
