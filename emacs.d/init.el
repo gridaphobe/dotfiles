@@ -855,17 +855,17 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 
 ;;;; magit
-(require 'magit)
-(setq magit-last-seen-setup-instructions "1.4.0")
-;; (diminish 'magit-auto-revert-mode)
-;; (add-to-list 'rm-blacklist " MRev")
-(defalias 'magit 'magit-status)
-(defadvice magit-status (around magit-fullscreen activate)
-  (window-configuration-to-register :magit-fullscreen)
-  ad-do-it
-  (delete-other-windows))
-(defadvice magit-mode-quit-window (after magit-restore-screen activate)
-  (jump-to-register :magit-fullscreen))
+(use-package magit
+  :config
+  (progn
+    (setq magit-last-seen-setup-instructions "1.4.0")
+    (defalias 'magit 'magit-status)))
+;; (defadvice magit-status (around magit-fullscreen activate)
+;;   (window-configuration-to-register :magit-fullscreen)
+;;   ad-do-it
+;;   (delete-other-windows))
+;; (defadvice magit-mode-quit-window (after magit-restore-screen activate)
+;;   (jump-to-register :magit-fullscreen))
 
   
 ;;;; markdown
@@ -884,14 +884,38 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (use-package org
   :bind
   (("C-c a"   . org-agenda)
+   ("C-c b"   . org-iswitchb)
    ("C-c c"   . org-capture)
    ("C-c s l" . org-store-link))
 
-  :init
+  :config
   (progn
-    (setq org-agenda-files '("~/Dropbox/org/ucsd.org"
+    (setq org-directory "~/Dropbox/org")
+    (setq org-agenda-files `(,(concat org-directory "/notes.org")
                                         ; "~/Dropbox/org/galois.org"
                              ))
+    (setq org-default-notes-file (concat org-directory "/notes.org"))
+
+    ;; Targets include this file and any file contributing to the agenda - up to 9 levels deep
+    (setq org-refile-targets (quote ((nil :maxlevel . 9)
+                                     (org-agenda-files :maxlevel . 9))))
+
+    ;; Use full outline paths for refile targets - we file directly with IDO
+    (setq org-refile-use-outline-path t)
+
+    ;; Targets complete directly with IDO
+    (setq org-outline-path-complete-in-steps nil)
+
+    ;; Allow refile to create parent tasks with confirmation
+    (setq org-refile-allow-creating-parent-nodes (quote confirm))
+
+    (setq org-startup-indented t)
+
+    (setq org-cycle-separator-lines 0)
+
+    (setq org-blank-before-new-entry (quote ((heading . nil)
+                                             (plain-list-item . auto))))
+
     (setq orc-src-fontify-natively t)
     ;; Resume clocking task when emacs is restarted
     (org-clock-persistence-insinuate)
@@ -910,10 +934,22 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
     ;; Sometimes I change tasks I'm clocking quickly - this removes clocked tasks with 0:00 duration
     (setq org-clock-out-remove-zero-time-clocks t)
 
-    (setq org-log-done 'note))
+    ;; Save clock data and state changes and notes in the LOGBOOK drawer
+    (setq org-clock-into-drawer t)
 
-  :config
-  (progn
+    ;; Don't show SCHEDULED times if the item is DONE
+    (setq org-agenda-skip-scheduled-if-done t)
+
+    (setq org-log-into-drawer t)
+    (setq org-log-done 'time)
+    (setq org-log-refile 'time)
+
+    ;; Org todo keywords
+    (setq org-todo-keywords
+          (quote
+           ((sequence "SOMEDAY(s)" "TODO(t)" "NEXT(n)" "|" "DONE(d)")
+            (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)"))))
+
     (use-package ox-latex
       :config
       (progn
@@ -954,9 +990,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
                      'org-latex-ignore-heading-filter-headline)))))
 
 ;;;; prog-mode
-(defun my/local-comment-auto-fill ()
-  (auto-fill-mode 1)
-  (set (make-local-variable 'comment-auto-fill-only-comments) t))
+;; (defun my/local-comment-auto-fill ()
+;;   (auto-fill-mode 1)
+;;   (set (make-local-variable 'comment-auto-fill-only-comments) t))
 
 (defun my/add-watchwords ()
   (font-lock-add-keywords
@@ -1115,55 +1151,55 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
 (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
 (add-to-list 'Info-directory-list "~/.nix-profile/share/info")
-(require 'mu4e)
-(setq mu4e-maildir "~/.mail"
-     mu4e-drafts-folder "/drafts"
-     mu4e-refile-folder "/archive"
-     mu4e-sent-folder "/sent"
-     mu4e-trash-folder "/trash"
-     mu4e-attachment-dir "~/Downloads"
-     mu4e-user-mail-address-list '("gridaphobe@gmail.com"
-                                   "eseidel@galois.com"
-                                   "eric@eseidel.org"
-                                   "eric@seidel.io"
-                                   "eric9@mac.com"
-                                   "eric9@me.com"
-                                   "eric9@icloud.com"
-                                   "eseidel@cs.ucsd.edu"
-                                   "eseidel@ucsd.edu"
-                                   "eseidel@eng.ucsd.edu"
-                                   "eseidel01@ccny.cuny.edu"
-                                   "eric@fluidinfo.com"
-                                   "seidel@apple.com")
-     ;; mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-     ;;                   "Starred Messages"
-     ;;                   ?s)
-     ;;                  ("flag:unread AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-     ;;                   "Unread Messages"
-     ;;                   ?u)
-     ;;                  ("to:*.ucsd.edu AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
-     ;;                   "UCSD"
-     ;;                   ?w))
-     mu4e-sent-messages-behavior 'delete
-     mu4e-auto-retrieve-keys t
-     mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
+(use-package mu4e
+  :init
+  (setq mu4e-maildir "~/.mail"
+        mu4e-drafts-folder "/drafts"
+        mu4e-refile-folder "/archive"
+        mu4e-sent-folder "/sent"
+        mu4e-trash-folder "/trash"
+        mu4e-attachment-dir "~/Downloads"
+        mu4e-user-mail-address-list '("gridaphobe@gmail.com"
+                                      "eseidel@galois.com"
+                                      "eric@eseidel.org"
+                                      "eric@seidel.io"
+                                      "eric9@mac.com"
+                                      "eric9@me.com"
+                                      "eric9@icloud.com"
+                                      "eseidel@cs.ucsd.edu"
+                                      "eseidel@ucsd.edu"
+                                      "eseidel@eng.ucsd.edu"
+                                      "eseidel01@ccny.cuny.edu"
+                                      "eric@fluidinfo.com"
+                                      "seidel@apple.com")
+        ;; mu4e-bookmarks '(("flag:flagged AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+        ;;                   "Starred Messages"
+        ;;                   ?s)
+        ;;                  ("flag:unread AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+        ;;                   "Unread Messages"
+        ;;                   ?u)
+        ;;                  ("to:*.ucsd.edu AND NOT (maildir:/gmail/spam OR maildir:/gmail/trash)"
+        ;;                   "UCSD"
+        ;;                   ?w))
+        mu4e-sent-messages-behavior 'delete
+        mu4e-auto-retrieve-keys t
+        mu4e-headers-actions '(("capture message" . mu4e-action-capture-message)
+                               ("tag message" . mu4e-action-retag-message))
+        mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
+                            ("view as pdf" . mu4e-action-view-as-pdf)
                             ("tag message" . mu4e-action-retag-message))
-     mu4e-view-actions '(("capture message" . mu4e-action-capture-message)
-                         ("view as pdf" . mu4e-action-view-as-pdf)
-                         ("tag message" . mu4e-action-retag-message))
-     mu4e-completing-read-function 'completing-read
-     mu4e-change-filenames-when-moving t
-     mu4e-compose-dont-reply-to-self t
-     mu4e-compose-signature-auto-include nil
-     mu4e-headers-skip-duplicates t
-     mu4e-headers-include-related t
-     mu4e-headers-results-limit 100
-     mu4e-hide-index-messages nil
-     mu4e-use-fancy-chars t
-     mu4e-debug nil
-     mu4e-get-mail-command "mbsync -aq"
-     mu4e-update-interval (* 5 60)
-     )
+        mu4e-completing-read-function 'ivy-completing-read
+        mu4e-change-filenames-when-moving t
+        mu4e-compose-dont-reply-to-self t
+        mu4e-compose-signature-auto-include nil
+        mu4e-headers-skip-duplicates t
+        mu4e-headers-include-related t
+        mu4e-headers-results-limit 100
+        mu4e-hide-index-messages nil
+        mu4e-use-fancy-chars t
+        mu4e-debug nil
+        mu4e-get-mail-command "mbsync -aq"
+        mu4e-update-interval (* 5 60)))
 
 ;; (setq mu4e-html2text-command
 ;;      #'(lambda () 
@@ -1396,8 +1432,20 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;            :nickserv-password ,irc-nick-pass
 ;;            ))))
 
-;; (setq lui-max-buffer-size 30000
-;;       circe-reduce-lurker-spam t)
+(use-package circe
+  :init
+  (setq lui-max-buffer-size 30000
+        circe-reduce-lurker-spam t
+        circe-highlight-nick-type 'occurrence
+        tracking-ignored-buffers '(("#emacs" circe-highlight-nick-face)
+                                   ("#fluidinfo" circe-highlight-nick-face)
+                                   ("#fluidinfo-private" circe-highlight-nick-face)
+                                   ("#haskell" circe-highlight-nick-face)
+                                   ("#haskell-emacs" circe-highlight-nick-face)
+                                   ("#haskell-ide-engine" circe-highlight-nick-face)
+                                   ("#haskell-infrastructure" circe-highlight-nick-face)
+                                   ("#idris" circe-highlight-nick-face)
+                                   ("#nixos" circe-highlight-nick-face))))
 
 
 ;;;; wgrep

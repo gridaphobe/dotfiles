@@ -424,6 +424,7 @@
         multiple-cursors
         org-plus-contrib
         org-trello
+        pdf-tools
         persp-projectile
         projectile
         racket-mode
