@@ -34,13 +34,22 @@
 (setq inhibit-startup-screen t)
 
 (require 'package)
-(setq package-archives nil)
-(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/")
-(add-to-list 'package-directory-list "~/.nix-profile/share/emacs/site-lisp/elpa")
-(load-file "~/.nix-profile/share/emacs/site-lisp/site-start.el")
+(if (file-exists-p "~/.nix-profile/share/emacs/site-lisp")
+    (progn
+      (setq package-archives nil)
+      (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/")
+      (add-to-list 'package-directory-list "~/.nix-profile/share/emacs/site-lisp/elpa")
+      (load-file "~/.nix-profile/share/emacs/site-lisp/site-start.el"))
+  (progn
+    (add-to-list 'package-archives
+                 '("melpa" . "https://melpa.org/packages/"))
+    (add-to-list 'package-archives
+                 '("melpa-stable" . "https://stable.melpa.org/packages/") t)))
 (package-initialize)
 
-
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
 (require 'use-package)
 (require 'bind-key)
 
@@ -62,13 +71,6 @@
   (bind-key "s-s" 'save-buffer)
   (bind-key "s-q" 'save-buffers-kill-emacs)
 
-  (set-fontset-font "fontset-default"
-                    'unicode
-                    '("Fira Mono" . "iso10646-1"))
-  (set-face-attribute 'default nil
-                      :family "Fira Mono"
-                      :height 120)
-
   (require 'exec-path-from-shell)
   (setq exec-path-from-shell-variables
         '("PATH" "MANPATH" "DYLD_LIBRARY_PATH" "NIX_PATH"
@@ -79,12 +81,22 @@
 
   (setq browse-url-browser-function 'browse-url-default-macosx-browser))
 
+(set-fontset-font "fontset-default"
+                  'unicode
+                  '("Fira Mono" . "iso10646-1"))
+(set-face-attribute 'default nil
+                    :family "Fira Mono"
+                    :height 120)
+
 ;;;; theme
 ;; (defadvice load-theme (around disable-other-themes activate)
 ;;   (mapc #'disable-theme custom-enabled-themes)
 ;;   ad-do-it)
 
-(load-theme 'solarized-light)
+(use-package solarized-theme
+  :ensure t
+  :config
+  (load-theme 'solarized-light))
 
 ;; (load-theme 'zenburn)
 ;; (load-theme 'leuven)
@@ -93,10 +105,10 @@
 
 ;;;; smart-mode-line
 (use-package smart-mode-line
-  :init
-  (setq sml/name-width '(20 . 30))
+  :ensure t
   :config
   (progn
+    (setq sml/name-width '(20 . 30))
     (sml/setup)
     (sml/apply-theme 'light)))
 
@@ -111,6 +123,7 @@
 
 (set-default 'tags-case-fold-search nil)
 (use-package dired-x
+  :ensure dired+
   :config
   (progn
     (setq-default dired-omit-files-p t)
@@ -137,6 +150,7 @@
 (setq set-mark-command-repeat-pop t)
 
 (use-package ibuffer-vc
+  :ensure t
   :config
   (add-hook 'ibuffer-hook
             (lambda ()
@@ -304,13 +318,15 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (diminish 'subword-mode)
 
 ;;;; smartparens
-(require 'smartparens-config)
-(bind-key "C-k"   'sp-kill-hybrid-sexp)
-(bind-key "C-M-f" 'sp-forward-sexp)
-(bind-key "C-M-b" 'sp-backward-sexp)
-(bind-key "C-M-k" 'sp-kill-sexp)
-(bind-key "C-M-p" 'sp-forward-slurp-sexp)
-(bind-key "C-M-o" 'sp-forward-barf-sexp)
+(use-package smartparens-config
+  :ensure smartparens
+  :config
+  (bind-key "C-k"   'sp-kill-hybrid-sexp)
+  (bind-key "C-M-f" 'sp-forward-sexp)
+  (bind-key "C-M-b" 'sp-backward-sexp)
+  (bind-key "C-M-k" 'sp-kill-sexp)
+  (bind-key "C-M-p" 'sp-forward-slurp-sexp)
+  (bind-key "C-M-o" 'sp-forward-barf-sexp))
 
 (setq-default sp-autoskip-closing-pair 'always)
 (setq sp-hybrid-kill-entire-symbol nil)
@@ -333,6 +349,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; anzu
 (use-package anzu
+  :ensure t
   :bind (("M-%" . anzu-query-replace)
          ("C-M-%" . anzu-query-replace-regexp)))
 
@@ -343,6 +360,12 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (bind-key "M-x" 'smex)
 ;; (bind-key "M-X" 'smex-major-mode-commands)
 
+(use-package swiper
+  :ensure t
+  :bind
+  (("C-s" . swiper)
+   ("C-r" . swiper)))
+
 (use-package ivy
   :diminish 'ivy-mode
   :init
@@ -352,12 +375,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :bind
   (("C-c C-r" . ivy-resume)))
 
-(use-package swiper
-  :bind
-  (("C-s" . swiper)
-   ("C-r" . swiper)))
-
 (use-package counsel
+  :ensure t
   :init
   (setq counsel-find-file-ignore-regexp "\(?:\`[#.]\)\|\(?:[#~]\'\)")
   :bind
@@ -415,6 +434,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (persp-mode)
 ;; (require 'persp-projectile)
 (use-package projectile
+  :ensure t
   :diminish 'projectile-mode
   :init
   (setq projectile-completion-system 'ivy
@@ -425,10 +445,11 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   (progn
     (projectile-global-mode)
     (use-package perspective
+      :ensure t
       :config
       (progn
         (persp-mode)
-        (use-package persp-projectile)))))
+        (use-package persp-projectile :ensure t)))))
 
 ;; (projectile-global-mode)
 ;; (diminish 'projectile-mode)
@@ -446,6 +467,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (diminish 'auto-complete-mode)
 ;; (ac-set-trigger-key "TAB")
 (use-package company
+  :ensure t
   :diminish 'company-mode
   :init
   (setq company-global-modes '(not circe-channel-mode
@@ -520,15 +542,18 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; expand-region
 (use-package expand-region
+  :ensure t
   :bind (("M-m" . er/expand-region)))
 
 ;;;; change-inner
 (use-package change-inner
+  :ensure t
   :bind (("M-i" . change-inner)
          ("M-o" . change-outer)))
 
 ;;;; undo-tree
 (use-package undo-tree
+  :ensure t
   :diminish 'undo-tree-mode
   :init
   (setq undo-tree-visualizer-relative-timestamps t
@@ -651,6 +676,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; flycheck
 (use-package flycheck
+  :ensure t
   :bind
   (("M-n" . flycheck-next-error)
    ("M-p" . flycheck-previous-error))
@@ -660,6 +686,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   (progn
     (global-flycheck-mode 1)
     (use-package flycheck-pos-tip
+      :ensure t
       :config
       (flycheck-pos-tip-mode))))
 
@@ -722,80 +749,83 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (add-hook 'evil-god-state-exit-hook (lambda () (diminish-undo 'god-local-mode)))
 
 ;;;; haskell
-(require 'haskell-mode)
-(require 'haskell-interactive-mode)
-(require 'haskell-process)
-(sp-local-pair '(haskell-mode literate-haskell-mode) 
-               "{- " " -}" 
-               :trigger "-{")
-(sp-local-pair '(haskell-mode literate-haskell-mode) 
-               "{-@ " " @-}" 
-               :trigger "@{")
-(sp-local-pair '(haskell-mode literate-haskell-mode) 
-               "{-# " " #-}" 
-               :trigger "#{")
-(bind-key "C-c C-l" 'haskell-process-load-file haskell-mode-map)
-(bind-key "C-c C-t" 'haskell-mode-show-type-at haskell-mode-map)
-(bind-key "C-c C-i" 'haskell-process-do-info   haskell-mode-map)
-(bind-key "C-c C-." 'haskell-mode-goto-loc haskell-mode-map)
-(bind-key "C-c C-?" 'haskell-mode-find-uses haskell-mode-map)
-(bind-key "M-n" 'next-error haskell-mode-map)
-(bind-key "M-p" 'previous-error haskell-mode-map)
+(use-package haskell-mode
+  :ensure t
+  :config
+  (require 'haskell-interactive-mode)
+  (require 'haskell-process)
+  (sp-local-pair '(haskell-mode literate-haskell-mode) 
+                 "{- " " -}" 
+                 :trigger "-{")
+  (sp-local-pair '(haskell-mode literate-haskell-mode) 
+                 "{-@ " " @-}" 
+                 :trigger "@{")
+  (sp-local-pair '(haskell-mode literate-haskell-mode) 
+                 "{-# " " #-}" 
+                 :trigger "#{")
+  (bind-key "C-c C-l" 'haskell-process-load-file haskell-mode-map)
+  (bind-key "C-c C-t" 'haskell-mode-show-type-at haskell-mode-map)
+  (bind-key "C-c C-i" 'haskell-process-do-info   haskell-mode-map)
+  (bind-key "C-c C-." 'haskell-mode-goto-loc haskell-mode-map)
+  (bind-key "C-c C-?" 'haskell-mode-find-uses haskell-mode-map)
+  (bind-key "M-n" 'next-error haskell-mode-map)
+  (bind-key "M-p" 'previous-error haskell-mode-map)
+  
+  ;; (add-to-list 'evil-emacs-state-modes 'haskell-presentation-mode)
+  
+  (setq haskell-process-type 'auto
+        haskell-process-path-ghci "ghci"
+        haskell-process-args-ghci '("-ferror-spans" "-idist/build:dist/build/autogen")
+        haskell-process-args-cabal-repl '(;"--with-ghc=ghci-ng"
+                                          "--ghc-option=-ferror-spans")
+        haskell-process-log t
+        haskell-align-imports-pad-after-name t
+        haskell-ask-also-kill-buffers nil
+        haskell-completing-read-function 'completing-read
+        haskell-interactive-popup-errors nil
+        haskell-interactive-types-for-show-ambiguous t
+        haskell-process-auto-import-loaded-modules t
+        ;;haskell-process-reload-with-fbytecode t
+        haskell-process-suggest-add-package t
+        haskell-process-suggest-hoogle-imports t
+        haskell-process-suggest-language-pragmas t
+        haskell-process-suggest-remove-import-lines t
+        haskell-process-suggest-overloaded-strings t
+        haskell-process-suggest-restart t
+        haskell-process-use-presentation-mode nil
+        haskell-stylish-on-save nil
+        haskell-tags-on-save t
+        )
+  
+  (add-hook 'haskell-mode-hook 'eldoc-mode)
+  (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+  (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
+  (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+  (add-hook 'haskell-mode-hook 'flycheck-haskell-setup)
 
-;; (add-to-list 'evil-emacs-state-modes 'haskell-presentation-mode)
+  (setq-default flycheck-ghc-args '("-package" "ghc"))
 
-(setq haskell-process-type 'auto
-      haskell-process-path-ghci "ghci"
-      haskell-process-args-ghci '("-ferror-spans" "-idist/build:dist/build/autogen")
-      haskell-process-args-cabal-repl '(;"--with-ghc=ghci-ng"
-                                        "--ghc-option=-ferror-spans")
-      haskell-process-log t
-      haskell-align-imports-pad-after-name t
-      haskell-ask-also-kill-buffers nil
-      haskell-completing-read-function 'completing-read
-      haskell-interactive-popup-errors nil
-      haskell-interactive-types-for-show-ambiguous t
-      haskell-process-auto-import-loaded-modules t
-      ;;haskell-process-reload-with-fbytecode t
-      haskell-process-suggest-add-package t
-      haskell-process-suggest-hoogle-imports t
-      haskell-process-suggest-language-pragmas t
-      haskell-process-suggest-remove-import-lines t
-      haskell-process-suggest-overloaded-strings t
-      haskell-process-suggest-restart t
-      haskell-process-use-presentation-mode nil
-      haskell-stylish-on-save nil
-      haskell-tags-on-save t
-      )
-
-(add-hook 'haskell-mode-hook 'eldoc-mode)
-(add-hook 'haskell-mode-hook 'interactive-haskell-mode)
-(add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
-(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-(add-hook 'haskell-mode-hook 'flycheck-haskell-setup)
-
-
-(setq-default flycheck-ghc-args '("-package" "ghc"))
-
-;; (bind-key "M-n" 'next-error     haskell-interactive-mode-map)
-;; (bind-key "M-p" 'previous-error haskell-interactive-mode-map)
-
-(require 'hindent)
-(add-hook 'haskell-mode-hook #'hindent-mode)
-(setq hindent-style "gibiansky")
-
-;;(load "~/.emacs.d/haskell-flycheck.el")
-(add-hook 'haskell-mode-hook 
-          (lambda () 
-            ;; (turn-on-haskell-indentation)
-            (diminish 'haskell-indentation-mode)
-            (diminish 'interactive-haskell-mode)
-            ;; (flycheck-haskell-setup)
-            ;; (bind-key "M-n" 'next-error interactive-haskell-mode-map)
-            ;; (bind-key "M-p" 'previous-error interactive-haskell-mode-map)
-            ;;(flycheck-select-checker 'haskell-process)
-            ;;(flycheck-select-checker 'haskell-ghc-modi-check)
-            ))
+  ;; (bind-key "M-n" 'next-error     haskell-interactive-mode-map)
+  ;; (bind-key "M-p" 'previous-error haskell-interactive-mode-map)
+  
+  (use-package hindent
+    :ensure t
+    :config
+    (add-hook 'haskell-mode-hook #'hindent-mode)
+    (setq hindent-style "gibiansky"))
+  
+  ;;(load "~/.emacs.d/haskell-flycheck.el")
+  (add-hook 'haskell-mode-hook 
+            (lambda () 
+              ;; (turn-on-haskell-indentation)
+              (diminish 'haskell-indentation-mode)
+              (diminish 'interactive-haskell-mode)
+              ;; (flycheck-haskell-setup)
+              ;; (bind-key "M-n" 'next-error interactive-haskell-mode-map)
+              ;; (bind-key "M-p" 'previous-error interactive-haskell-mode-map)
+              ;;(flycheck-select-checker 'haskell-process)
+              ;;(flycheck-select-checker 'haskell-ghc-modi-check)
+              )))
 
 
 
@@ -856,6 +886,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; magit
 (use-package magit
+  :ensure t
+  :bind (("C-x g" . magit-status))
   :config
   (progn
     (setq magit-last-seen-setup-instructions "1.4.0")
@@ -870,6 +902,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   
 ;;;; markdown
 (use-package markdown-mode
+  :ensure t
   :init
   (progn
     (add-to-list 'auto-mode-alist '("\\.markdown\\'" . gfm-mode))
@@ -1006,9 +1039,12 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   (which-function-mode 1))
 
 ;; (require-package 'ws-butler)
-(ws-butler-global-mode 1)
-(diminish 'ws-butler-mode)
-(diminish 'highlight-changes-mode)
+(use-package ws-butler
+  :ensure t
+  :config
+  (ws-butler-global-mode 1)
+  (diminish 'ws-butler-mode)
+  (diminish 'highlight-changes-mode))
 
 (defun my/prog-mode-defaults ()
   "Default coding hook, useful with any programming language."
@@ -1071,6 +1107,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; switch-window
 (use-package switch-window
+  :ensure t
   :bind (("C-x o"   . switch-window)
          ("C-x C-o" . switch-window)))
 
@@ -1088,6 +1125,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; volatile-highlights
 (use-package volatile-highlights
+  :ensure t
   :diminish ""
   :config (volatile-highlights-mode 1))
 
@@ -1433,6 +1471,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;            ))))
 
 (use-package circe
+  :ensure t
   :init
   (setq lui-max-buffer-size 30000
         circe-reduce-lurker-spam t
@@ -1450,6 +1489,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; wgrep
 (use-package wgrep
+  :ensure t
   :init (setq wgrep-auto-save-buffer t
               wgrep-enable-key "r"))
 
