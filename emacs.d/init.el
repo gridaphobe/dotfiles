@@ -448,12 +448,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (use-package company
   :diminish 'company-mode
   :init
-  (setq company-global-modes '(not circe-channel-mode
-                                   circe-query-mode
-                                   circe-server-mode))
+  (add-hook #'prog-mode-hook #'company-mode)
   :config
-  (global-company-mode))
-;; (add-to-list 'rm-blacklist " company")
+  (setq company-dabbrev-downcase nil))
 
 ;;;; compile
 (use-package compile
@@ -654,14 +651,13 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :bind
   (("M-n" . flycheck-next-error)
    ("M-p" . flycheck-previous-error))
-  :init
-  (setq flycheck-check-syntax-automatically '(mode-enabled save))
+  :init (global-flycheck-mode 1)
   :config
-  (progn
-    (global-flycheck-mode 1)
-    (use-package flycheck-pos-tip
-      :config
-      (flycheck-pos-tip-mode))))
+  (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc json-jsonlint json-python-json haskell-hlint))
+  (setq flycheck-check-syntax-automatically '(mode-enabled save))
+  (use-package flycheck-pos-tip
+    :init
+    (flycheck-pos-tip-mode)))
 
 
 ;;;; flyspell
@@ -852,14 +848,44 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
           TeX-parse-self t
           TeX-save-query nil))
   )
-
+(use-package pdf-tools
+  :config
+  (pdf-tools-install))
 
 ;;;; magit
 (use-package magit
+  :bind (("C-x g" . magit-status))
   :config
-  (progn
-    (setq magit-last-seen-setup-instructions "1.4.0")
-    (defalias 'magit 'magit-status)))
+  (setq magit-last-seen-setup-instructions "1.4.0")
+  (defalias 'magit 'magit-status)
+  (setq magit-display-buffer-function
+        (lambda (buffer)
+          (if (or magit-display-buffer-noselect
+                  ;; don't go fullscreen for certain magit buffers if current
+                  ;; buffer is a magit buffer (we're conforming to
+                  ;; `magit-display-buffer-traditional')
+                  (and (derived-mode-p 'magit-mode)
+                       (not (memq (with-current-buffer buffer major-mode)
+                                  '(magit-process-mode
+                                    magit-revision-mode
+                                    magit-diff-mode
+                                    magit-stash-mode
+                                    magit-status-mode)))))
+              ;; the code that called `magit-display-buffer-function'
+              ;; expects the original window to stay alive, we can't go
+              ;; fullscreen
+              (magit-display-buffer-traditional buffer)
+            (delete-other-windows)
+            ;; make sure the window isn't dedicated, otherwise
+            ;; `set-window-buffer' throws an error
+            (set-window-dedicated-p nil nil)
+            (set-window-buffer nil buffer)
+            ;; return buffer's window
+            (get-buffer-window buffer))))
+  (use-package magit-gh-pulls
+    :config
+    (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls))
+  )
 ;; (defadvice magit-status (around magit-fullscreen activate)
 ;;   (window-configuration-to-register :magit-fullscreen)
 ;;   ad-do-it

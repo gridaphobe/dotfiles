@@ -1,6 +1,6 @@
 { pkgs }:
 {
-  #allowBroken = true;
+  allowBroken = true;
   allowUnfree = true;
 
   #replaceStdenv = { pkgs }: pkgs.allStdenvs.stdenvDarwinPure;
@@ -126,7 +126,7 @@
         # (mutt.override { withSidebar = true;})
         nix-prefetch-scripts
         nix-repl
-        # notmuch
+        notmuch
         ocaml
         patch
         patchutils
@@ -159,7 +159,7 @@
       cabal2nix
       cabal-install
       ghc-core
-      ghc-mod
+      #ghc-mod
       #ghci-ng
       # ghcid
       graphmod
@@ -168,7 +168,7 @@
       #haskell-docs
       hasktags
       codex
-      hindent
+      #hindent
       hint
       hlint
       hscolour
@@ -204,7 +204,7 @@
       # trifecta
       binary-bits
       clay
-      present
+      # present
       fgl
       fgl-visualize
 
@@ -405,7 +405,7 @@
         flycheck-haskell
         flycheck-pos-tip
         # gnus
-        ghc-mod
+        #ghc-mod
         god-mode
         haskell-mode
         hindent
@@ -416,12 +416,14 @@
         ibuffer-vc
         idris-mode
         magit
+        magit-gh-pulls
         markdown-mode
         material-theme
         moe-theme
         monokai-theme
         #mu4e  # comes with mu
         multiple-cursors
+        notmuch
         org-plus-contrib
         org-trello
         pdf-tools

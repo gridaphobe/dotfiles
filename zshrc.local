@@ -28,19 +28,23 @@ fi
 
 path=($HOME/bin $HOME/.local/bin /usr/local/bin /usr/local/sbin $path)
 
-[[ -r "$HOME/.nix-profile/etc/profile.d/nix.sh" ]] && . "$HOME/.nix-profile/etc/profile.d/nix.sh"
-export NIX_CONF_DIR="$HOME/.config/nix"
-export NIX_PATH=nixpkgs="$HOME/Source/nixpkgs"
-#export CFLAGS="$CFLAGS -I$HOME/.nix-profile/include"
-#export CXXFLAGS="$CXXFLAGS -I$HOME/.nix-profile/include"
-#export LDFLAGS="$LDFLAGS -L$HOME/.nix-profile/lib"
-#export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/.nix-profile/lib"
-#export DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$HOME/.nix-profile/lib"
+if [[ -r "$HOME/.nix-profile/etc/profile.d/nix.sh" ]]; then
+  . "$HOME/.nix-profile/etc/profile.d/nix.sh"
+  export NIX_CONF_DIR="$HOME/.config/nix"
+  export NIX_PATH=nixpkgs="$HOME/Source/nixpkgs"
+  #export CFLAGS="$CFLAGS -I$HOME/.nix-profile/include"
+  #export CXXFLAGS="$CXXFLAGS -I$HOME/.nix-profile/include"
+  #export LDFLAGS="$LDFLAGS -L$HOME/.nix-profile/lib"
+  #export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$HOME/.nix-profile/lib"
+  #export DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$HOME/.nix-profile/lib"
+fi
 
-export NIX_GHC="$HOME/.nix-profile/bin/ghc"
-export NIX_GHCPKG="$HOME/.nix-profile/bin/ghc-pkg"
-export NIX_GHC_DOCDIR="$HOME/.nix-profile/share/doc/ghc/html"
-export NIX_GHC_LIBDIR="$HOME/.nix-profile/lib/ghc-$($NIX_GHC --numeric-version)"
+if [ -e ~/.nix-profile/bin/ghc ]; then
+  export NIX_GHC="$HOME/.nix-profile/bin/ghc"
+  export NIX_GHCPKG="$HOME/.nix-profile/bin/ghc-pkg"
+  export NIX_GHC_DOCDIR="$HOME/.nix-profile/share/doc/ghc/html"
+  export NIX_GHC_LIBDIR="$HOME/.nix-profile/lib/ghc-$($NIX_GHC --numeric-version)"
+fi
 
 # Local Variables:
 # mode: sh
