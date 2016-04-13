@@ -86,7 +86,7 @@
                   '("Fira Mono" . "iso10646-1"))
 (set-face-attribute 'default nil
                     :family "Fira Mono"
-                    :height 120)
+                    :height 140)
 
 ;;;; theme
 ;; (defadvice load-theme (around disable-other-themes activate)
@@ -364,16 +364,15 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :ensure t
   :bind
   (("C-s" . swiper)
-   ("C-r" . swiper)))
-
-(use-package ivy
-  :diminish 'ivy-mode
+   ("C-r" . swiper))
   :init
-  (setq ivy-use-virtual-buffers t)
-  :config
-  (ivy-mode 1)
-  :bind
-  (("C-c C-r" . ivy-resume)))
+  (use-package ivy
+    :diminish 'ivy-mode
+    :init
+    (setq ivy-use-virtual-buffers t)
+    (ivy-mode 1)
+    :bind
+    (("C-c C-r" . ivy-resume))))
 
 (use-package counsel
   :ensure t

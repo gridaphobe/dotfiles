@@ -396,6 +396,7 @@
         company
         company-ghc
         color-theme-sanityinc-tomorrow
+        dired-plus
         #evil
         #evil-god-state
         #evil-surround
@@ -434,7 +435,7 @@
         smartparens
         smex
         solarized-theme
-        swiper
+        swiper ivy counsel
         switch-window
         structured-haskell-mode
         tuareg
