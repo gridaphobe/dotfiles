@@ -34,17 +34,24 @@
 (setq inhibit-startup-screen t)
 
 (require 'package)
-(if (file-exists-p "~/.nix-profile/share/emacs/site-lisp")
+(if nil ;(or (file-exists-p "~/.nix-profile/share/emacs/site-lisp")
+        ;    (file-exists-p "~/.nix-profile/share/emacs-with-packages/site-lisp"))
     (progn
       (setq package-archives nil)
       (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/")
       (add-to-list 'package-directory-list "~/.nix-profile/share/emacs/site-lisp/elpa")
-      (load-file "~/.nix-profile/share/emacs/site-lisp/site-start.el"))
+      (add-to-list 'load-path "~/.nix-profile/share/emacs-with-packages/site-lisp/")
+      (add-to-list 'package-directory-list "~/.nix-profile/share/emacs-with-packages/site-lisp/elpa")
+      (load-file "~/.nix-profile/share/emacs-with-packages/site-lisp/site-start.el"))
   (progn
     (add-to-list 'package-archives
-                 '("melpa" . "https://melpa.org/packages/"))
+                 '("melpa" . "https://melpa.org/packages/") t)
     (add-to-list 'package-archives
-                 '("melpa-stable" . "https://stable.melpa.org/packages/") t)))
+                 '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+    (setq package-archive-priorities
+          '(("melpa-stable" . 2)
+            ("gnu" . 1)
+            ("melpa" . 0)))))
 (package-initialize)
 
 (unless (package-installed-p 'use-package)
@@ -61,6 +68,7 @@
         mac-pass-control-to-system nil)
   (setq mac-command-modifier 'super)
   (setq mac-option-modifier 'meta)
+  (mac-auto-operator-composition-mode)
 
   (bind-key "<s-return>" 'toggle-frame-fullscreen)
   (bind-key "s-`" 'other-frame)
@@ -71,11 +79,13 @@
   (bind-key "s-s" 'save-buffer)
   (bind-key "s-q" 'save-buffers-kill-emacs)
 
-  (require 'exec-path-from-shell)
-  (setq exec-path-from-shell-variables
-        '("PATH" "MANPATH" "DYLD_LIBRARY_PATH" "NIX_PATH"
-          "NIX_GHC" "NIX_GHCPKG" "NIX_GHC_DOCDIR" "NIX_GHC_LIBDIR"))
-  (exec-path-from-shell-initialize)
+  (use-package exec-path-from-shell
+    :ensure t
+    :config
+    (setq exec-path-from-shell-variables
+          '("PATH" "MANPATH" "DYLD_LIBRARY_PATH" "NIX_PATH"
+            "NIX_GHC" "NIX_GHCPKG" "NIX_GHC_DOCDIR" "NIX_GHC_LIBDIR"))
+    (exec-path-from-shell-initialize))
 
   (add-to-list 'exec-path "/Applications/Racket/bin")
 
@@ -83,9 +93,9 @@
 
 (set-fontset-font "fontset-default"
                   'unicode
-                  '("Fira Mono" . "iso10646-1"))
+                  '("Fira Code" . "iso10646-1"))
 (set-face-attribute 'default nil
-                    :family "Fira Mono"
+                    :family "Fira Code"
                     :height 140)
 
 ;;;; theme
@@ -123,6 +133,7 @@
 
 (set-default 'tags-case-fold-search nil)
 (use-package dired-x
+  :disabled t
   :ensure dired+
   :config
   (progn
@@ -137,7 +148,7 @@
 (electric-indent-mode -1)
 (electric-layout-mode -1)
 (electric-pair-mode -1)
-(show-paren-mode 1)
+(show-paren-mode -1)
 
 (setq-default major-mode 'text-mode)
 
@@ -259,7 +270,7 @@
 
 ;; saner regex syntax
 (use-package re-builder
-  :init
+  :config
   (setq reb-re-syntax 'string))
 
 ;; enable narrowing commands
@@ -289,6 +300,11 @@
 
 ;;;; ProofGeneral
 ;; (load "~/.nix-profile/share/emacs/site-lisp/ProofGeneral/generic/proof-site.el")
+
+
+(load (expand-file-name "~/.quicklisp/slime-helper.el"))
+;; Replace "sbcl" with the path to your implementation
+(setq inferior-lisp-program "sbcl")
 
 
 ;;;; Rectangle-aware commands
@@ -321,6 +337,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (use-package smartparens-config
   :ensure smartparens
   :config
+  (smartparens-global-mode 1)
+  (show-smartparens-global-mode 1)
   (bind-key "C-k"   'sp-kill-hybrid-sexp)
   (bind-key "C-M-f" 'sp-forward-sexp)
   (bind-key "C-M-b" 'sp-backward-sexp)
@@ -328,9 +346,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   (bind-key "C-M-p" 'sp-forward-slurp-sexp)
   (bind-key "C-M-o" 'sp-forward-barf-sexp))
 
-(setq-default sp-autoskip-closing-pair 'always)
-(setq sp-hybrid-kill-entire-symbol nil)
-(electric-pair-mode)
+;; (setq-default sp-autoskip-closing-pair 'always)
+;; (setq sp-hybrid-kill-entire-symbol nil)
+;; (electric-pair-mode)
 
 ;; (show-smartparens-global-mode 1)
 ;; (add-hook 'prog-mode-hook 'turn-on-smartparens-mode)
@@ -360,29 +378,33 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (bind-key "M-x" 'smex)
 ;; (bind-key "M-X" 'smex-major-mode-commands)
 
+(use-package ivy
+  :ensure t
+  :pin "melpa"
+  :diminish 'ivy-mode
+  :config
+  (setq ivy-use-virtual-buffers t)
+  (ivy-mode 1)
+  :demand t
+  :bind
+  (("C-c C-r" . ivy-resume)))
+
 (use-package swiper
   :ensure t
+  :pin "melpa"
   :bind
   (("C-s" . swiper)
-   ("C-r" . swiper))
-  :init
-  (use-package ivy
-    :diminish 'ivy-mode
-    :init
-    (setq ivy-use-virtual-buffers t)
-    (ivy-mode 1)
-    :bind
-    (("C-c C-r" . ivy-resume))))
+   ("C-r" . swiper)))
 
 (use-package counsel
   :ensure t
-  :init
+  :pin "melpa"
+  :config
   (setq counsel-find-file-ignore-regexp "\(?:\`[#.]\)\|\(?:[#~]\'\)")
   :bind
   (("C-x C-f" . counsel-find-file)
-   ("M-x" . counsel-M-x)))
-
-(bind-key "C-c i" 'imenu)
+   ("M-x" . counsel-M-x)
+   ("C-c i" . counsel-imenu)))
 
 ;; (require 'helm-config)
 ;; (require 'helm)
@@ -439,16 +461,18 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   (setq projectile-completion-system 'ivy
         projectile-globally-ignored-directories
         '(".idea" ".eunit" ".git" ".hg" ".fslckout" ".bzr" "_darcs" ".tox" ".svn" ".liquid")
+	projectile-switch-project-action 'projectile-vc
         projectile-globally-ignored-file-suffixes '(".o" ".hi"))
   :config
   (progn
     (projectile-global-mode)
-    (use-package perspective
-      :ensure t
-      :config
-      (progn
-        (persp-mode)
-        (use-package persp-projectile :ensure t)))))
+    ;; (use-package perspective
+    ;;   :ensure t
+    ;;   :config
+    ;;   (progn
+    ;;     (persp-mode)
+    ;;     (use-package persp-projectile :ensure t)))
+    ))
 
 ;; (projectile-global-mode)
 ;; (diminish 'projectile-mode)
@@ -543,6 +567,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; change-inner
 (use-package change-inner
+  :disabled t
   :ensure t
   :bind (("M-i" . change-inner)
          ("M-o" . change-outer)))
@@ -747,24 +772,24 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (use-package haskell-mode
   :ensure t
   :config
-  (require 'haskell-interactive-mode)
-  (require 'haskell-process)
-  (sp-local-pair '(haskell-mode literate-haskell-mode) 
-                 "{- " " -}" 
-                 :trigger "-{")
-  (sp-local-pair '(haskell-mode literate-haskell-mode) 
-                 "{-@ " " @-}" 
-                 :trigger "@{")
-  (sp-local-pair '(haskell-mode literate-haskell-mode) 
-                 "{-# " " #-}" 
-                 :trigger "#{")
-  (bind-key "C-c C-l" 'haskell-process-load-file haskell-mode-map)
-  (bind-key "C-c C-t" 'haskell-mode-show-type-at haskell-mode-map)
-  (bind-key "C-c C-i" 'haskell-process-do-info   haskell-mode-map)
-  (bind-key "C-c C-." 'haskell-mode-goto-loc haskell-mode-map)
-  (bind-key "C-c C-?" 'haskell-mode-find-uses haskell-mode-map)
-  (bind-key "M-n" 'next-error haskell-mode-map)
-  (bind-key "M-p" 'previous-error haskell-mode-map)
+  ;; (require 'haskell-interactive-mode)
+  ;; (require 'haskell-process)
+  ;; (sp-local-pair '(haskell-mode literate-haskell-mode)
+  ;;                "{- " " -}"
+  ;;                :trigger "-{")
+  ;; (sp-local-pair '(haskell-mode literate-haskell-mode)
+  ;;                "{-@ " " @-}"
+  ;;                :trigger "@{")
+  ;; (sp-local-pair '(haskell-mode literate-haskell-mode)
+  ;;                "{-# " " #-}"
+  ;;                :trigger "#{")
+  ;; (bind-key "C-c C-l" 'haskell-process-load-file haskell-mode-map)
+  ;; (bind-key "C-c C-t" 'haskell-mode-show-type-at haskell-mode-map)
+  ;; (bind-key "C-c C-i" 'haskell-process-do-info   haskell-mode-map)
+  ;; (bind-key "C-c C-." 'haskell-mode-goto-loc haskell-mode-map)
+  ;; (bind-key "C-c C-?" 'haskell-mode-find-uses haskell-mode-map)
+  ;; (bind-key "M-n" 'next-error haskell-mode-map)
+  ;; (bind-key "M-p" 'previous-error haskell-mode-map)
   
   ;; (add-to-list 'evil-emacs-state-modes 'haskell-presentation-mode)
   
@@ -789,14 +814,14 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
         haskell-process-suggest-restart t
         haskell-process-use-presentation-mode nil
         haskell-stylish-on-save nil
-        haskell-tags-on-save t
+        haskell-tags-on-save nil
         )
   
   (add-hook 'haskell-mode-hook 'eldoc-mode)
-  (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+  ;; (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
   (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
   (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-  (add-hook 'haskell-mode-hook 'flycheck-haskell-setup)
+  ;; (add-hook 'haskell-mode-hook 'flycheck-haskell-setup)
 
   (setq-default flycheck-ghc-args '("-package" "ghc"))
 
@@ -808,6 +833,13 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
     :config
     (add-hook 'haskell-mode-hook #'hindent-mode)
     (setq hindent-style "gibiansky"))
+
+  (use-package intero
+    :ensure t
+    :pin "melpa"
+    :config
+    (add-hook 'haskell-mode-hook 'intero-mode)
+    )
   
   ;;(load "~/.emacs.d/haskell-flycheck.el")
   (add-hook 'haskell-mode-hook 
@@ -826,7 +858,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;; (require 'shm)
 ;; (require 'shm-case-split)
-;; ;; (require 'shm-reformat)
+;; (require 'shm-reformat)
 ;; (add-hook 'haskell-mode-hook 'turn-off-smartparens-mode)
 ;; (add-hook 'haskell-mode-hook 'structured-haskell-mode)
 ;; (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
@@ -864,6 +896,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; latex
 (use-package tex-site
+  :ensure auctex
   :init
   (progn
     (setq-default TeX-PDF-mode t)
@@ -878,6 +911,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
           TeX-save-query nil))
   )
 (use-package pdf-tools
+  :ensure t
   :config
   (pdf-tools-install))
 
@@ -1215,6 +1249,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (add-to-list 'Info-directory-list "~/.nix-profile/share/info")
 (use-package mu4e
   :init
+  (use-package org-mu4e)
   (setq mu4e-maildir "~/.mail"
         mu4e-drafts-folder "/drafts"
         mu4e-refile-folder "/archive"
@@ -1327,6 +1362,38 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (require 'mu4e-maildirs-extension)
 ;; (mu4e-maildirs-extension)
 
+(use-package gnus
+  :config
+  ;; accounts
+  (setq gnus-select-method '(nntp "news.gmane.org"))
+  (setq gnus-secondary-select-methods
+        '((nnimap "seidel.io"
+                  (nnimap-address "mail.messagingengine.com")
+                  ;;(nnimap-server-port 8143)
+                  (nnimap-user "eric@seidel.io")
+                  ;;(nnimap-authenticator login)
+                  (nnimap-stream ssl))))
+
+  ;; display
+  (setq gnus-sum-thread-tree-indent " ")
+  (setq gnus-sum-thread-tree-root "")
+  (setq gnus-sum-thread-tree-false-root "")
+  (setq gnus-sum-thread-tree-single-indent "")
+  (setq gnus-sum-thread-tree-vertical        "│")
+  (setq gnus-sum-thread-tree-leaf-with-other "├> ")
+  (setq gnus-sum-thread-tree-single-leaf     "└> ")
+  (setq gnus-summary-line-format
+        (concat
+         "%0{%U%R%z%}"
+         "%3{│%}" "%1{%d%}" "%3{│%}" ;; date
+         "  "
+         "%4{%-20,20f%}"               ;; name
+         "  "
+         "%3{│%}"
+         " "
+         "%{%B%}"
+         "%s\n"))
+  (setq gnus-summary-display-arrow t))
 
 ;; (require 'gnus)
 ;; (setq gnus-select-method '(nnimap "local"
@@ -1416,26 +1483,6 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; ;; ;; (add-to-list 'evil-emacs-state-modes 'gnus-category-mode)
 ;; ;; ;; (add-to-list 'evil-emacs-state-modes 'gnus-custom-mode)
 ;; ;; ;; http://groups.google.com/group/gnu.emacs.gnus/browse_thread/thread/a673a74356e7141f
-;; (when window-system
-;;   (setq gnus-sum-thread-tree-indent " ")
-;;   (setq gnus-sum-thread-tree-root "")
-;;   (setq gnus-sum-thread-tree-false-root "")
-;;   (setq gnus-sum-thread-tree-single-indent "")
-;;   (setq gnus-sum-thread-tree-vertical        "│")
-;;   (setq gnus-sum-thread-tree-leaf-with-other "├> ")
-;;   (setq gnus-sum-thread-tree-single-leaf     "└> "))
-;; (setq gnus-summary-line-format
-;;       (concat
-;;        "%0{%U%R%z%}"
-;;        "%3{│%}" "%1{%d%}" "%3{│%}" ;; date
-;;        "  "
-;;        "%4{%-20,20f%}"               ;; name
-;;        "  "
-;;        "%3{│%}"
-;;        " "
-;;        "%1{%B%}"
-;;        "%s\n"))
-;; (setq gnus-summary-display-arrow t)
 
 ;; (gnus-demon-add-handler 'gnus-demon-scan-news 5 nil) ; this does a call to gnus-group-get-new-news
 
@@ -1483,20 +1530,11 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;;; irc
 ;; (require 'circe)
 
-;; (when (load-file "~/.emacs.d/private.el") ;;(require 'private nil t)
-;;   (setq circe-network-options
-;;         `(("seidel.io"
-;;            :user "gridaphobe/freenode"
-;;            :pass ,irc-pass
-;;            :service 5000
-;;            :tls t
-;;            :nick "gridaphobe"
-;;            :nickserv-password ,irc-nick-pass
-;;            ))))
+
 
 (use-package circe
   :ensure t
-  :init
+  :config
   (setq lui-max-buffer-size 30000
         circe-reduce-lurker-spam t
         circe-highlight-nick-type 'occurrence
@@ -1508,14 +1546,24 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
                                    ("#haskell-ide-engine" circe-highlight-nick-face)
                                    ("#haskell-infrastructure" circe-highlight-nick-face)
                                    ("#idris" circe-highlight-nick-face)
-                                   ("#nixos" circe-highlight-nick-face))))
+                                   ("#nixos" circe-highlight-nick-face)))
+  (when (load-file "~/.emacs.d/private.el") ;;(require 'private nil t)
+    (setq circe-network-options
+          `(("seidel.io"
+             :user "gridaphobe/freenode"
+             :pass ,irc-pass
+             :port 5000
+             :nick "gridaphobe"
+             :nickserv-password ,irc-nick-pass
+             )))))
 
 
 ;;;; wgrep
 (use-package wgrep
   :ensure t
-  :init (setq wgrep-auto-save-buffer t
-              wgrep-enable-key "r"))
+  :config
+  (setq wgrep-auto-save-buffer t
+        wgrep-enable-key "r"))
 
 
 ;;;; pretty symbols
