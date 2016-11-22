@@ -104,13 +104,19 @@
 ;;   ad-do-it)
 
 (use-package solarized-theme
+  :disabled t
   :ensure t
   :config
   (load-theme 'solarized-light))
 
 ;; (load-theme 'zenburn)
-;; (load-theme 'leuven)
-;; (custom-theme-set-faces 'leuven '(default ((default :background "WhiteSmoke")) t))
+(use-package leuven-theme
+  :ensure t
+  :config
+  (load-theme 'leuven)
+  (custom-theme-set-faces
+   'leuven
+   '(default ((default :background "WhiteSmoke")) t)))
 ;; (load-theme 'tomorrow-eighties)
 
 ;;;; smart-mode-line
@@ -380,7 +386,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 (use-package ivy
   :ensure t
-  :pin "melpa"
+  :pin "melpa-stable"
   :diminish 'ivy-mode
   :config
   (setq ivy-use-virtual-buffers t)
@@ -391,14 +397,14 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 (use-package swiper
   :ensure t
-  :pin "melpa"
+  :pin "melpa-stable"
   :bind
   (("C-s" . swiper)
    ("C-r" . swiper)))
 
 (use-package counsel
   :ensure t
-  :pin "melpa"
+  :pin "melpa-stable"
   :config
   (setq counsel-find-file-ignore-regexp "\(?:\`[#.]\)\|\(?:[#~]\'\)")
   :bind
@@ -980,6 +986,11 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
    ("C-c s l" . org-store-link))
 
   :config
+  (use-package org-bullets
+    :ensure t
+    :init
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
   (progn
     (setq org-directory "~/Dropbox/org")
     (setq org-agenda-files `(,(concat org-directory "/notes.org")
@@ -999,8 +1010,6 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
     ;; Allow refile to create parent tasks with confirmation
     (setq org-refile-allow-creating-parent-nodes (quote confirm))
-
-    (setq org-startup-indented t)
 
     (setq org-cycle-separator-lines 0)
 

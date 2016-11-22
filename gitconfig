@@ -2,7 +2,8 @@
 
 [user]
 	name = Eric Seidel
-	email = gridaphobe@gmail.com
+	email = eric@seidel.io
+	signingkey = F786949E
 [alias]
 	st = status
 	co = checkout
