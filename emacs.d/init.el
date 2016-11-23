@@ -407,6 +407,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :pin "melpa-stable"
   :config
   (setq counsel-find-file-ignore-regexp "\(?:\`[#.]\)\|\(?:[#~]\'\)")
+  (use-package smex
+    :ensure t
+    :config (smex-initialize))
   :bind
   (("C-x C-f" . counsel-find-file)
    ("M-x" . counsel-M-x)
