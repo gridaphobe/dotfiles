@@ -121,12 +121,18 @@
 
 ;;;; smart-mode-line
 (use-package smart-mode-line
+  :disabled t
   :ensure t
   :config
   (progn
     (setq sml/name-width '(20 . 30))
     (sml/setup)
     (sml/apply-theme 'light)))
+
+(use-package powerline
+  :ensure t
+  :config
+  (powerline-center-theme))
 
 (add-to-list 'completion-ignored-extensions ".hi")
 (add-to-list 'completion-ignored-extensions ".hdevtools.sock")
@@ -722,6 +728,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; flyspell
 (use-package flyspell
+  :diminish 'flyspell-mode
   :init
   (setq ispell-program-name "aspell" ; use aspell instead of ispell
         ispell-extra-args '("--sug-mode=ultra")
@@ -826,7 +833,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
         haskell-tags-on-save nil
         )
   
-  (add-hook 'haskell-mode-hook 'eldoc-mode)
+  ;; (add-hook 'haskell-mode-hook 'eldoc-mode)
   ;; (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
   (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
   (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
@@ -1105,6 +1112,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;; show the name of the current function definition in the modeline
 (use-package which-func
+  :disabled t
   :config
   (which-function-mode 1))
 
