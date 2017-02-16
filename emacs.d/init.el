@@ -35,7 +35,7 @@
 
 (require 'package)
 (if nil ;(or (file-exists-p "~/.nix-profile/share/emacs/site-lisp")
-        ;    (file-exists-p "~/.nix-profile/share/emacs-with-packages/site-lisp"))
+                                        ;    (file-exists-p "~/.nix-profile/share/emacs-with-packages/site-lisp"))
     (progn
       (setq package-archives nil)
       (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/")
@@ -49,8 +49,8 @@
     (add-to-list 'package-archives
                  '("melpa-stable" . "https://stable.melpa.org/packages/") t)
     (setq package-archive-priorities
-          '(("melpa-stable" . 2)
-            ("gnu" . 1)
+          '(("gnu" . 2)
+            ("melpa-stable" . 1)
             ("melpa" . 0)))))
 (package-initialize)
 
@@ -91,12 +91,14 @@
 
   (setq browse-url-browser-function 'browse-url-default-macosx-browser))
 
-(set-fontset-font "fontset-default"
-                  'unicode
-                  '("Fira Code" . "iso10646-1"))
-(set-face-attribute 'default nil
-                    :family "Fira Code"
-                    :height 140)
+(let ((font "Input Mono Compressed"))
+  (set-fontset-font "fontset-default"
+                    'unicode
+                    `(,font . "iso10646-1"))
+  (set-face-attribute 'default nil
+                      :family font
+                      :height 140
+                      :weight 'ultra-light))
 
 ;;;; theme
 ;; (defadvice load-theme (around disable-other-themes activate)
@@ -104,20 +106,18 @@
 ;;   ad-do-it)
 
 (use-package solarized-theme
-  :disabled t
   :ensure t
   :config
   (load-theme 'solarized-light))
 
-;; (load-theme 'zenburn)
 (use-package leuven-theme
+  :disabled t
   :ensure t
   :config
   (load-theme 'leuven)
   (custom-theme-set-faces
    'leuven
    '(default ((default :background "WhiteSmoke")) t)))
-;; (load-theme 'tomorrow-eighties)
 
 ;;;; smart-mode-line
 (use-package smart-mode-line
@@ -199,7 +199,7 @@
 (setq require-final-newline t)
 
 ;; (setq debug-on-error t)
-; see https://bling.github.io/blog/2016/01/18/why-are-you-changing-gc-cons-threshold/
+                                        ; see https://bling.github.io/blog/2016/01/18/why-are-you-changing-gc-cons-threshold/
 ;; (setq gc-cons-threshold (* 20 (expt 2 20))) ; gc after 20MB
 
 (setq-default fill-column 72)
@@ -230,7 +230,7 @@
 
 ;; revert buffers automatically when underlying files are changed externally
 (global-auto-revert-mode 1)
-(setq auto-revert-verbose t)
+;; (setq auto-revert-verbose t)
 
 ;; auto-save when switching buffers
 (defadvice switch-to-buffer (before save-buffer-now activate)
@@ -301,7 +301,7 @@
 (recentf-mode 1)
 (savehist-mode 1)
 (use-package saveplace
-  :init
+  :config
   (setq-default save-place t))
 
 ;; ediff defaults
@@ -314,9 +314,9 @@
 ;; (load "~/.nix-profile/share/emacs/site-lisp/ProofGeneral/generic/proof-site.el")
 
 
-(load (expand-file-name "~/.quicklisp/slime-helper.el"))
-;; Replace "sbcl" with the path to your implementation
-(setq inferior-lisp-program "sbcl")
+;; (load (expand-file-name "~/.quicklisp/slime-helper.el"))
+;; ;; Replace "sbcl" with the path to your implementation
+;; (setq inferior-lisp-program "sbcl")
 
 
 ;;;; Rectangle-aware commands
@@ -348,6 +348,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;;; smartparens
 (use-package smartparens-config
   :ensure smartparens
+  :diminish 'smartparens-mode
   :config
   (smartparens-global-mode 1)
   (show-smartparens-global-mode 1)
@@ -392,34 +393,30 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 (use-package ivy
   :ensure t
-  :pin "melpa-stable"
+  :pin "gnu"
   :diminish 'ivy-mode
+  :demand t
+  :bind
+  (("C-c C-r" . ivy-resume))
   :config
   (setq ivy-use-virtual-buffers t)
   (ivy-mode 1)
-  :demand t
-  :bind
-  (("C-c C-r" . ivy-resume)))
-
-(use-package swiper
-  :ensure t
-  :pin "melpa-stable"
-  :bind
-  (("C-s" . swiper)
-   ("C-r" . swiper)))
-
-(use-package counsel
-  :ensure t
-  :pin "melpa-stable"
-  :config
-  (setq counsel-find-file-ignore-regexp "\(?:\`[#.]\)\|\(?:[#~]\'\)")
-  (use-package smex
-    :ensure t
-    :config (smex-initialize))
-  :bind
-  (("C-x C-f" . counsel-find-file)
-   ("M-x" . counsel-M-x)
-   ("C-c i" . counsel-imenu)))
+  (use-package swiper
+    :demand t
+    :bind
+    (("C-s" . swiper)
+     ("C-r" . swiper)))
+  (use-package counsel
+    :demand t
+    :config
+    (setq counsel-find-file-ignore-regexp "\(?:\`[#.]\)\|\(?:[#~]\'\)")
+    (use-package smex
+      :ensure t
+      :config (smex-initialize))
+    :bind
+    (("C-x C-f" . counsel-find-file)
+     ("M-x" . counsel-M-x)
+     ("C-c i" . counsel-imenu))))
 
 ;; (require 'helm-config)
 ;; (require 'helm)
@@ -454,14 +451,14 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (bind-key "p"        'helm-grep-mode-jump-other-window-backward helm-grep-mode-map)
 
 ;; (use-package helm-swoop
-;;   :init (setq helm-multi-swoop-edit-save t))
+;;   :config (setq helm-multi-swoop-edit-save t))
 ;; (bind-key "M-i" 'helm-swoop-from-isearch isearch-mode-map)
 ;; (bind-key "M-i" 'helm-multi-swoop-all-from-helm-swoop helm-swoop-map)
 
 ;;;; ace-isearch
 ;; (use-package ace-isearch
 ;;   :diminish ""
-;;   :init (progn (global-ace-isearch-mode +1)
+;;   :config (progn (global-ace-isearch-mode +1)
 ;;                (setq ace-isearch-input-idle-delay 0.2)))
 
 ;;;; projectile
@@ -472,22 +469,20 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (use-package projectile
   :ensure t
   :diminish 'projectile-mode
-  :init
+  :config
   (setq projectile-completion-system 'ivy
         projectile-globally-ignored-directories
         '(".idea" ".eunit" ".git" ".hg" ".fslckout" ".bzr" "_darcs" ".tox" ".svn" ".liquid")
 	projectile-switch-project-action 'projectile-vc
         projectile-globally-ignored-file-suffixes '(".o" ".hi"))
-  :config
-  (progn
-    (projectile-global-mode)
-    ;; (use-package perspective
-    ;;   :ensure t
-    ;;   :config
-    ;;   (progn
-    ;;     (persp-mode)
-    ;;     (use-package persp-projectile :ensure t)))
-    ))
+  (projectile-global-mode)
+  ;; (use-package perspective
+  ;;   :ensure t
+  ;;   :config
+  ;;   (progn
+  ;;     (persp-mode)
+  ;;     (use-package persp-projectile :ensure t)))
+  )
 
 ;; (projectile-global-mode)
 ;; (diminish 'projectile-mode)
@@ -507,33 +502,28 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (use-package company
   :ensure t
   :diminish 'company-mode
-  :init
-  (add-hook #'prog-mode-hook #'company-mode)
   :config
-  (setq company-dabbrev-downcase nil))
+  (add-hook #'prog-mode-hook #'company-mode))
 
 ;;;; compile
 (use-package compile
-  :init
+  :config
   (setq compilation-scroll-output 'first-error
         compilation-window-height 10)
-  :config
-  (progn
-    (defun bury-compile-buffer-if-successful (buffer string)
-      "Bury a compilation BUFFER if STRING has no warnings."
-      (if (and
-           (string-match "compilation" (buffer-name buffer))
-           (string-match "finished" string)
-           (not
-            (with-current-buffer buffer
-              (search-forward "warning" nil t))))
-          (run-with-timer 1 nil
-                          (lambda (buf)
-                            (bury-buffer buf)
-                            (delete-window (get-buffer-window buf)))
-                          buffer)))
-
-    (add-hook 'compilation-finish-functions #'bury-compile-buffer-if-successful)))
+  (defun bury-compile-buffer-if-successful (buffer string)
+    "Bury a compilation BUFFER if STRING has no warnings."
+    (if (and
+         (string-match "compilation" (buffer-name buffer))
+         (string-match "finished" string)
+         (not
+          (with-current-buffer buffer
+            (search-forward "warning" nil t))))
+        (run-with-timer 1 nil
+                        (lambda (buf)
+                          (bury-buffer buf)
+                          (delete-window (get-buffer-window buf)))
+                        buffer)))
+  (add-hook 'compilation-finish-functions #'bury-compile-buffer-if-successful))
 
 
 ;;;; css-mode
@@ -542,7 +532,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; discover-my-major
 ;; (use-package discover-my-major
-;;   :init (bind-key "M-m" 'discover-my-major help-map))
+;;   :config (bind-key "M-m" 'discover-my-major help-map))
 
 
 ;;;; edit-server
@@ -591,10 +581,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (use-package undo-tree
   :ensure t
   :diminish 'undo-tree-mode
-  :init
+  :config
   (setq undo-tree-visualizer-relative-timestamps t
         undo-tree-visualizer-timestamps t)
-  :config
   (global-undo-tree-mode))
 ;; (add-to-list 'rm-blacklist " Undo-Tree")
 
@@ -634,7 +623,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;   (read-kbd-macro evil-toggle-key) 'evil-emacs-state)
 ;; (define-key evil-insert-state-map
 ;;   [escape] 'evil-normal-state)
-    
+
 ;; (defun evil-undefine ()
 ;;   (interactive)
 ;;   (let (evil-mode-map-alist)
@@ -677,7 +666,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (bind-key "RET" 'evil-undefine       evil-insert-state-map)
 
 ;; (use-package evil-surround
-;;   :init (global-evil-surround-mode 1))
+;;   :config (global-evil-surround-mode 1))
 
 ;;(defadvice switch-to-buffer (before evil-back-to-initial-state activate)
 ;;  (evil-change-state
@@ -716,10 +705,11 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :bind
   (("M-n" . flycheck-next-error)
    ("M-p" . flycheck-previous-error))
-  :init (global-flycheck-mode 1)
   :config
   (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc json-jsonlint json-python-json haskell-hlint))
   (setq flycheck-check-syntax-automatically '(mode-enabled save))
+  (setq flycheck-mode-line-prefix "✓")
+  (global-flycheck-mode 1)
   (use-package flycheck-pos-tip
     :ensure t
     :config
@@ -729,12 +719,11 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;;; flyspell
 (use-package flyspell
   :diminish 'flyspell-mode
-  :init
+  :config
   (setq ispell-program-name "aspell" ; use aspell instead of ispell
         ispell-extra-args '("--sug-mode=ultra")
         flyspell-issue-message-flag nil ; issuing a message for each word is slow
         )
-  :config
   (progn
     (add-hook 'message-mode-hook #'flyspell-mode)
     (add-hook 'text-mode-hook #'flyspell-mode)))
@@ -813,7 +802,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
         haskell-process-path-ghci "ghci"
         haskell-process-args-ghci '("-ferror-spans" "-idist/build:dist/build/autogen")
         haskell-process-args-cabal-repl '(;"--with-ghc=ghci-ng"
-                                          "--ghc-option=-ferror-spans")
+                                          "--ghc-option=-ferror-spans"
+                                          )
+        haskell-process-args-stack-ghci '("--ghci-options=-ferror-spans")
         haskell-process-log t
         haskell-align-imports-pad-after-name t
         haskell-ask-also-kill-buffers nil
@@ -835,8 +826,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   
   ;; (add-hook 'haskell-mode-hook 'eldoc-mode)
   ;; (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
-  (add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
-  (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+  ;; (add-hook 'haskell-mode-hook 'haskell-decl-scan-mode)
+  (add-hook 'haskell-mode-hook 'haskell-indentation-mode)
   ;; (add-hook 'haskell-mode-hook 'flycheck-haskell-setup)
 
   (setq-default flycheck-ghc-args '("-package" "ghc"))
@@ -846,15 +837,21 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   
   (use-package hindent
     :ensure t
+    :diminish 'hindent-mode
     :config
+    (setq hindent-process-path "~/.local/bin/hindent")
     (add-hook 'haskell-mode-hook #'hindent-mode)
-    (setq hindent-style "gibiansky"))
+    )
 
   (use-package intero
+    ;; :disabled t
     :ensure t
+    :diminish 'intero-mode
     :pin "melpa"
     :config
     (add-hook 'haskell-mode-hook 'intero-mode)
+    ;; (setq intero-blacklist '("/Users/gridaphobe/Source/ghc"))
+    ;; (add-hook 'haskell-mode-hook 'intero-mode-blacklist)
     )
   
   ;;(load "~/.emacs.d/haskell-flycheck.el")
@@ -913,7 +910,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;;; latex
 (use-package tex-site
   :ensure auctex
-  :init
+  :config
   (progn
     (setq-default TeX-PDF-mode t)
     (add-hook 'LaTeX-mode-hook 'flyspell-mode)
@@ -936,33 +933,34 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :ensure t
   :bind (("C-x g" . magit-status))
   :config
-  (setq magit-last-seen-setup-instructions "1.4.0")
+  (global-magit-file-mode)
   (defalias 'magit 'magit-status)
   (setq magit-display-buffer-function
-        (lambda (buffer)
-          (if (or magit-display-buffer-noselect
-                  ;; don't go fullscreen for certain magit buffers if current
-                  ;; buffer is a magit buffer (we're conforming to
-                  ;; `magit-display-buffer-traditional')
-                  (and (derived-mode-p 'magit-mode)
-                       (not (memq (with-current-buffer buffer major-mode)
-                                  '(magit-process-mode
-                                    magit-revision-mode
-                                    magit-diff-mode
-                                    magit-stash-mode
-                                    magit-status-mode)))))
-              ;; the code that called `magit-display-buffer-function'
-              ;; expects the original window to stay alive, we can't go
-              ;; fullscreen
-              (magit-display-buffer-traditional buffer)
-            (delete-other-windows)
-            ;; make sure the window isn't dedicated, otherwise
-            ;; `set-window-buffer' throws an error
-            (set-window-dedicated-p nil nil)
-            (set-window-buffer nil buffer)
-            ;; return buffer's window
-            (get-buffer-window buffer))))
+        #'(lambda (buffer)
+            (if (or magit-display-buffer-noselect
+                    ;; don't go fullscreen for certain magit buffers if current
+                    ;; buffer is a magit buffer (we're conforming to
+                    ;; `magit-display-buffer-traditional')
+                    (and (derived-mode-p 'magit-mode)
+                         (not (memq (with-current-buffer buffer major-mode)
+                                    '(magit-process-mode
+                                      magit-revision-mode
+                                      magit-diff-mode
+                                      magit-stash-mode
+                                      magit-status-mode)))))
+                ;; the code that called `magit-display-buffer-function'
+                ;; expects the original window to stay alive, we can't go
+                ;; fullscreen
+                (magit-display-buffer-traditional buffer)
+              (delete-other-windows)
+              ;; make sure the window isn't dedicated, otherwise
+              ;; `set-window-buffer' throws an error
+              (set-window-dedicated-p nil nil)
+              (set-window-buffer nil buffer)
+              ;; return buffer's window
+              (get-buffer-window buffer))))
   (use-package magit-gh-pulls
+    :disabled t
     :config
     (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls))
   )
@@ -977,14 +975,16 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;;; markdown
 (use-package markdown-mode
   :ensure t
-  :init
+  :config
   (progn
     (add-to-list 'auto-mode-alist '("\\.markdown\\'" . gfm-mode))
     (add-to-list 'auto-mode-alist '("\\.md\\'" . gfm-mode))))
 
 
 ;;;; nix-mode
-(use-package nix-mode)
+(use-package nix-mode
+  :disabled t
+  )
 
 
 ;;;; org-mode
@@ -998,7 +998,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :config
   (use-package org-bullets
     :ensure t
-    :init
+    :config
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
   (progn
@@ -1141,7 +1141,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :config
   (progn
     (use-package em-smart
-      :init
+      :config
       (setq eshell-where-to-jump 'begin
             eshell-review-quick-commands nil
             eshell-smart-space-goes-to-end t
@@ -1179,7 +1179,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
         (erase-buffer)))))
 
 (use-package shell
-  :init
+  :config
   (setq shell-file-name "bash"))
 
 
@@ -1191,13 +1191,13 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; tramp
 (use-package tramp
-  :init
+  :config
   (setq tramp-default-method "ssh"))
 
 
 ;;;; uniqify
 (use-package uniquify
-  :init
+  :config
   (setq uniquify-buffer-name-style 'post-forward-angle-brackets))
 
 
@@ -1230,13 +1230,13 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (use-package leuven-theme)
 ;; (use-package zenburn-theme)
 ;; (use-package solarized-theme
-;;   :init 
+;;   :config
 ;;   (setq solarized-distinct-fringe-background t ; make the fringe stand out from the background
 ;;         solarized-high-contrast-mode-line t    ; make the modeline high contrast
 ;;         ))
 
 ;; (use-package powerline
-;;   :init
+;;   :config
 ;;   (progn
 ;;     (setq powerline-default-separator nil)
 ;;     (powerline-center-evil-theme)))
@@ -1264,12 +1264,15 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (setq user-full-name "Eric Seidel"
       user-mail-address "eric@seidel.io")
 
-;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
-(add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
-(add-to-list 'Info-directory-list "~/.nix-profile/share/info")
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu/mu4e")
+;; (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
+;; (add-to-list 'Info-directory-list "~/.nix-profile/share/info")
 (use-package mu4e
-  :init
+  :config
   (use-package org-mu4e)
+  (use-package mu4e-maildirs-extension
+    :ensure t
+    :config (mu4e-maildirs-extension))
   (setq mu4e-maildir "~/.mail"
         mu4e-drafts-folder "/drafts"
         mu4e-refile-folder "/archive"
@@ -1315,8 +1318,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
         mu4e-hide-index-messages nil
         mu4e-use-fancy-chars t
         mu4e-debug nil
-        mu4e-get-mail-command "mbsync -aq"
-        mu4e-update-interval (* 5 60)))
+        mu4e-get-mail-command "mbsync -a"
+        mu4e-update-interval (* 5 60)
+        ))
 
 ;; (setq mu4e-html2text-command
 ;;      #'(lambda () 
@@ -1600,10 +1604,10 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; this at the end......
 (line-number-mode 1)
 (column-number-mode 1)
-(size-indication-mode 1)
-(setq display-time-format "%R"
-      display-time-default-load-average nil)
-(display-time-mode 1)
+;; (size-indication-mode 1)
+;; (setq display-time-format "%R"
+;;       display-time-default-load-average nil)
+;; (display-time-mode 1)
 (global-hl-line-mode 1)
 
 (xterm-mouse-mode 1)
