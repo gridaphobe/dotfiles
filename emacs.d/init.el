@@ -98,7 +98,7 @@
   (set-face-attribute 'default nil
                       :family font
                       :height 140
-                      :weight 'ultra-light))
+                      :weight 'light))
 
 ;;;; theme
 ;; (defadvice load-theme (around disable-other-themes activate)
@@ -935,30 +935,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :config
   (global-magit-file-mode)
   (defalias 'magit 'magit-status)
-  (setq magit-display-buffer-function
-        #'(lambda (buffer)
-            (if (or magit-display-buffer-noselect
-                    ;; don't go fullscreen for certain magit buffers if current
-                    ;; buffer is a magit buffer (we're conforming to
-                    ;; `magit-display-buffer-traditional')
-                    (and (derived-mode-p 'magit-mode)
-                         (not (memq (with-current-buffer buffer major-mode)
-                                    '(magit-process-mode
-                                      magit-revision-mode
-                                      magit-diff-mode
-                                      magit-stash-mode
-                                      magit-status-mode)))))
-                ;; the code that called `magit-display-buffer-function'
-                ;; expects the original window to stay alive, we can't go
-                ;; fullscreen
-                (magit-display-buffer-traditional buffer)
-              (delete-other-windows)
-              ;; make sure the window isn't dedicated, otherwise
-              ;; `set-window-buffer' throws an error
-              (set-window-dedicated-p nil nil)
-              (set-window-buffer nil buffer)
-              ;; return buffer's window
-              (get-buffer-window buffer))))
+  (remove-hook 'server-switch-hook 'magit-commit-diff)
+  (setq magit-display-buffer-function 'magit-display-buffer-fullcolumn-most-v1)
   (use-package magit-gh-pulls
     :disabled t
     :config
@@ -1132,6 +1110,29 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 (add-hook 'prog-mode-hook 'my/prog-mode-defaults)
 
+
+(use-package rust-mode
+  :ensure t
+  :config
+  (use-package cargo
+    :ensure t
+    :config
+    (add-hook 'rust-mode-hook #'cargo-minor-mode))
+  (use-package flycheck-rust
+    :ensure t
+    :config
+    (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+  (use-package racer
+    :ensure t
+    :config
+    (setq racer-rust-src-path "/usr/local/share/rust/rust_src/")
+    (setq racer-cmd "racer")
+    (add-hook 'rust-mode-hook #'racer-mode)
+    (add-hook 'racer-mode-hook #'eldoc-mode))
+  (use-package rustfmt
+    :ensure t
+    :config
+    (setq rustfmt-bin "~/.cargo/bin/rustfmt")))
 
 
 ;;;; shells
