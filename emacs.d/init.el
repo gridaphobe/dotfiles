@@ -429,7 +429,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;       helm-ff-skip-boring-files t
 ;;       helm-quick-update t                   ; do not display invisible candidates
 ;;       helm-split-window-default-side 'below
-;;       helm-split-window-in-side-p t 
+;;       helm-split-window-in-side-p t
 ;;       ;; helm-always-two-windows nil ; t
 ;;       helm-autoresize-max-height 30
 ;;       helm-autoresize-min-height 30
@@ -509,7 +509,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (use-package compile
   :config
   (setq compilation-scroll-output 'first-error
-        compilation-window-height 10)
+        compilation-window-height 10
+        compilation-context-lines 0)
   (defun bury-compile-buffer-if-successful (buffer string)
     "Bury a compilation BUFFER if STRING has no warnings."
     (if (and
@@ -589,6 +590,18 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 
 ;;;; evil
+(use-package evil
+  :disabled t
+  :ensure t
+  :config
+  (evil-mode 1)
+  (setq evil-esc-delay 0
+        evil-cross-lines t
+        evil-move-cursor-back nil
+        evil-want-fine-undo nil
+        evil-want-C-u-scroll t
+        )
+  )
 ;; (require 'evil)
 ;; (evil-mode 1)
 ;; ;; prevent esc-key from translating to meta-key in terminal mode
@@ -605,17 +618,17 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (bind-key "\"" 'ace-jump-mode evil-normal-state-map)
 
 ;; ;; Make movement keys work like they should
-;; (bind-key "<remap> <evil-next-line>"     
-;;           'evil-next-visual-line     
+;; (bind-key "<remap> <evil-next-line>"
+;;           'evil-next-visual-line
 ;;           evil-normal-state-map)
-;; (bind-key "<remap> <evil-previous-line>" 
-;;           'evil-previous-visual-line 
+;; (bind-key "<remap> <evil-previous-line>"
+;;           'evil-previous-visual-line
 ;;           evil-normal-state-map)
-;; (bind-key "<remap> <evil-next-line>"     
-;;           'evil-next-visual-line     
+;; (bind-key "<remap> <evil-next-line>"
+;;           'evil-next-visual-line
 ;;           evil-motion-state-map)
-;; (bind-key "<remap> <evil-previous-line>" 
-;;           'evil-previous-visual-line 
+;; (bind-key "<remap> <evil-previous-line>"
+;;           'evil-previous-visual-line
 ;;           evil-motion-state-map)
 
 ;; (setcdr evil-insert-state-map nil)
@@ -713,7 +726,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   (use-package flycheck-pos-tip
     :ensure t
     :config
-    (flycheck-pos-tip-mode)))
+    (flycheck-pos-tip-mode)
+    (setq flycheck-pos-tip-timeout -1)))
 
 
 ;;;; flyspell
@@ -795,9 +809,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   ;; (bind-key "C-c C-?" 'haskell-mode-find-uses haskell-mode-map)
   ;; (bind-key "M-n" 'next-error haskell-mode-map)
   ;; (bind-key "M-p" 'previous-error haskell-mode-map)
-  
+
   ;; (add-to-list 'evil-emacs-state-modes 'haskell-presentation-mode)
-  
+
   (setq haskell-process-type 'auto
         haskell-process-path-ghci "ghci"
         haskell-process-args-ghci '("-ferror-spans" "-idist/build:dist/build/autogen")
@@ -823,7 +837,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
         haskell-stylish-on-save nil
         haskell-tags-on-save nil
         )
-  
+
   ;; (add-hook 'haskell-mode-hook 'eldoc-mode)
   ;; (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
   ;; (add-hook 'haskell-mode-hook 'haskell-decl-scan-mode)
@@ -834,7 +848,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
   ;; (bind-key "M-n" 'next-error     haskell-interactive-mode-map)
   ;; (bind-key "M-p" 'previous-error haskell-interactive-mode-map)
-  
+
   (use-package hindent
     :ensure t
     :diminish 'hindent-mode
@@ -853,10 +867,10 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
     ;; (setq intero-blacklist '("/Users/gridaphobe/Source/ghc"))
     ;; (add-hook 'haskell-mode-hook 'intero-mode-blacklist)
     )
-  
+
   ;;(load "~/.emacs.d/haskell-flycheck.el")
-  (add-hook 'haskell-mode-hook 
-            (lambda () 
+  (add-hook 'haskell-mode-hook
+            (lambda ()
               ;; (turn-on-haskell-indentation)
               (diminish 'haskell-indentation-mode)
               (diminish 'interactive-haskell-mode)
@@ -949,7 +963,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (defadvice magit-mode-quit-window (after magit-restore-screen activate)
 ;;   (jump-to-register :magit-fullscreen))
 
-  
+
 ;;;; markdown
 (use-package markdown-mode
   :ensure t
@@ -964,6 +978,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :disabled t
   )
 
+;;;; ocaml
+(use-package tuareg
+  :ensure t)
 
 ;;;; org-mode
 (use-package org
@@ -1324,7 +1341,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
         ))
 
 ;; (setq mu4e-html2text-command
-;;      #'(lambda () 
+;;      #'(lambda ()
 ;;          (shr-render-region (point-min) (point-max))))
 
 ;; (load "~/.emacs.d/vendor/window-margin.el")
@@ -1376,7 +1393,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;                                    (dolist (msgid my/msgids-to-move)
 ;;                                      (mu4e~proc-move msgid nil "-N"))
 ;;                                    (setq my/msgids-to-move nil))
-;;                  mu4e-header-func (lambda (msg) 
+;;                  mu4e-header-func (lambda (msg)
 ;;                                     (my/terminal-notifier
 ;;                                      "New Mail"
 ;;                                      (caar (mu4e-message-field msg :from))
@@ -1450,7 +1467,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;       ;                                        )
 ;;       ;                                )
 ;;       gnus-asynchronous t
-      
+
 ;;       gnus-message-archive-group nil
 ;;       ;; gnus-sum-thread-tree-false-root      ""
 ;;       ;; gnus-sum-thread-tree-single-indent   ""
