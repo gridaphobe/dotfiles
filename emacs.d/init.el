@@ -407,7 +407,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (use-package anzu
   :ensure t
   :bind (("M-%" . anzu-query-replace)
-         ("C-M-%" . anzu-query-replace-regexp)))
+         ("C-M-%" . anzu-query-replace-regexp))
+  :config
+  (setq anzu-cons-mode-line-p nil))
 
 ;;;; helm
 

@@ -1,3 +1,5 @@
+(require 'subr-x)
+
 (defvar doom-memoized-table (make-hash-table :test 'equal :size 10)
   "A lookup table containing memoized functions. The keys are argument lists,
 and the value is the function's return value.")
@@ -390,26 +392,28 @@ icons."
   (save-excursion (goto-char pos)
                   (current-column)))
 
-;; (def-modeline-segment! selection-info
-;;   "Information about the current selection, such as how many characters and
-;; lines are selected, or the NxM dimensions of a block selection."
-;;   (when (and (active) (or mark-active (eq evil-state 'visual)))
-;;     (let ((reg-beg (region-beginning))
-;;           (reg-end (region-end)))
-;;       (propertize
-;;        (let ((lines (count-lines reg-beg (min (1+ reg-end) (point-max)))))
-;;          (cond ((or (bound-and-true-p rectangle-mark-mode)
-;;                     (eq 'block evil-visual-selection))
-;;                 (let ((cols (abs (- (doom-column reg-end)
-;;                                     (doom-column reg-beg)))))
-;;                   (format "%dx%dB" lines cols)))
-;;                ((eq 'line evil-visual-selection)
-;;                 (format "%dL" lines))
-;;                ((> lines 1)
-;;                 (format "%dC %dL" (- (1+ reg-end) reg-beg) lines))
-;;                (t
-;;                 (format "%dC" (- (1+ reg-end) reg-beg)))))
-;;        'face 'doom-modeline-highlight))))
+(def-modeline-segment! selection-info
+  "Information about the current selection, such as how many characters and
+lines are selected, or the NxM dimensions of a block selection."
+  (when (and (active) (or mark-active ;;(eq evil-state 'visual)
+                          ))
+    (let ((reg-beg (region-beginning))
+          (reg-end (region-end)))
+      (propertize
+       (let ((lines (count-lines reg-beg (min (1+ reg-end) (point-max)))))
+         (cond ((or (bound-and-true-p rectangle-mark-mode)
+                    ;; (eq 'block evil-visual-selection)
+                    )
+                (let ((cols (abs (- (doom-column reg-end)
+                                    (doom-column reg-beg)))))
+                  (format "%dx%dB" lines cols)))
+               ;; ((eq 'line evil-visual-selection)
+               ;;  (format "%dL" lines))
+               ((> lines 1)
+                (format "%dC %dL" (- (1+ reg-end) reg-beg) lines))
+               (t
+                (format "%dC" (- (1+ reg-end) reg-beg)))))
+       'face 'doom-modeline-highlight))))
 
 
 ;;
@@ -428,64 +432,66 @@ icons."
                                      :v-adjust -0.05)
               sep))))
 
-;; (defsubst +doom-modeline--anzu ()
-;;   "Show the match index and total number thereof. Requires `anzu', also
-;; `evil-anzu' if using `evil-mode' for compatibility with `evil-search'."
-;;   (when (and anzu--state (not iedit-mode))
+(require 'anzu)
+(defsubst +doom-modeline--anzu ()
+  "Show the match index and total number thereof. Requires `anzu', also
+`evil-anzu' if using `evil-mode' for compatibility with `evil-search'."
+  (when (and anzu--state ;; (not iedit-mode)
+             )
+    (propertize
+     (let ((here anzu--current-position)
+           (total anzu--total-matched))
+       (cond ((eq anzu--state 'replace-query)
+              (format " %d replace " total))
+             ((eq anzu--state 'replace)
+              (format " %d/%d " here total))
+             (anzu--overflow-p
+              (format " %s+ " total))
+             (t
+              (format " %s/%d " here total))))
+     'face (if (active) 'doom-modeline-panel))))
+
+;; (defsubst +doom-modeline--evil-substitute ()
+;;   "Show number of :s matches in real time."
+;;   (when (and evil-mode
+;;              (or (assq 'evil-ex-substitute evil-ex-active-highlights-alist)
+;;                  (assq 'evil-ex-global-match evil-ex-active-highlights-alist)
+;;                  (assq 'evil-ex-buffer-match evil-ex-active-highlights-alist)))
 ;;     (propertize
-;;      (let ((here anzu--current-position)
-;;            (total anzu--total-matched))
-;;        (cond ((eq anzu--state 'replace-query)
-;;               (format " %d replace " total))
-;;              ((eq anzu--state 'replace)
-;;               (format " %d/%d " here total))
-;;              (anzu--overflow-p
-;;               (format " %s+ " total))
-;;              (t
-;;               (format " %s/%d " here total))))
+;;      (let ((range (if evil-ex-range
+;;                       (cons (car evil-ex-range) (cadr evil-ex-range))
+;;                     (cons (line-beginning-position) (line-end-position))))
+;;            (pattern (car-safe (evil-delimited-arguments evil-ex-argument 2))))
+;;        (if pattern
+;;            (format " %s matches " (how-many pattern (car range) (cdr range)))
+;;          " ... "))
 ;;      'face (if (active) 'doom-modeline-panel))))
 
-(defsubst +doom-modeline--evil-substitute ()
-  "Show number of :s matches in real time."
-  (when (and evil-mode
-             (or (assq 'evil-ex-substitute evil-ex-active-highlights-alist)
-                 (assq 'evil-ex-global-match evil-ex-active-highlights-alist)
-                 (assq 'evil-ex-buffer-match evil-ex-active-highlights-alist)))
-    (propertize
-     (let ((range (if evil-ex-range
-                      (cons (car evil-ex-range) (cadr evil-ex-range))
-                    (cons (line-beginning-position) (line-end-position))))
-           (pattern (car-safe (evil-delimited-arguments evil-ex-argument 2))))
-       (if pattern
-           (format " %s matches " (how-many pattern (car range) (cdr range)))
-         " ... "))
-     'face (if (active) 'doom-modeline-panel))))
-
-(defsubst +doom-modeline--iedit ()
-  "Show the number of iedit regions matches + what match you're on."
-  (when (and iedit-mode iedit-occurrences-overlays)
-    (propertize
-     (let ((this-oc (or (let ((inhibit-message t))
-                          (iedit-find-current-occurrence-overlay))
-                        (progn (iedit-prev-occurrence)
-                               (iedit-find-current-occurrence-overlay))))
-           (length (length iedit-occurrences-overlays)))
-       (format " %s/%d "
-               (if this-oc
-                   (- length
-                      (length (cdr
-                               (memq this-oc (sort (append iedit-occurrences-overlays (list))
-                                                   (lambda (x y) (< (overlay-start x) (overlay-start y))))))))
-                 "-")
-               length))
-     'face (if (active) 'doom-modeline-panel))))
+;; (defsubst +doom-modeline--iedit ()
+;;   "Show the number of iedit regions matches + what match you're on."
+;;   (when (and iedit-mode iedit-occurrences-overlays)
+;;     (propertize
+;;      (let ((this-oc (or (let ((inhibit-message t))
+;;                           (iedit-find-current-occurrence-overlay))
+;;                         (progn (iedit-prev-occurrence)
+;;                                (iedit-find-current-occurrence-overlay))))
+;;            (length (length iedit-occurrences-overlays)))
+;;        (format " %s/%d "
+;;                (if this-oc
+;;                    (- length
+;;                       (length (cdr
+;;                                (memq this-oc (sort (append iedit-occurrences-overlays (list))
+;;                                                    (lambda (x y) (< (overlay-start x) (overlay-start y))))))))
+;;                  "-")
+;;                length))
+;;      'face (if (active) 'doom-modeline-panel))))
 
 (def-modeline-segment! matches
   "Displays: 1. the currently recording macro, 2. A current/total for the
 current search term (with anzu), 3. The number of substitutions being conducted
 with `evil-ex-substitute', and/or 4. The number of active `iedit' regions."
   (let ((meta (concat (+doom-modeline--macro-recording)
-                      ;; (+doom-modeline--anzu)
+                      (+doom-modeline--anzu)
                       ;; (+doom-modeline--evil-substitute)
                       ;; (+doom-modeline--iedit)
                       )))
@@ -528,9 +534,7 @@ with `evil-ex-substitute', and/or 4. The number of active `iedit' regions."
 ;;
 
 (def-modeline! main
-  (bar matches " " buffer-info "  %l:%c %p  "
-       ;; selection-info
-  )
+  (bar matches " " buffer-info "  %l:%c %p  " selection-info)
   (buffer-encoding vcs major-mode flycheck " "))
 
 (def-modeline! eldoc
@@ -542,9 +546,7 @@ with `evil-ex-substitute', and/or 4. The number of active `iedit' regions."
   (media-info major-mode " "))
 
 (def-modeline! special
-  (bar matches " %b   %l:%c %p  "
-       ;; selection-info
-  )
+  (bar matches " %b   %l:%c %p  " selection-info)
   (buffer-encoding major-mode flycheck " "))
 
 (def-modeline! project
