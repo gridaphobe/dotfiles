@@ -106,6 +106,7 @@
 ;;   ad-do-it)
 
 (use-package solarized-theme
+  :disabled t
   :ensure t
   :config
   (load-theme 'solarized-light))
@@ -130,15 +131,39 @@
     (sml/apply-theme 'light)))
 
 (use-package powerline
+  :disabled t
   :ensure t
   :config
   (powerline-center-theme))
 
-(add-to-list 'completion-ignored-extensions ".hi")
-(add-to-list 'completion-ignored-extensions ".hdevtools.sock")
-(add-to-list 'completion-ignored-extensions ".liquid/")
-(add-to-list 'completion-ignored-extensions ".hpc/")
+(use-package nlinum
+  :ensure t
+  :config (add-hook 'prog-mode-hook #'nlinum-mode))
 
+(use-package doom-themes
+  :ensure t
+  :diminish 'doom-buffer-mode
+  :config
+  (setq doom-one-brighter-comments nil
+        doom-one-brighter-modeline t
+        doom-enable-bold t
+        doom-enable-italic t)
+  (load-theme 'doom-one t)
+  (doom-themes-nlinum-config)
+  ;; brighter source buffers (that represent files)
+  (add-hook 'find-file-hook #'doom-buffer-mode-maybe)
+  ;; ...if you use auto-revert-mode
+  (add-hook 'after-revert-hook #'doom-buffer-mode-maybe)
+  ;; And you can brighten other buffers (unconditionally) with:
+  (add-hook 'ediff-prepare-buffer-hook #'doom-buffer-mode)
+
+  ;; brighter minibuffer when active
+  (add-hook 'minibuffer-setup-hook #'doom-brighten-minibuffer))
+
+(use-package all-the-icons
+  :ensure t)
+
+(load "~/.emacs.d/doom-modeline.el")
 
 ;;;; misc
 (blink-cursor-mode -1)
@@ -569,7 +594,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;;; expand-region
 (use-package expand-region
   :ensure t
-  :bind (("M-m" . er/expand-region)))
+  :bind (("M-m" . er/expand-region)
+         ("M-S-m" . er/contract-region)))
 
 ;;;; change-inner
 (use-package change-inner
@@ -593,15 +619,88 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (use-package evil
   :disabled t
   :ensure t
-  :config
-  (evil-mode 1)
+  :init
   (setq evil-esc-delay 0
         evil-cross-lines t
         evil-move-cursor-back nil
-        evil-want-fine-undo nil
+        evil-want-fine-undo t
         evil-want-C-u-scroll t
         )
+  :config
+  (evil-mode 1)
+  (setcdr evil-insert-state-map nil)
+  (define-key evil-insert-state-map
+    (read-kbd-macro evil-toggle-key) 'evil-emacs-state)
+  (define-key evil-insert-state-map
+    [escape] 'evil-normal-state)
+  ;; Make movement keys work like they should
+  (bind-key "<remap> <evil-next-line>"
+            'evil-next-visual-line
+            evil-normal-state-map)
+  (bind-key "<remap> <evil-previous-line>"
+            'evil-previous-visual-line
+            evil-normal-state-map)
+  (bind-key "<remap> <evil-next-line>"
+            'evil-next-visual-line
+            evil-motion-state-map)
+  (bind-key "<remap> <evil-previous-line>"
+            'evil-previous-visual-line
+            evil-motion-state-map)
+  (defun evil-undefine ()
+    (interactive)
+    (let (evil-mode-map-alist)
+      (call-interactively (key-binding (this-command-keys)))))
+
+  (bind-key "C-e" 'evil-end-of-line    evil-normal-state-map)
+  (bind-key "C-e" 'end-of-line         evil-insert-state-map)
+  (bind-key "C-e" 'evil-end-of-line    evil-visual-state-map)
+  (bind-key "C-e" 'evil-end-of-line    evil-motion-state-map)
+  (bind-key "C-f" 'evil-forward-char   evil-normal-state-map)
+  (bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
+  (bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
+  (bind-key "C-b" 'evil-backward-char  evil-normal-state-map)
+  (bind-key "C-b" 'evil-backward-char  evil-insert-state-map)
+  (bind-key "C-b" 'evil-backward-char  evil-visual-state-map)
+  ;; (bind-key "C-d" 'evil-delete-char    evil-normal-state-map)
+  ;; (bind-key "C-d" 'evil-delete-char    evil-insert-state-map)
+  ;; (bind-key "C-d" 'evil-delete-char    evil-visual-state-map)
+  (bind-key "C-n" 'evil-next-line      evil-normal-state-map)
+  (bind-key "C-n" 'evil-next-line      evil-insert-state-map)
+  (bind-key "C-n" 'evil-next-line      evil-visual-state-map)
+  (bind-key "C-p" 'evil-previous-line  evil-normal-state-map)
+  (bind-key "C-p" 'evil-previous-line  evil-insert-state-map)
+  (bind-key "C-p" 'evil-previous-line  evil-visual-state-map)
+  (bind-key "C-w" 'evil-delete         evil-normal-state-map)
+  (bind-key "C-w" 'evil-delete         evil-insert-state-map)
+  (bind-key "C-w" 'evil-delete         evil-visual-state-map)
+  (bind-key "C-y" 'yank                evil-normal-state-map)
+  (bind-key "C-y" 'yank                evil-insert-state-map)
+  (bind-key "C-y" 'yank                evil-visual-state-map)
+  (bind-key "C-k" 'kill-line           evil-normal-state-map)
+  (bind-key "C-k" 'kill-line           evil-insert-state-map)
+  (bind-key "C-k" 'kill-line           evil-visual-state-map)
+  (bind-key "C-r" 'isearch-backward    evil-normal-state-map)
+  (bind-key "C-r" 'isearch-backward    evil-insert-state-map)
+  (bind-key "C-r" 'isearch-backward    evil-visual-state-map)
+  (bind-key "Q"   'call-last-kbd-macro evil-normal-state-map)
+  (bind-key "Q"   'call-last-kbd-macro evil-visual-state-map)
+  (bind-key "TAB" 'evil-undefine       evil-normal-state-map)
+  (bind-key "RET" 'evil-undefine       evil-insert-state-map)
   )
+(use-package evil-god-state
+  :disabled t
+  :ensure t
+  :after evil
+  :config
+  (evil-define-key 'normal global-map "," 'evil-execute-in-god-state)
+  (evil-define-key 'visual global-map "," 'evil-execute-in-god-state))
+(use-package evil-surround
+  :disabled t
+  :ensure t
+  :after evil
+  :config
+  (global-evil-surround-mode +1))
+
 ;; (require 'evil)
 ;; (evil-mode 1)
 ;; ;; prevent esc-key from translating to meta-key in terminal mode
@@ -617,66 +716,12 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (bind-key "<escape>" 'keyboard-escape-quit)
 ;; (bind-key "\"" 'ace-jump-mode evil-normal-state-map)
 
-;; ;; Make movement keys work like they should
-;; (bind-key "<remap> <evil-next-line>"
-;;           'evil-next-visual-line
-;;           evil-normal-state-map)
-;; (bind-key "<remap> <evil-previous-line>"
-;;           'evil-previous-visual-line
-;;           evil-normal-state-map)
-;; (bind-key "<remap> <evil-next-line>"
-;;           'evil-next-visual-line
-;;           evil-motion-state-map)
-;; (bind-key "<remap> <evil-previous-line>"
-;;           'evil-previous-visual-line
-;;           evil-motion-state-map)
-
 ;; (setcdr evil-insert-state-map nil)
 ;; (define-key evil-insert-state-map
 ;;   (read-kbd-macro evil-toggle-key) 'evil-emacs-state)
 ;; (define-key evil-insert-state-map
 ;;   [escape] 'evil-normal-state)
 
-;; (defun evil-undefine ()
-;;   (interactive)
-;;   (let (evil-mode-map-alist)
-;;     (call-interactively (key-binding (this-command-keys)))))
-
-;; (bind-key "C-e" 'evil-end-of-line    evil-normal-state-map)
-;; (bind-key "C-e" 'end-of-line         evil-insert-state-map)
-;; (bind-key "C-e" 'evil-end-of-line    evil-visual-state-map)
-;; (bind-key "C-e" 'evil-end-of-line    evil-motion-state-map)
-;; (bind-key "C-f" 'evil-forward-char   evil-normal-state-map)
-;; (bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
-;; (bind-key "C-f" 'evil-forward-char   evil-insert-state-map)
-;; (bind-key "C-b" 'evil-backward-char  evil-normal-state-map)
-;; (bind-key "C-b" 'evil-backward-char  evil-insert-state-map)
-;; (bind-key "C-b" 'evil-backward-char  evil-visual-state-map)
-;; (bind-key "C-d" 'evil-delete-char    evil-normal-state-map)
-;; (bind-key "C-d" 'evil-delete-char    evil-insert-state-map)
-;; (bind-key "C-d" 'evil-delete-char    evil-visual-state-map)
-;; (bind-key "C-n" 'evil-next-line      evil-normal-state-map)
-;; (bind-key "C-n" 'evil-next-line      evil-insert-state-map)
-;; (bind-key "C-n" 'evil-next-line      evil-visual-state-map)
-;; (bind-key "C-p" 'evil-previous-line  evil-normal-state-map)
-;; (bind-key "C-p" 'evil-previous-line  evil-insert-state-map)
-;; (bind-key "C-p" 'evil-previous-line  evil-visual-state-map)
-;; (bind-key "C-w" 'evil-delete         evil-normal-state-map)
-;; (bind-key "C-w" 'evil-delete         evil-insert-state-map)
-;; (bind-key "C-w" 'evil-delete         evil-visual-state-map)
-;; (bind-key "C-y" 'yank                evil-normal-state-map)
-;; (bind-key "C-y" 'yank                evil-insert-state-map)
-;; (bind-key "C-y" 'yank                evil-visual-state-map)
-;; (bind-key "C-k" 'kill-line           evil-normal-state-map)
-;; (bind-key "C-k" 'kill-line           evil-insert-state-map)
-;; (bind-key "C-k" 'kill-line           evil-visual-state-map)
-;; (bind-key "C-r" 'isearch-backward    evil-normal-state-map)
-;; (bind-key "C-r" 'isearch-backward    evil-insert-state-map)
-;; (bind-key "C-r" 'isearch-backward    evil-visual-state-map)
-;; (bind-key "Q"   'call-last-kbd-macro evil-normal-state-map)
-;; (bind-key "Q"   'call-last-kbd-macro evil-visual-state-map)
-;; (bind-key "TAB" 'evil-undefine       evil-normal-state-map)
-;; (bind-key "RET" 'evil-undefine       evil-insert-state-map)
 
 ;; (use-package evil-surround
 ;;   :config (global-evil-surround-mode 1))
@@ -837,6 +882,10 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
         haskell-stylish-on-save nil
         haskell-tags-on-save nil
         )
+  (add-to-list 'completion-ignored-extensions ".hi")
+  (add-to-list 'completion-ignored-extensions ".hdevtools.sock")
+  (add-to-list 'completion-ignored-extensions ".liquid/")
+  (add-to-list 'completion-ignored-extensions ".hpc/")
 
   ;; (add-hook 'haskell-mode-hook 'eldoc-mode)
   ;; (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
@@ -858,14 +907,25 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
     )
 
   (use-package intero
-    ;; :disabled t
+    :disabled t
     :ensure t
     :diminish 'intero-mode
-    :pin "melpa"
+    :pin melpa
     :config
     (add-hook 'haskell-mode-hook 'intero-mode)
     ;; (setq intero-blacklist '("/Users/gridaphobe/Source/ghc"))
     ;; (add-hook 'haskell-mode-hook 'intero-mode-blacklist)
+    )
+  (use-package dante
+    ;;:disabled t
+    :ensure t
+    ;; :pin melpa
+    :load-path "~/Source/dante"
+    :commands 'dante-mode
+    :init
+    (add-hook 'haskell-mode-hook 'dante-mode)
+    (add-hook 'haskell-mode-hook 'flycheck-mode)
+    :config
     )
 
   ;;(load "~/.emacs.d/haskell-flycheck.el")
@@ -937,10 +997,10 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
           TeX-parse-self t
           TeX-save-query nil))
   )
-(use-package pdf-tools
-  :ensure t
-  :config
-  (pdf-tools-install))
+;; (use-package pdf-tools
+;;   :ensure t
+;;   :config
+;;   (pdf-tools-install))
 
 ;;;; magit
 (use-package magit
@@ -1146,10 +1206,11 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
     (setq racer-cmd "racer")
     (add-hook 'rust-mode-hook #'racer-mode)
     (add-hook 'racer-mode-hook #'eldoc-mode))
-  (use-package rustfmt
-    :ensure t
-    :config
-    (setq rustfmt-bin "~/.cargo/bin/rustfmt")))
+  ;; (use-package rustfmt
+  ;;   :ensure t
+  ;;   :config
+  ;;   (setq rustfmt-bin "~/.cargo/bin/rustfmt"))
+  )
 
 
 ;;;; shells
@@ -1286,6 +1347,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/mu4e")
 ;; (add-to-list 'Info-directory-list "~/.nix-profile/share/info")
 (use-package mu4e
+  :disabled t
   :config
   (use-package org-mu4e)
   (use-package mu4e-maildirs-extension
@@ -1405,6 +1467,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (mu4e-maildirs-extension)
 
 (use-package gnus
+  :disabled t
   :config
   ;; accounts
   (setq gnus-select-method '(nntp "news.gmane.org"))
@@ -1575,6 +1638,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 
 (use-package circe
+  :disabled t
   :ensure t
   :config
   (setq lui-max-buffer-size 30000
@@ -1639,7 +1703,6 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 (message "Emacs is ready to do thy bidding, Master %s!" (getenv "USER"))
 
-(provide 'init)
 ;;; init.el ends here
 
 ;; (load-file (let ((coding-system-for-read 'utf-8))
