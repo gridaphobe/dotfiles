@@ -217,7 +217,8 @@ project root). Excludes the file basename. See `doom-buffer-name' for that."
     (let ((buffer-path
            (file-relative-name (file-name-directory
                                 (or buffer-file-truename (file-truename buffer-file-name)))
-                               (projectile-project-root))))
+                               (let ((projectile-require-project-root nil))
+                                 (projectile-project-root)))))
       (unless (equal buffer-path "./")
         (let ((max-length (truncate (* (window-body-width) 0.4))))
           (if (> (length buffer-path) max-length)
@@ -249,7 +250,9 @@ buffer where knowing the current project directory is important."
              :face face
              :v-adjust -0.05
              :height 1.25)
-            (propertize (concat " " (abbreviate-file-name (projectile-project-root)))
+            (propertize (concat " " (abbreviate-file-name
+                                     (let ((projectile-require-project-root nil))
+                                       (projectile-project-root))))
                         'face face))))
 
 ;;
