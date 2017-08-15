@@ -3,7 +3,8 @@
 [user]
 	name = Eric Seidel
 	email = eric@seidel.io
-	signingkey = F786949E
+[credential]
+	helper = osxkeychain
 [alias]
 	st = status
 	co = checkout
@@ -22,8 +23,6 @@
 	branch = auto
 [push]
 	default = simple
-[credential]
-	helper = osxkeychain
 [merge]
   tool = ediff
 [mergetool "ediff"]
