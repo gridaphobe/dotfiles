@@ -17,7 +17,7 @@
     #   inherit (pkgs) z3;
     # });
 
-    aeson = super.aeson_0_10_0_0;
+    # aeson = super.aeson_0_10_0_0;
 
     #distributive = dontCheck super.distributive;
     #comonad = dontCheck super.comonad;
@@ -382,8 +382,17 @@
     #     aspell
     #     aspellDicts.en
 
-    emacs-env = pkgs.emacsWithPackages #.override # {emacs = emacs24;}
-                (with emacsPackagesNgGen emacs; [
+    emacs-env =
+      let customEmacsPackages =
+            emacsPackagesNg.override (super: self: {
+              # use a custom version of emacs
+              # emacs = emacs;
+              # use the unstable MELPA version of magit
+              # magit = self.melpaPackages.magit;
+            });
+      in customEmacsPackages.emacsWithPackages (epkgs: with epkgs; [ # epkgs.evil epkgs.magit ])
+    # emacs-env = pkgs.emacsWithPackages #.override # {emacs = emacs24;}
+    #             (with emacsPackagesNgGen emacs; [
         # ac-haskell-process
         # ace-jump-mode
         ag

@@ -5,10 +5,19 @@
 
 ;;; Code:
 
-(defmacro csetq (variable value)
+(defmacro csetq-1 (variable value)
   `(funcall (or (get ',variable 'custom-set)
                 'set-default)
             ',variable ,value))
+(defmacro csetq (&rest binds)
+  (pcase binds
+    (`(,var ,val)
+     `(csetq-1 ,var ,val))
+    (`(,var ,val . ,rest)
+     `(progn
+        (csetq-1 ,var ,val)
+        (csetq ,@rest)))))
+
 
 (defconst on-mac (eq system-type 'darwin)
   "Are we on a Mac?")
@@ -21,7 +30,7 @@
   (server-start))
 
 ;; config changes made through the customize UI will be store here
-(setq custom-file (concat user-emacs-directory "custom.el"))
+(csetq custom-file (concat user-emacs-directory "custom.el"))
 (when (file-exists-p custom-file)
   (load custom-file))
 
@@ -31,13 +40,13 @@
 (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 
 ;; No splash screen please... jeez
-(setq inhibit-startup-screen t)
+(csetq inhibit-startup-screen t)
 
 (require 'package)
 (if nil ;(or (file-exists-p "~/.nix-profile/share/emacs/site-lisp")
                                         ;    (file-exists-p "~/.nix-profile/share/emacs-with-packages/site-lisp"))
     (progn
-      (setq package-archives nil)
+      (csetq package-archives nil)
       (add-to-list 'load-path "~/.nix-profile/share/emacs/site-lisp/")
       (add-to-list 'package-directory-list "~/.nix-profile/share/emacs/site-lisp/elpa")
       (add-to-list 'load-path "~/.nix-profile/share/emacs-with-packages/site-lisp/")
@@ -48,7 +57,7 @@
                  '("melpa" . "https://melpa.org/packages/") t)
     (add-to-list 'package-archives
                  '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-    (setq package-archive-priorities
+    (csetq package-archive-priorities
           '(("gnu" . 2)
             ("melpa-stable" . 1)
             ("melpa" . 0)))))
@@ -64,11 +73,12 @@
 (when (and on-mac window-system)
   ;; Emacs users obviously have little need for Command and Option keys,
   ;; but they do need Meta and Super
-  (setq mac-pass-command-to-system nil
-        mac-pass-control-to-system nil)
-  (setq mac-command-modifier 'super)
-  (setq mac-option-modifier 'meta)
-  (mac-auto-operator-composition-mode)
+  ;; (csetq mac-pass-command-to-system nil
+  ;;       mac-pass-control-to-system nil)
+  ;; (csetq mac-command-modifier 'super)
+  ;; (csetq mac-option-modifier 'meta)
+  ;; (csetq mac-mouse-wheel-smooth-scroll t)
+  ;; (mac-auto-operator-composition-mode)
 
   (bind-key "<s-return>" 'toggle-frame-fullscreen)
   (bind-key "s-`" 'other-frame)
@@ -82,23 +92,48 @@
   (use-package exec-path-from-shell
     :ensure t
     :config
-    (setq exec-path-from-shell-variables
+    (csetq exec-path-from-shell-variables
           '("PATH" "MANPATH" "DYLD_LIBRARY_PATH" "NIX_PATH"
             "NIX_GHC" "NIX_GHCPKG" "NIX_GHC_DOCDIR" "NIX_GHC_LIBDIR"))
     (exec-path-from-shell-initialize))
 
   (add-to-list 'exec-path "/Applications/Racket/bin")
 
-  (setq browse-url-browser-function 'browse-url-default-macosx-browser))
+  (csetq browse-url-browser-function 'browse-url-default-macosx-browser))
 
-(let ((font "Input Mono Compressed"))
+(let ((font
+       ;;"Input Mono Compressed"
+       "Monoid"
+       ))
   (set-fontset-font "fontset-default"
                     'unicode
                     `(,font . "iso10646-1"))
   (set-face-attribute 'default nil
                       :family font
-                      :height 140
-                      :weight 'light))
+                      :height 100
+                      ;; :weight 'light
+                      ))
+
+(defun pre-process-kill-ring-element (element)
+  (replace-regexp-in-string "^[[:space:]]+" ""
+                            (replace-regexp-in-string "[[:space:]]+$" "" (substring-no-properties element))))
+(defun preprocess-kill-ring ()
+  (let ((result nil)
+        (element nil))
+    (dolist (element kill-ring)
+      (progn
+        (csetq element (pre-process-kill-ring-element element))
+        (when (not (or
+                    (eq 0 (length element))
+                    (string-match-p "[\r\n]+" element)))
+          (csetq result (cons element result)))))
+    (reverse result)))
+(defun browse-kill-ring ()
+  (interactive)
+  (let ((str (completing-read "Pick an element: "
+                              (preprocess-kill-ring))))
+    (insert str)))
+(bind-key "C-M-y" 'browse-kill-ring)
 
 ;;;; theme
 ;; (defadvice load-theme (around disable-other-themes activate)
@@ -126,7 +161,7 @@
   :ensure t
   :config
   (progn
-    (setq sml/name-width '(20 . 30))
+    (csetq sml/name-width '(20 . 30))
     (sml/setup)
     (sml/apply-theme 'light)))
 
@@ -144,7 +179,7 @@
   :ensure t
   :diminish 'doom-buffer-mode
   :config
-  (setq doom-one-brighter-comments nil
+  (csetq doom-one-brighter-comments nil
         doom-one-brighter-modeline t
         doom-enable-bold t
         doom-enable-italic t)
@@ -168,26 +203,26 @@
 ;;;; misc
 (blink-cursor-mode -1)
 
-(set-default 'tags-case-fold-search nil)
+(csetq tags-case-fold-search nil)
 (use-package dired-x
   :disabled t
   :ensure dired+
   :config
   (progn
-    (setq-default dired-omit-files-p t)
-    (setq dired-omit-files
+    (csetq dired-omit-files-p t)
+    (csetq dired-omit-files
           (concat "\\.dyn_hi$\\|\\.dyn_o$\\|\\.hi$\\|\\.o$\\|"
                   dired-omit-files))))
 
-(setq ring-bell-function 'ignore)
-(setq enable-recursive-minibuffers t)
+(csetq ring-bell-function 'ignore)
+(csetq enable-recursive-minibuffers t)
 
 (electric-indent-mode -1)
 (electric-layout-mode -1)
 (electric-pair-mode -1)
 (show-paren-mode -1)
 
-(setq-default major-mode 'text-mode)
+(csetq major-mode 'text-mode)
 
 ;; When popping the mark, continue popping until the cursor
 ;; actually moves
@@ -195,7 +230,7 @@
   (let ((p (point)))
     (dotimes (i 10)
       (when (= p (point)) ad-do-it))))
-(setq set-mark-command-repeat-pop t)
+(csetq set-mark-command-repeat-pop t)
 
 (use-package ibuffer-vc
   :ensure t
@@ -207,7 +242,7 @@
                 (ibuffer-do-sort-by-alphabetic)))))
 
 ;; nice scrolling
-(setq scroll-margin 0
+(csetq scroll-margin 0
       scroll-conservatively 10000
       scroll-preserve-screen-position 1)
 
@@ -221,13 +256,13 @@
 (prefer-coding-system 'utf-8)
 (set-language-environment "UTF-8")
 
-(setq require-final-newline t)
+(csetq require-final-newline t)
 
-;; (setq debug-on-error t)
+;; (csetq debug-on-error t)
                                         ; see https://bling.github.io/blog/2016/01/18/why-are-you-changing-gc-cons-threshold/
-;; (setq gc-cons-threshold (* 20 (expt 2 20))) ; gc after 20MB
+;; (csetq gc-cons-threshold (* 20 (expt 2 20))) ; gc after 20MB
 
-(setq-default fill-column 72)
+(csetq fill-column 72)
 
 ;; Death to the tabs!  However, tabs historically indent to the next
 ;; 8-character offset; specifying anything else will cause *mass*
@@ -239,23 +274,23 @@
 ;; indentation width -- eg. c-basic-offset: use that to adjust your
 ;; personal indentation width, while maintaining the style (and
 ;; meaning) of any files you load.
-(setq-default indent-tabs-mode nil)   ;; don't use tabs to indent
-(setq-default tab-width 8)            ;; but maintain correct appearance
+(csetq indent-tabs-mode nil)   ;; don't use tabs to indent
+(csetq tab-width 8)            ;; but maintain correct appearance
 
 ;; delete the selection with a keypress
 (delete-selection-mode 1)
 
 ;; store all backup and autosave files in the tmp dir
-(setq backup-directory-alist
+(csetq backup-directory-alist
       `((".*" . ,temporary-file-directory)))
-(setq auto-save-file-name-transforms
+(csetq auto-save-file-name-transforms
       `((".*" ,temporary-file-directory t)))
-(setq auto-save-list-file-prefix
+(csetq auto-save-list-file-prefix
       temporary-file-directory)
 
 ;; revert buffers automatically when underlying files are changed externally
 (global-auto-revert-mode 1)
-;; (setq auto-revert-verbose t)
+;; (csetq auto-revert-verbose t)
 
 ;; auto-save when switching buffers
 (defadvice switch-to-buffer (before save-buffer-now activate)
@@ -274,7 +309,7 @@
   (when buffer-file-name (save-buffer)))
 
 ;; hippie expand is dabbrev expand on steroids
-(setq hippie-expand-try-functions-list
+(csetq hippie-expand-try-functions-list
       '(try-expand-dabbrev
         try-expand-dabbrev-all-buffers
         try-expand-dabbrev-from-kill
@@ -287,7 +322,7 @@
         try-complete-lisp-symbol))
 
 ;; try to complete at point if already indented
-(setq tab-always-indent 'complete)
+(csetq tab-always-indent 'complete)
 
 ;; make a shell script executable automatically on save
 (add-hook 'after-save-hook
@@ -297,7 +332,7 @@
 (use-package midnight
   :config
   (progn
-    (setq midnight-mode t)
+    (csetq midnight-mode t)
     (add-to-list 'clean-buffer-list-kill-never-regexps
                  "^#\w+")
     (add-to-list 'clean-buffer-list-kill-never-buffer-names
@@ -308,7 +343,7 @@
 ;; saner regex syntax
 (use-package re-builder
   :config
-  (setq reb-re-syntax 'string))
+  (csetq reb-re-syntax 'string))
 
 ;; enable narrowing commands
 (put 'narrow-to-region 'disabled nil)
@@ -327,7 +362,7 @@
 (savehist-mode 1)
 (use-package saveplace
   :config
-  (setq-default save-place t))
+  (csetq save-place t))
 
 ;; ediff defaults
 (csetq ediff-window-setup-function 'ediff-setup-windows-plain)
@@ -341,7 +376,7 @@
 
 ;; (load (expand-file-name "~/.quicklisp/slime-helper.el"))
 ;; ;; Replace "sbcl" with the path to your implementation
-;; (setq inferior-lisp-program "sbcl")
+;; (csetq inferior-lisp-program "sbcl")
 
 
 ;;;; Rectangle-aware commands
@@ -384,8 +419,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   (bind-key "C-M-p" 'sp-forward-slurp-sexp)
   (bind-key "C-M-o" 'sp-forward-barf-sexp))
 
-;; (setq-default sp-autoskip-closing-pair 'always)
-;; (setq sp-hybrid-kill-entire-symbol nil)
+;; (csetq sp-autoskip-closing-pair 'always)
+;; (csetq sp-hybrid-kill-entire-symbol nil)
 ;; (electric-pair-mode)
 
 ;; (show-smartparens-global-mode 1)
@@ -409,7 +444,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :bind (("M-%" . anzu-query-replace)
          ("C-M-%" . anzu-query-replace-regexp))
   :config
-  (setq anzu-cons-mode-line-p nil))
+  (csetq anzu-cons-mode-line-p nil))
 
 ;;;; helm
 
@@ -426,17 +461,19 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :bind
   (("C-c C-r" . ivy-resume))
   :config
-  (setq ivy-use-virtual-buffers t)
+  (csetq ivy-use-virtual-buffers t)
   (ivy-mode 1)
   (use-package swiper
     :demand t
     :bind
-    (("C-s" . swiper)
-     ("C-r" . swiper)))
+    (("C-s" . counsel-grep-or-swiper)
+     ("C-r" . counsel-grep-or-swiper)))
   (use-package counsel
     :demand t
     :config
-    (setq counsel-find-file-ignore-regexp "\(?:\`[#.]\)\|\(?:[#~]\'\)")
+    (csetq counsel-find-file-ignore-regexp "\(?:\`[#.]\)\|\(?:[#~]\'\)"
+           counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
+    (counsel-mode 1)
     (use-package smex
       :ensure t
       :config (smex-initialize))
@@ -449,7 +486,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (require 'helm)
 ;; (require 'helm-files)
 ;; (require 'ido)
-;; (setq helm-buffers-fuzzy-matching t
+;; (csetq helm-buffers-fuzzy-matching t
 ;;       ido-use-virtual-buffers t
 ;;       helm-ff-auto-update-initial-value t
 ;;       helm-ff-file-name-history-use-recentf t
@@ -478,7 +515,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (bind-key "p"        'helm-grep-mode-jump-other-window-backward helm-grep-mode-map)
 
 ;; (use-package helm-swoop
-;;   :config (setq helm-multi-swoop-edit-save t))
+;;   :config (csetq helm-multi-swoop-edit-save t))
 ;; (bind-key "M-i" 'helm-swoop-from-isearch isearch-mode-map)
 ;; (bind-key "M-i" 'helm-multi-swoop-all-from-helm-swoop helm-swoop-map)
 
@@ -486,7 +523,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (use-package ace-isearch
 ;;   :diminish ""
 ;;   :config (progn (global-ace-isearch-mode +1)
-;;                (setq ace-isearch-input-idle-delay 0.2)))
+;;                (csetq ace-isearch-input-idle-delay 0.2)))
 
 ;;;; projectile
 ;; (require 'projectile)
@@ -497,7 +534,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :ensure t
   :diminish 'projectile-mode
   :config
-  (setq projectile-completion-system 'ivy
+  (csetq projectile-completion-system 'ivy
         projectile-globally-ignored-directories
         '(".idea" ".eunit" ".git" ".hg" ".fslckout" ".bzr" "_darcs" ".tox" ".svn" ".liquid")
 	projectile-switch-project-action 'projectile-vc
@@ -517,25 +554,29 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;; (require 'helm-projectile)
 ;; (helm-projectile-on)
-;; (setq projectile-switch-project-action 'helm-projectile)
+;; (csetq projectile-switch-project-action 'helm-projectile)
 
 
 ;;;; auto complete
 ;; (require 'auto-complete)
 ;; (ac-config-default)
-;; (setq ac-auto-start nil)
+;; (csetq ac-auto-start nil)
 ;; (diminish 'auto-complete-mode)
 ;; (ac-set-trigger-key "TAB")
 (use-package company
   :ensure t
   :diminish 'company-mode
   :config
+  (csetq company-dabbrev-downcase nil
+         company-dabbrev-ignore-case t
+         company-dabbrev-code-ignore-case t)
   (add-hook #'prog-mode-hook #'company-mode))
+
 
 ;;;; compile
 (use-package compile
   :config
-  (setq compilation-scroll-output 'first-error
+  (csetq compilation-scroll-output 'first-error
         compilation-window-height 10
         compilation-context-lines 0)
   (defun bury-compile-buffer-if-successful (buffer string)
@@ -569,7 +610,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; emacs lisp
 (defun imenu-elisp-sections ()
-  (setq imenu-prev-index-position-function nil)
+  (csetq imenu-prev-index-position-function nil)
   (add-to-list 'imenu-generic-expression '(nil "^;;;; \\(.+\\)$" 1) t))
 
 (defun my/remove-elc-on-save ()
@@ -611,7 +652,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :ensure t
   :diminish 'undo-tree-mode
   :config
-  (setq undo-tree-visualizer-relative-timestamps t
+  (csetq undo-tree-visualizer-relative-timestamps t
         undo-tree-visualizer-timestamps t)
   (global-undo-tree-mode))
 ;; (add-to-list 'rm-blacklist " Undo-Tree")
@@ -622,7 +663,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :disabled t
   :ensure t
   :init
-  (setq evil-esc-delay 0
+  (csetq evil-esc-delay 0
         evil-cross-lines t
         evil-move-cursor-back nil
         evil-want-fine-undo t
@@ -706,8 +747,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (require 'evil)
 ;; (evil-mode 1)
 ;; ;; prevent esc-key from translating to meta-key in terminal mode
-;; (setq evil-esc-delay 0)
-;; (setq evil-search-module 'evil-search
+;; (csetq evil-esc-delay 0)
+;; (csetq evil-search-module 'evil-search
 ;;       evil-cross-lines t
 ;;       evil-move-cursor-back nil)
 ;; (add-to-list 'evil-emacs-state-modes 'special-mode)
@@ -766,22 +807,22 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   (("M-n" . flycheck-next-error)
    ("M-p" . flycheck-previous-error))
   :config
-  (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc json-jsonlint json-python-json haskell-hlint))
-  (setq flycheck-check-syntax-automatically '(mode-enabled save))
-  (setq flycheck-mode-line-prefix "✓")
+  (csetq flycheck-disabled-checkers '(emacs-lisp-checkdoc json-jsonlint json-python-json haskell-hlint))
+  (csetq flycheck-check-syntax-automatically '(mode-enabled save))
+  (csetq flycheck-mode-line-prefix "✓")
   (global-flycheck-mode 1)
   (use-package flycheck-pos-tip
     :ensure t
     :config
     (flycheck-pos-tip-mode)
-    (setq flycheck-pos-tip-timeout -1)))
+    (csetq flycheck-pos-tip-timeout -1)))
 
 
 ;;;; flyspell
 (use-package flyspell
   :diminish 'flyspell-mode
   :config
-  (setq ispell-program-name "aspell" ; use aspell instead of ispell
+  (csetq ispell-program-name "aspell" ; use aspell instead of ispell
         ispell-extra-args '("--sug-mode=ultra")
         flyspell-issue-message-flag nil ; issuing a message for each word is slow
         )
@@ -791,21 +832,23 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 
 ;;;; god-mode
-;;(require 'god-mode)
-;;(god-mode)
-;; (setq-default cursor-type 'bar)
-;; (add-hook 'god-local-mode-hook
-;;           (defun my/god-toggle-cursor-type ()
-;;             (setq cursor-type (if god-local-mode
-;;                                   'box
-;;                                 'bar))))
-
-;; (bind-key "<escape>" 'god-local-mode)
-;; (bind-key "C-z" 'god-local-mode)
-;; (bind-key "i" 'god-local-mode god-local-mode-map)
-;; (bind-key "." 'repeat god-local-mode-map)
-
-;; (add-to-list 'god-exempt-major-modes 'weechat-mode)
+(use-package god-mode
+  :disabled t
+  :ensure t
+  :config
+  (god-mode)
+  (csetq cursor-type 'bar)
+  (defun my/god-toggle-cursor-type ()
+    (csetq cursor-type (if god-local-mode
+                          'box
+                        'bar)))
+  (add-hook 'god-local-mode-hook #'my/god-toggle-cursor-type)
+  (bind-key "<escape>" 'god-local-mode)
+  (bind-key "C-z" 'god-local-mode)
+  (bind-key "i" 'god-local-mode god-local-mode-map)
+  (bind-key "." 'repeat god-local-mode-map)
+  (add-to-list 'god-exempt-major-modes 'custom-mode)
+  )
 
 ;; (defun god-toggle-on-overwrite ()
 ;;  "Toggle god-mode on command `overwrite-mode'."
@@ -859,7 +902,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
   ;; (add-to-list 'evil-emacs-state-modes 'haskell-presentation-mode)
 
-  (setq haskell-process-type 'auto
+  (csetq haskell-process-type 'auto
         haskell-process-path-ghci "ghci"
         haskell-process-args-ghci '("-ferror-spans" "-idist/build:dist/build/autogen")
         haskell-process-args-cabal-repl '(;"--with-ghc=ghci-ng"
@@ -895,7 +938,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   (add-hook 'haskell-mode-hook 'haskell-indentation-mode)
   ;; (add-hook 'haskell-mode-hook 'flycheck-haskell-setup)
 
-  (setq-default flycheck-ghc-args '("-package" "ghc"))
+  (csetq flycheck-ghc-args '("-package" "ghc"))
 
   ;; (bind-key "M-n" 'next-error     haskell-interactive-mode-map)
   ;; (bind-key "M-p" 'previous-error haskell-interactive-mode-map)
@@ -904,7 +947,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
     :ensure t
     :diminish 'hindent-mode
     :config
-    (setq hindent-process-path "~/.local/bin/hindent")
+    (csetq hindent-process-path "~/.local/bin/hindent")
     (add-hook 'haskell-mode-hook #'hindent-mode)
     )
 
@@ -915,7 +958,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
     :pin melpa
     :config
     (add-hook 'haskell-mode-hook 'intero-mode)
-    ;; (setq intero-blacklist '("/Users/gridaphobe/Source/ghc"))
+    ;; (csetq intero-blacklist '("/Users/gridaphobe/Source/ghc"))
     ;; (add-hook 'haskell-mode-hook 'intero-mode-blacklist)
     )
   (use-package dante
@@ -953,7 +996,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (add-hook 'haskell-interactive-mode 'turn-off-smartparens-mode)
 ;; (add-hook 'haskell-interactive-mode 'structured-haskell-repl-mode)
 ;; (remove-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-;; (setq shm-colon-enabled t
+;; (csetq shm-colon-enabled t
 ;;       shm-indent-point-after-adding-where-clause t
 ;;       shm-lambda-indent-style 'leftmost-parent
 ;;       shm-use-hdevtools nil
@@ -976,7 +1019,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (use-package js3-mode)
 ;; (after "js2-mode-autoloads"
 ;;   (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-;;   (setq js2-auto-indent-p t
+;;   (csetq js2-auto-indent-p t
 ;;         js2-cleanup-whitespace t
 ;;         js2-enter-indents-newline t
 ;;         js2-indent-on-enter-key t
@@ -988,21 +1031,21 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :ensure auctex
   :config
   (progn
-    (setq-default TeX-PDF-mode t)
+    (csetq TeX-PDF-mode t)
     (add-hook 'LaTeX-mode-hook 'flyspell-mode)
     (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
     (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
     (add-hook 'doc-view-mode-hook 'auto-revert-mode)
-    (setq reftex-plug-into-AUCTeX t
+    (csetq reftex-plug-into-AUCTeX t
           reftex-default-bibliography '("main.bib")
           TeX-auto-save t
           TeX-parse-self t
           TeX-save-query nil))
   )
-;; (use-package pdf-tools
-;;   :ensure t
-;;   :config
-;;   (pdf-tools-install))
+(use-package pdf-tools
+  :ensure t
+  :config
+  (pdf-tools-install))
 
 ;;;; magit
 (use-package magit
@@ -1012,7 +1055,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   (global-magit-file-mode)
   (defalias 'magit 'magit-status)
   (remove-hook 'server-switch-hook 'magit-commit-diff)
-  (setq magit-display-buffer-function 'magit-display-buffer-fullcolumn-most-v1)
+  (csetq magit-display-buffer-function 'magit-display-buffer-fullcolumn-most-v1)
   (use-package magit-gh-pulls
     :disabled t
     :config
@@ -1059,60 +1102,60 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
   (progn
-    (setq org-directory "~/Dropbox/org")
-    (setq org-agenda-files `(,(concat org-directory "/notes.org")
+    (csetq org-directory "~/Dropbox/org")
+    (csetq org-agenda-files `(,(concat org-directory "/notes.org")
                                         ; "~/Dropbox/org/galois.org"
                              ))
-    (setq org-default-notes-file (concat org-directory "/notes.org"))
+    (csetq org-default-notes-file (concat org-directory "/notes.org"))
 
     ;; Targets include this file and any file contributing to the agenda - up to 9 levels deep
-    (setq org-refile-targets (quote ((nil :maxlevel . 9)
+    (csetq org-refile-targets (quote ((nil :maxlevel . 9)
                                      (org-agenda-files :maxlevel . 9))))
 
     ;; Use full outline paths for refile targets - we file directly with IDO
-    (setq org-refile-use-outline-path t)
+    (csetq org-refile-use-outline-path t)
 
     ;; Targets complete directly with IDO
-    (setq org-outline-path-complete-in-steps nil)
+    (csetq org-outline-path-complete-in-steps nil)
 
     ;; Allow refile to create parent tasks with confirmation
-    (setq org-refile-allow-creating-parent-nodes (quote confirm))
+    (csetq org-refile-allow-creating-parent-nodes (quote confirm))
 
-    (setq org-cycle-separator-lines 0)
+    (csetq org-cycle-separator-lines 0)
 
-    (setq org-blank-before-new-entry (quote ((heading . nil)
+    (csetq org-blank-before-new-entry (quote ((heading . nil)
                                              (plain-list-item . auto))))
 
-    (setq orc-src-fontify-natively t)
+    (csetq orc-src-fontify-natively t)
     ;; Resume clocking task when emacs is restarted
     (org-clock-persistence-insinuate)
     ;; Show lot of clocking history so it's easy to pick items off the C-F11 list
-    (setq org-clock-history-length 23)
+    (csetq org-clock-history-length 23)
     ;; Resume clocking task on clock-in if the clock is open
-    (setq org-clock-in-resume t)
+    (csetq org-clock-in-resume t)
     ;; Save the running clock and all clock history when exiting Emacs, load it on startup
-    (setq org-clock-persist t)
+    (csetq org-clock-persist t)
     ;; Do not prompt to resume an active clock
-    (setq org-clock-persist-query-resume nil)
+    (csetq org-clock-persist-query-resume nil)
     ;; Enable auto clock resolution for finding open clocks
-    (setq org-clock-auto-clock-resolution (quote when-no-clock-is-running))
+    (csetq org-clock-auto-clock-resolution (quote when-no-clock-is-running))
     ;; Include current clocking task in clock reports
-    (setq org-clock-report-include-clocking-task t)
+    (csetq org-clock-report-include-clocking-task t)
     ;; Sometimes I change tasks I'm clocking quickly - this removes clocked tasks with 0:00 duration
-    (setq org-clock-out-remove-zero-time-clocks t)
+    (csetq org-clock-out-remove-zero-time-clocks t)
 
     ;; Save clock data and state changes and notes in the LOGBOOK drawer
-    (setq org-clock-into-drawer t)
+    (csetq org-clock-into-drawer t)
 
     ;; Don't show SCHEDULED times if the item is DONE
-    (setq org-agenda-skip-scheduled-if-done t)
+    (csetq org-agenda-skip-scheduled-if-done t)
 
-    (setq org-log-into-drawer t)
-    (setq org-log-done 'time)
-    (setq org-log-refile 'time)
+    (csetq org-log-into-drawer t)
+    (csetq org-log-done 'time)
+    (csetq org-log-refile 'time)
 
     ;; Org todo keywords
-    (setq org-todo-keywords
+    (csetq org-todo-keywords
           (quote
            ((sequence "SOMEDAY(s)" "TODO(t)" "NEXT(n)" "|" "DONE(d)")
             (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)"))))
@@ -1120,7 +1163,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
     (use-package ox-latex
       :config
       (progn
-        (setq org-latex-pdf-process '("latexmk -pdf %f"))
+        (csetq org-latex-pdf-process '("latexmk -pdf %f"))
         (add-to-list 'org-latex-classes
                      '("sigplanconf"
                        "\\documentclass{sigplanconf}\n[PACKAGES]\n[EXTRA]"
@@ -1142,7 +1185,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
         ;;        (format "\\cite[%s][%s]{%s}"
         ;;                (cadr (split-string desc ";"))
         ;;                (car (split-string desc ";"))  path))))))
-        (setq org-latex-listings nil)
+        (csetq org-latex-listings nil)
         ;; (add-to-list 'org-latex-packages-alist '("" "listings"))
         ;; (add-to-list 'org-latex-packages-alist '("" "color"))
         ;; (add-to-list 'org-latex-packages-alist '("" "minted"))
@@ -1204,14 +1247,14 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   (use-package racer
     :ensure t
     :config
-    (setq racer-rust-src-path "/usr/local/share/rust/rust_src/")
-    (setq racer-cmd "racer")
+    (csetq racer-rust-src-path "/usr/local/share/rust/rust_src/")
+    (csetq racer-cmd "racer")
     (add-hook 'rust-mode-hook #'racer-mode)
     (add-hook 'racer-mode-hook #'eldoc-mode))
   ;; (use-package rustfmt
   ;;   :ensure t
   ;;   :config
-  ;;   (setq rustfmt-bin "~/.cargo/bin/rustfmt"))
+  ;;   (csetq rustfmt-bin "~/.cargo/bin/rustfmt"))
   )
 
 
@@ -1223,7 +1266,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   (progn
     (use-package em-smart
       :config
-      (setq eshell-where-to-jump 'begin
+      (csetq eshell-where-to-jump 'begin
             eshell-review-quick-commands nil
             eshell-smart-space-goes-to-end t
             eshell-cmpl-cycle-completions nil
@@ -1247,7 +1290,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
     ;; Eshell Hooks
     (defun eshell-settings ()
-      (setq show-trailing-whitespace nil)
+      (csetq show-trailing-whitespace nil)
       (eshell-smart-initialize))
 
     (add-hook 'eshell-mode-hook 'eshell-settings)
@@ -1261,7 +1304,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 (use-package shell
   :config
-  (setq shell-file-name "bash"))
+  (csetq shell-file-name "bash"))
 
 
 ;;;; switch-window
@@ -1273,13 +1316,13 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;;; tramp
 (use-package tramp
   :config
-  (setq tramp-default-method "ssh"))
+  (csetq tramp-default-method "ssh"))
 
 
 ;;;; uniqify
 (use-package uniquify
   :config
-  (setq uniquify-buffer-name-style 'post-forward-angle-brackets))
+  (csetq uniquify-buffer-name-style 'post-forward-angle-brackets))
 
 
 ;;;; volatile-highlights
@@ -1312,14 +1355,14 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (use-package zenburn-theme)
 ;; (use-package solarized-theme
 ;;   :config
-;;   (setq solarized-distinct-fringe-background t ; make the fringe stand out from the background
+;;   (csetq solarized-distinct-fringe-background t ; make the fringe stand out from the background
 ;;         solarized-high-contrast-mode-line t    ; make the modeline high contrast
 ;;         ))
 
 ;; (use-package powerline
 ;;   :config
 ;;   (progn
-;;     (setq powerline-default-separator nil)
+;;     (csetq powerline-default-separator nil)
 ;;     (powerline-center-evil-theme)))
 
 ;;;; generic keybindings
@@ -1342,7 +1385,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 
 ;;;; email
-(setq user-full-name "Eric Seidel"
+(csetq user-full-name "Eric Seidel"
       user-mail-address "eric@seidel.io")
 
 (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu/mu4e")
@@ -1355,7 +1398,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   (use-package mu4e-maildirs-extension
     :ensure t
     :config (mu4e-maildirs-extension))
-  (setq mu4e-maildir "~/.mail"
+  (csetq mu4e-maildir "~/.mail"
         mu4e-drafts-folder "/drafts"
         mu4e-refile-folder "/archive"
         mu4e-sent-folder "/sent"
@@ -1404,7 +1447,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
         mu4e-update-interval (* 5 60)
         ))
 
-;; (setq mu4e-html2text-command
+;; (csetq mu4e-html2text-command
 ;;      #'(lambda ()
 ;;          (shr-render-region (point-min) (point-max))))
 
@@ -1415,7 +1458,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;  (defun my/set-from-address ()
 ;;    (let ((msg mu4e-compose-parent-message))
 ;;      (when msg
-;;        (setq user-mail-address
+;;        (csetq user-mail-address
 ;;              (cond
 ;;               ((mu4e-message-contact-field-matches msg :to "ucsd.edu")
 ;;                "eseidel@cs.ucsd.edu")
@@ -1423,13 +1466,13 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;                "eseidel@galois.com")
 ;;               (t "gridaphobe@gmail.com")))))))
 
-;; (setq message-send-mail-function 'smtpmail-send-it
+;; (csetq message-send-mail-function 'smtpmail-send-it
 ;;      smtpmail-stream-type 'starttls
 ;;      smtpmail-default-smtp-server "smtp.gmail.com"
 ;;      smtpmail-smtp-server "smtp.gmail.com"
 ;;      smtpmail-smtp-service 587)
 ;; ;; don't keep message buffers around
-;; (setq message-kill-buffer-on-exit t)
+;; (csetq message-kill-buffer-on-exit t)
 
 (defun my/terminal-notifier (title subtitle message)
  (call-process "terminal-notifier" nil nil nil
@@ -1445,18 +1488,18 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; (defvar my/msgids-to-move nil)
 ;; (add-hook 'mu4e-index-updated-hook
 ;;          (defun my/notify-new-mail ()
-;;            (setq my/msgids-to-move nil
+;;            (csetq my/msgids-to-move nil
 ;;                  my/mu4e-tmp-erase-func mu4e-erase-func
 ;;                  my/mu4e-tmp-found-func mu4e-found-func
 ;;                  my/mu4e-tmp-header-func mu4e-header-func
 ;;                  mu4e-erase-func (lambda () nil)
 ;;                  mu4e-found-func (lambda (n)
-;;                                    (setq mu4e-erase-func my/mu4e-tmp-erase-func
+;;                                    (csetq mu4e-erase-func my/mu4e-tmp-erase-func
 ;;                                          mu4e-found-func my/mu4e-tmp-found-func
 ;;                                          mu4e-header-func my/mu4e-tmp-header-func)
 ;;                                    (dolist (msgid my/msgids-to-move)
 ;;                                      (mu4e~proc-move msgid nil "-N"))
-;;                                    (setq my/msgids-to-move nil))
+;;                                    (csetq my/msgids-to-move nil))
 ;;                  mu4e-header-func (lambda (msg)
 ;;                                     (my/terminal-notifier
 ;;                                      "New Mail"
@@ -1472,8 +1515,8 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :disabled t
   :config
   ;; accounts
-  (setq gnus-select-method '(nntp "news.gmane.org"))
-  (setq gnus-secondary-select-methods
+  (csetq gnus-select-method '(nntp "news.gmane.org"))
+  (csetq gnus-secondary-select-methods
         '((nnimap "seidel.io"
                   (nnimap-address "mail.messagingengine.com")
                   ;;(nnimap-server-port 8143)
@@ -1482,14 +1525,14 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
                   (nnimap-stream ssl))))
 
   ;; display
-  (setq gnus-sum-thread-tree-indent " ")
-  (setq gnus-sum-thread-tree-root "")
-  (setq gnus-sum-thread-tree-false-root "")
-  (setq gnus-sum-thread-tree-single-indent "")
-  (setq gnus-sum-thread-tree-vertical        "│")
-  (setq gnus-sum-thread-tree-leaf-with-other "├> ")
-  (setq gnus-sum-thread-tree-single-leaf     "└> ")
-  (setq gnus-summary-line-format
+  (csetq gnus-sum-thread-tree-indent " ")
+  (csetq gnus-sum-thread-tree-root "")
+  (csetq gnus-sum-thread-tree-false-root "")
+  (csetq gnus-sum-thread-tree-single-indent "")
+  (csetq gnus-sum-thread-tree-vertical        "│")
+  (csetq gnus-sum-thread-tree-leaf-with-other "├> ")
+  (csetq gnus-sum-thread-tree-single-leaf     "└> ")
+  (csetq gnus-summary-line-format
         (concat
          "%0{%U%R%z%}"
          "%3{│%}" "%1{%d%}" "%3{│%}" ;; date
@@ -1500,10 +1543,10 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
          " "
          "%{%B%}"
          "%s\n"))
-  (setq gnus-summary-display-arrow t))
+  (csetq gnus-summary-display-arrow t))
 
 ;; (require 'gnus)
-;; (setq gnus-select-method '(nnimap "local"
+;; (csetq gnus-select-method '(nnimap "local"
 ;;                                   (nnimap-address "localhost")
 ;;                                   (nnimap-server-port 8143)
 ;;                                   (nnimap-user "eric@seidel.io")
@@ -1562,7 +1605,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;       gnus-thread-ignore-subject nil
 ;; )
 
-;; (setq gnus-simplify-subject-functions '(rrix/gnus-simplify-phab-headers
+;; (csetq gnus-simplify-subject-functions '(rrix/gnus-simplify-phab-headers
 ;;                                         gnus-simplify-subject-re
 ;;                                         gnus-simplify-subject-fuzzy
 ;;                                         gnus-simplify-whitespace
@@ -1584,7 +1627,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;   "Remove Phabricator headers from subject lines."
 ;;   (let ((transformed-subject subject))
 ;;     (dolist (regex rrix/gnus-simplify-phab-headers-list)
-;;               (setq transformed-subject (replace-regexp-in-string regex "" transformed-subject)))
+;;               (csetq transformed-subject (replace-regexp-in-string regex "" transformed-subject)))
 ;;     transformed-subject))
 
 ;; ;; ;; (add-to-list 'evil-emacs-state-modes 'gnus-category-mode)
@@ -1602,7 +1645,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;   )
 ;; (add-hook 'gnus-after-getting-new-news-hook 'gnus-notifications)
 ;; ;; ;; (require 'gnus-alias)
-;; ;; (setq gnus-posting-styles
+;; ;; (csetq gnus-posting-styles
 ;; ;;       '(;
 ;; ;;         (".*"
 ;; ;;          (address "eric@seidel.io")
@@ -1629,9 +1672,9 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;; ;; ;;     ))
 
 
-;; ;; ;; (setq gnus-select-method
+;; ;; ;; (csetq gnus-select-method
 ;; ;; ;;       '(nnimap (st)))
-;; ;; ;; (setq gnus-secondary-select-methods
+;; ;; ;; (csetq gnus-secondary-select-methods
 ;; ;; ;;       '((nnmaildir )))
 
 ;;;; irc
@@ -1643,7 +1686,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :disabled t
   :ensure t
   :config
-  (setq lui-max-buffer-size 30000
+  (csetq lui-max-buffer-size 30000
         circe-reduce-lurker-spam t
         circe-highlight-nick-type 'occurrence
         tracking-ignored-buffers '(("#emacs" circe-highlight-nick-face)
@@ -1656,7 +1699,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
                                    ("#idris" circe-highlight-nick-face)
                                    ("#nixos" circe-highlight-nick-face)))
   (when (load-file "~/.emacs.d/private.el") ;;(require 'private nil t)
-    (setq circe-network-options
+    (csetq circe-network-options
           `(("seidel.io"
              :user "gridaphobe/freenode"
              :pass ,irc-pass
@@ -1670,13 +1713,13 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (use-package wgrep
   :ensure t
   :config
-  (setq wgrep-auto-save-buffer t
+  (csetq wgrep-auto-save-buffer t
         wgrep-enable-key "r"))
 
 
 ;;;; pretty symbols
 ;; (when (fboundp 'global-prettify-symbols-mode)
-;;   (setq-default prettify-symbols-alist nil
+;;   (csetq prettify-symbols-alist nil
 ;;               ;  '(("<-" . ?\u2190)
 ;;                ;   ("->" . ?\u2192)))
 ;;                 )
@@ -1689,7 +1732,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (line-number-mode 1)
 (column-number-mode 1)
 ;; (size-indication-mode 1)
-;; (setq display-time-format "%R"
+;; (csetq display-time-format "%R"
 ;;       display-time-default-load-average nil)
 ;; (display-time-mode 1)
 (global-hl-line-mode 1)
@@ -1698,7 +1741,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 
 ;; FIXME: why is this being set to nil?!
-;; (setq mu4e-mu-binary (executable-find "mu"))
+;; (csetq mu4e-mu-binary (executable-find "mu"))
 
 ;; (add-to-list 'load-path "~/Downloads/idris-mode-master")
 ;; (require 'idris-mode)
