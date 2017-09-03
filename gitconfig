@@ -2,7 +2,7 @@
 
 [user]
 	name = Eric Seidel
-	email = eric@seidel.io
+        email = eric@seidel.io
 [credential]
 	helper = osxkeychain
 [alias]

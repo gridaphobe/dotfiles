@@ -54,9 +54,9 @@
       (load-file "~/.nix-profile/share/emacs-with-packages/site-lisp/site-start.el"))
   (progn
     (add-to-list 'package-archives
-                 '("melpa" . "https://melpa.org/packages/") t)
+                 '("melpa" . "http://melpa.org/packages/") t)
     (add-to-list 'package-archives
-                 '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+                 '("melpa-stable" . "http://stable.melpa.org/packages/") t)
     (csetq package-archive-priorities
           '(("gnu" . 2)
             ("melpa-stable" . 1)
@@ -71,15 +71,22 @@
 
 ;;;; mac stuff
 (when (and on-mac window-system)
-  ;; Emacs users obviously have little need for Command and Option keys,
-  ;; but they do need Meta and Super
-  ;; (csetq mac-pass-command-to-system nil
-  ;;       mac-pass-control-to-system nil)
-  ;; (csetq mac-command-modifier 'super)
-  ;; (csetq mac-option-modifier 'meta)
-  ;; (csetq mac-mouse-wheel-smooth-scroll t)
-  ;; (mac-auto-operator-composition-mode)
-
+  ;; extra config for emacs-mac
+  (when (eq window-system 'mac)
+    ;; Emacs users obviously have little need for Command and Option keys,
+    ;; but they do need Meta and Super
+    (csetq mac-pass-command-to-system nil
+           mac-pass-control-to-system nil)
+    (csetq mac-command-modifier 'super)
+    (csetq mac-option-modifier 'meta)
+    (csetq mac-mouse-wheel-smooth-scroll t)
+    ;; (mac-auto-operator-composition-mode)
+    (csetq mac-frame-tabbing nil)
+    (defun my/reset-frame ()
+      (make-frame)
+      (select-frame (get-other-frame))
+      (delete-frame (get-other-frame)))
+    (add-hook 'after-init-hook 'my/reset-frame))
   (bind-key "<s-return>" 'toggle-frame-fullscreen)
   (bind-key "s-`" 'other-frame)
   (bind-key "s-c" 'kill-ring-save)
@@ -94,10 +101,9 @@
     :config
     (csetq exec-path-from-shell-variables
           '("PATH" "MANPATH" "DYLD_LIBRARY_PATH" "NIX_PATH"
-            "NIX_GHC" "NIX_GHCPKG" "NIX_GHC_DOCDIR" "NIX_GHC_LIBDIR"))
+            "NIX_GHC" "NIX_GHCPKG" "NIX_GHC_DOCDIR" "NIX_GHC_LIBDIR"
+            "https_proxy" "http_proxy" "no_proxy"))
     (exec-path-from-shell-initialize))
-
-  (add-to-list 'exec-path "/Applications/Racket/bin")
 
   (csetq browse-url-browser-function 'browse-url-default-macosx-browser))
 
@@ -110,7 +116,7 @@
                     `(,font . "iso10646-1"))
   (set-face-attribute 'default nil
                       :family font
-                      :height 100
+                      :height 140
                       ;; :weight 'light
                       ))
 
@@ -180,7 +186,7 @@
   :diminish 'doom-buffer-mode
   :config
   (csetq doom-one-brighter-comments nil
-        doom-one-brighter-modeline t
+        doom-one-brighter-modeline nil
         doom-enable-bold t
         doom-enable-italic t)
   (load-theme 'doom-one t)
@@ -604,6 +610,10 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 ;;   :config (bind-key "M-m" 'discover-my-major help-map))
 
 
+;;;; docker
+(use-package dockerfile-mode
+  :ensure t)
+
 ;;;; edit-server
 ;; (require-package 'edit-server)
 
@@ -952,7 +962,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
     )
 
   (use-package intero
-    :disabled t
+    ;; :disabled t
     :ensure t
     :diminish 'intero-mode
     :pin melpa
@@ -962,7 +972,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
     ;; (add-hook 'haskell-mode-hook 'intero-mode-blacklist)
     )
   (use-package dante
-    ;;:disabled t
+    :disabled t
     :ensure t
     ;; :pin melpa
     :load-path "~/Source/dante"
@@ -1056,11 +1066,22 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   (defalias 'magit 'magit-status)
   (remove-hook 'server-switch-hook 'magit-commit-diff)
   (csetq magit-display-buffer-function 'magit-display-buffer-fullcolumn-most-v1)
-  (use-package magit-gh-pulls
-    :disabled t
-    :config
-    (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls))
   )
+(use-package magit-gh-pulls
+  :disabled t
+  :after magit
+  :pin melpa
+  :ensure t
+  :config
+  (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls))
+(use-package ghub
+  :ensure t
+  :pin melpa)
+(use-package magithub
+  :disabled t
+  :after (magit ghub)
+  :ensure t
+  :config (magithub-feature-autoinject t))
 ;; (defadvice magit-status (around magit-fullscreen activate)
 ;;   (window-configuration-to-register :magit-fullscreen)
 ;;   ad-do-it
@@ -1159,6 +1180,10 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
           (quote
            ((sequence "SOMEDAY(s)" "TODO(t)" "NEXT(n)" "|" "DONE(d)")
             (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)"))))
+
+    ;;(add-to-list 'org-export-backends 'md)
+    (use-package ox-gfm
+      :ensure t)
 
     (use-package ox-latex
       :config
@@ -1349,6 +1374,10 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
      (list (line-beginning-position)
            (line-beginning-position 2)))))
 
+
+;;;; yaml
+(use-package yaml-mode
+  :ensure t)
 
 ;; (use-package color-theme-sanityinc-tomorrow)
 ;; (use-package leuven-theme)
