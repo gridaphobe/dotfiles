@@ -55,11 +55,11 @@
   (progn
     (add-to-list 'package-archives
                  '("melpa" . "http://melpa.org/packages/") t)
-    (add-to-list 'package-archives
-                 '("melpa-stable" . "http://stable.melpa.org/packages/") t)
+    ;; (add-to-list 'package-archives
+    ;;              '("melpa-stable" . "http://stable.melpa.org/packages/") t)
     (csetq package-archive-priorities
           '(("gnu" . 2)
-            ("melpa-stable" . 1)
+            ;; ("melpa-stable" . 1)
             ("melpa" . 0)))))
 (package-initialize)
 
@@ -179,7 +179,9 @@
 
 (use-package nlinum
   :ensure t
-  :config (add-hook 'prog-mode-hook #'nlinum-mode))
+  :config
+  (csetq nlinum-highlight-current-line t)
+  (add-hook 'prog-mode-hook #'nlinum-mode))
 
 (use-package doom-themes
   :ensure t
@@ -190,16 +192,19 @@
         doom-enable-bold t
         doom-enable-italic t)
   (load-theme 'doom-one t)
-  (doom-themes-nlinum-config)
-  ;; brighter source buffers (that represent files)
-  (add-hook 'find-file-hook #'doom-buffer-mode-maybe)
-  ;; ...if you use auto-revert-mode
-  (add-hook 'after-revert-hook #'doom-buffer-mode-maybe)
-  ;; And you can brighten other buffers (unconditionally) with:
-  (add-hook 'ediff-prepare-buffer-hook #'doom-buffer-mode)
-
-  ;; brighter minibuffer when active
-  (add-hook 'minibuffer-setup-hook #'doom-brighten-minibuffer))
+  (doom-themes-visual-bell-config)
+  (doom-themes-org-config)
+  ;; ;; DEPRECATED
+  ;; (doom-themes-nlinum-config)
+  ;; ;; brighter source buffers (that represent files)
+  ;; (add-hook 'find-file-hook #'doom-buffer-mode-maybe)
+  ;; ;; ...if you use auto-revert-mode
+  ;; (add-hook 'after-revert-hook #'doom-buffer-mode-maybe)
+  ;; ;; And you can brighten other buffers (unconditionally) with:
+  ;; (add-hook 'ediff-prepare-buffer-hook #'doom-buffer-mode)
+  ;; ;; brighter minibuffer when active
+  ;; (add-hook 'minibuffer-setup-hook #'doom-brighten-minibuffer)
+  )
 
 (use-package all-the-icons
   :ensure t)
@@ -573,9 +578,11 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   :ensure t
   :diminish 'company-mode
   :config
-  (csetq company-dabbrev-downcase nil
-         company-dabbrev-ignore-case t
-         company-dabbrev-code-ignore-case t)
+  (csetq
+   company-idle-delay nil
+   company-dabbrev-downcase nil
+   company-dabbrev-ignore-case t
+   company-dabbrev-code-ignore-case t)
   (add-hook #'prog-mode-hook #'company-mode))
 
 

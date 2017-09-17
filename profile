@@ -20,7 +20,8 @@ if [ -d "$HOME/bin" ]; then
     export PATH="$HOME/bin:$PATH"
 fi
 
-export EDITOR='emacsclient -t -a ""'
+ec="/Applications/Emacs.app/Contents/MacOS/bin/emacsclient"
+export EDITOR="$ec -t -a \"\""
 
 # Local Variables:
 # mode: sh
