@@ -41,3 +41,8 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+
+[includeIf "gitdir:~/Work/"]
+  path = ~/Work/dotfiles/gitconfig
+[magit]
+	hideCampaign = true

@@ -206,6 +206,29 @@
   ;; (add-hook 'minibuffer-setup-hook #'doom-brighten-minibuffer)
   )
 
+(use-package solaire-mode
+  :disabled t
+  :ensure t
+  :after doom-themes
+  :config
+  ;; brighten buffers (that represent real files)
+  (add-hook 'after-change-major-mode-hook #'turn-on-solaire-mode)
+  ;; To enable solaire-mode unconditionally for certain modes:
+  (add-hook 'ediff-prepare-buffer-hook #'solaire-mode)
+
+  ;; ...if you use auto-revert-mode:
+  (add-hook 'after-revert-hook #'turn-on-solaire-mode)
+
+  ;; highlight the minibuffer when it is activated:
+  (add-hook 'minibuffer-setup-hook #'solaire-mode-in-minibuffer)
+
+  ;; if the bright and dark background colors are the wrong way around, use this
+  ;; to switch the backgrounds of the `default` and `solaire-default-face` faces.
+  ;; This should be used *after* you load the active theme!
+  ;;
+  ;; NOTE: This is necessary for themes in the doom-themes package!
+  (solaire-mode-swap-bg))
+
 (use-package all-the-icons
   :ensure t)
 
@@ -234,6 +257,8 @@
 (show-paren-mode -1)
 
 (csetq major-mode 'text-mode)
+
+(setq-default bidi-display-reordering nil)
 
 ;; When popping the mark, continue popping until the cursor
 ;; actually moves
@@ -586,6 +611,30 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
   (add-hook #'prog-mode-hook #'company-mode))
 
 
+;;;; c/c++
+(use-package irony
+  :ensure t
+  :config
+  (add-hook 'c++-mode-hook   #'irony-mode)
+  (add-hook 'c-mode-hook     #'irony-mode)
+  (add-hook 'objc-mode-hook  #'irony-mode)
+  (add-hook 'irony-mode-hook #'irony-cdb-autosetup-compile-options))
+(use-package company-irony
+  :ensure t
+  :after (irony company)
+  :config
+  (add-to-list 'company-backends #'company-irony))
+(use-package flycheck-irony
+  :ensure t
+  :after (irony flycheck)
+  :config
+  (add-hook 'flycheck-mode-hook #'flycheck-irony-setup))
+(use-package irony-eldoc
+  :ensure t
+  :after irony
+  :config
+  (add-hook 'irony-mode-hook #'irony-eldoc))
+
 ;;;; compile
 (use-package compile
   :config
@@ -837,6 +886,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 
 ;;;; flyspell
 (use-package flyspell
+  :disabled t
   :diminish 'flyspell-mode
   :config
   (csetq ispell-program-name "aspell" ; use aspell instead of ispell
@@ -1130,7 +1180,7 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
     (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
   (progn
-    (csetq org-directory "~/Dropbox/org")
+    (csetq org-directory "~/Work/org")
     (csetq org-agenda-files `(,(concat org-directory "/notes.org")
                                         ; "~/Dropbox/org/galois.org"
                              ))

@@ -25,3 +25,4 @@ xmonad
 /emacs.d/smex-items
 /emacs.d/abbrev_defs
 /emacs.d/network-security.data
+/emacs.d/irony/bin/irony-server
