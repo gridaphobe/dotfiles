@@ -661,6 +661,11 @@ Use `copy-rectangle-as-kill' if `rectangle-mark-mode' is set."
 (add-hook 'css-mode-hook 'rainbow-mode)
 
 
+;;;; dash-at-point
+(use-package dash-at-point
+  :ensure t)
+
+
 ;;;; discover-my-major
 ;; (use-package discover-my-major
 ;;   :config (bind-key "M-m" 'discover-my-major help-map))
