@@ -1,11 +1,10 @@
-:set -haddock
-:set +c
+-- :set -haddock
+-- :set +c
 :set +t
 :set prompt "ghci> "
 :set -package pretty-show
-import Text.Show.Pretty (ppShow)
-let pprint = putStrLn . ppShow
-:set -interactive-print=pprint
-:def pprint \x -> return $ "putStrLn (ppShow (" ++ x ++ "))"
-:def pprintM \x -> return $ "putStrLn . ppShow =<< (" ++ x ++ ")"
-:def hoogle \s -> return $ ":! hoogle --count=15 \"" ++ s ++ "\""
+import Text.Show.Pretty (pPrint)
+:set -interactive-print=pPrint
+:def pp \x -> return $ "putStrLn (ppShow (" ++ x ++ "))"
+:def ppM \x -> return $ "putStrLn . ppShow =<< (" ++ x ++ ")"
+-- :def hoogle \s -> return $ ":! hoogle --count=15 \"" ++ s ++ "\""

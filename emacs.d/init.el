@@ -178,10 +178,15 @@
   (powerline-center-theme))
 
 (use-package nlinum
+  :if (< emacs-major-version 26)
   :ensure t
   :config
   (csetq nlinum-highlight-current-line t)
   (add-hook 'prog-mode-hook #'nlinum-mode))
+(when (>= emacs-major-version 26)
+  (add-hook 'prog-mode-hook
+            (lambda ()
+              (setq display-line-numbers t))))
 
 (use-package doom-themes
   :ensure t
