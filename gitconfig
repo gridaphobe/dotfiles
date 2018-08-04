@@ -46,3 +46,6 @@
   path = ~/Work/dotfiles/gitconfig
 [magit]
 	hideCampaign = true
+[magithub "confirm"]
+	prAllowMaintainersToSubmit = allow
+	submitPr = allow
