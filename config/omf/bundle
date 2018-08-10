@@ -1,0 +1,7 @@
+package bang-bang
+package direnv
+package emacs
+package hub
+package proxy
+theme default
+theme pure
